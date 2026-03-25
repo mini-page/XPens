@@ -62,7 +62,8 @@ class ManageSubscriptionsScreen extends ConsumerWidget {
                               padding: const EdgeInsets.only(bottom: 14),
                               child: _SubscriptionTile(
                                 subscription: subscription,
-                                amountText: currency.format(subscription.amount),
+                                amountText:
+                                    currency.format(subscription.amount),
                                 onTap: () => _openEditor(
                                   context,
                                   ref,
@@ -112,7 +113,9 @@ class ManageSubscriptionsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          subscription == null ? '${result.name} created.' : '${result.name} updated.',
+          subscription == null
+              ? '${result.name} created.'
+              : '${result.name} updated.',
         ),
       ),
     );
@@ -230,7 +233,8 @@ class _SubscriptionTile extends StatelessWidget {
                           }
                           onTap();
                         },
-                        itemBuilder: (context) => const <PopupMenuEntry<String>>[
+                        itemBuilder: (context) =>
+                            const <PopupMenuEntry<String>>[
                           PopupMenuItem<String>(
                             value: 'edit',
                             child: Text('Edit'),

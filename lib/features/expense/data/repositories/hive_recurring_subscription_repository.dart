@@ -2,7 +2,8 @@ import '../../domain/repositories/recurring_subscription_repository.dart';
 import '../datasource/recurring_subscription_local_datasource.dart';
 import '../models/recurring_subscription_model.dart';
 
-class HiveRecurringSubscriptionRepository implements RecurringSubscriptionRepository {
+class HiveRecurringSubscriptionRepository
+    implements RecurringSubscriptionRepository {
   HiveRecurringSubscriptionRepository(this._localDatasource);
 
   final RecurringSubscriptionLocalDatasource _localDatasource;

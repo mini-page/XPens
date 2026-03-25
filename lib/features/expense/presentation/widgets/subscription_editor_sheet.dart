@@ -57,13 +57,16 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.subscription?.name ?? '');
+    _nameController =
+        TextEditingController(text: widget.subscription?.name ?? '');
     _amountController = TextEditingController(
       text: widget.subscription?.amount.toStringAsFixed(0) ?? '',
     );
-    _noteController = TextEditingController(text: widget.subscription?.note ?? '');
+    _noteController =
+        TextEditingController(text: widget.subscription?.note ?? '');
     _nextBillDate = widget.subscription?.nextBillDate ?? DateTime.now();
-    _iconKey = widget.subscription?.iconKey ?? subscriptionIconOptions.first.key;
+    _iconKey =
+        widget.subscription?.iconKey ?? subscriptionIconOptions.first.key;
     _isActive = widget.subscription?.isActive ?? true;
   }
 
@@ -124,9 +127,9 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
             const SizedBox(height: 14),
             TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration:
-                  _inputDecoration('Amount').copyWith(prefixText: '₹ '),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: _inputDecoration('Amount').copyWith(prefixText: '₹ '),
             ),
             const SizedBox(height: 14),
             TextField(
