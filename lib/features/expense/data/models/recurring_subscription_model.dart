@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 class RecurringSubscriptionModel {
   RecurringSubscriptionModel({
@@ -12,18 +11,26 @@ class RecurringSubscriptionModel {
     this.note = '',
     this.isActive = true,
   }) : nextBillDate = DateTime(
-          nextBillDate.year,
-          nextBillDate.month,
-          nextBillDate.day,
-        ) {
+         nextBillDate.year,
+         nextBillDate.month,
+         nextBillDate.day,
+       ) {
     if (id.isEmpty) {
       throw ArgumentError.value(id, 'id', 'Subscription id cannot be empty.');
     }
     if (name.trim().isEmpty) {
-      throw ArgumentError.value(name, 'name', 'Subscription name cannot be empty.');
+      throw ArgumentError.value(
+        name,
+        'name',
+        'Subscription name cannot be empty.',
+      );
     }
     if (amount <= 0) {
-      throw ArgumentError.value(amount, 'amount', 'Subscription amount must be positive.');
+      throw ArgumentError.value(
+        amount,
+        'amount',
+        'Subscription amount must be positive.',
+      );
     }
   }
 
@@ -36,7 +43,7 @@ class RecurringSubscriptionModel {
     bool isActive = true,
   }) {
     return RecurringSubscriptionModel(
-      id: _SubscriptionIdGenerator.generate(),
+      id: const Uuid().v4(),
       name: name.trim(),
       amount: amount,
       nextBillDate: nextBillDate,
@@ -75,7 +82,8 @@ class RecurringSubscriptionModel {
   }
 }
 
-class RecurringSubscriptionModelAdapter extends TypeAdapter<RecurringSubscriptionModel> {
+class RecurringSubscriptionModelAdapter
+    extends TypeAdapter<RecurringSubscriptionModel> {
   static const int typeIdValue = 4;
 
   @override
@@ -104,25 +112,5 @@ class RecurringSubscriptionModelAdapter extends TypeAdapter<RecurringSubscriptio
       ..writeString(obj.iconKey)
       ..writeString(obj.note)
       ..writeBool(obj.isActive);
-  }
-}
-
-abstract final class _SubscriptionIdGenerator {
-  static final Random _random = Random.secure();
-
-  static String generate() {
-    final bytes = List<int>.generate(16, (_) => _random.nextInt(256));
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-    return '${_hex(bytes.sublist(0, 4))}-'
-        '${_hex(bytes.sublist(4, 6))}-'
-        '${_hex(bytes.sublist(6, 8))}-'
-        '${_hex(bytes.sublist(8, 10))}-'
-        '${_hex(bytes.sublist(10, 16))}';
-  }
-
-  static String _hex(List<int> bytes) {
-    return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
   }
 }
