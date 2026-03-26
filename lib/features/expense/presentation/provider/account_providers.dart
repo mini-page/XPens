@@ -65,9 +65,7 @@ class AccountListNotifier extends AsyncNotifier<List<AccountModel>> {
           })
           .toList(growable: false);
 
-      for (final account in seededAccounts) {
-        await _repository.saveAccount(account);
-      }
+      await _repository.saveAccounts(seededAccounts);
 
       return seededAccounts;
     } catch (e, stackTrace) {

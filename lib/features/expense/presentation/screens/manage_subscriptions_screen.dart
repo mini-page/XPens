@@ -77,6 +77,35 @@ class ManageSubscriptionsScreen extends ConsumerWidget {
                       })
                       .toList(growable: false),
                 ),
+                  ? const Center(child: CircularProgressIndicator())
+                  : subscriptions.isEmpty
+                      ? const _SubscriptionStateCard(
+                          title: 'No recurring subscriptions',
+                          message:
+                              'Create the first subscription to keep upcoming bills visible.',
+                        )
+                      : ListView(
+                          children: subscriptions.map((subscription) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: _SubscriptionTile(
+                                subscription: subscription,
+                                amountText:
+                                    currency.format(subscription.amount),
+                                onTap: () => _openEditor(
+                                  context,
+                                  ref,
+                                  subscription: subscription,
+                                ),
+                                onDelete: () => ref
+                                    .read(
+                                      recurringSubscriptionControllerProvider,
+                                    )
+                                    .deleteSubscription(subscription.id),
+                              ),
+                            );
+                          }).toList(growable: false),
+                        ),
         ),
       ),
     );
@@ -245,6 +274,15 @@ class _SubscriptionTile extends StatelessWidget {
                                 child: Text('Delete'),
                               ),
                             ],
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Edit'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
+                        ],
                       ),
                     ],
                   ),

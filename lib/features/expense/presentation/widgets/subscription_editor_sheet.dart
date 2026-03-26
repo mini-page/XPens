@@ -66,6 +66,13 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
     _noteController = TextEditingController(
       text: widget.subscription?.note ?? '',
     );
+    _nameController =
+        TextEditingController(text: widget.subscription?.name ?? '');
+    _amountController = TextEditingController(
+      text: widget.subscription?.amount.toStringAsFixed(0) ?? '',
+    );
+    _noteController =
+        TextEditingController(text: widget.subscription?.note ?? '');
     _nextBillDate = widget.subscription?.nextBillDate ?? DateTime.now();
     _iconKey =
         widget.subscription?.iconKey ?? subscriptionIconOptions.first.key;
@@ -132,6 +139,8 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: _inputDecoration('Amount').copyWith(prefixText: '₹ '),
             ),
             const SizedBox(height: 14),
