@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../provider/account_providers.dart';
 import '../widgets/account_editor_sheet.dart';
 import 'accounts_screen.dart';
@@ -46,7 +47,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                 height: 72,
                 child: FloatingActionButton(
                   onPressed: _handleFabPressed,
-                  backgroundColor: const Color(0xFF0A6BE8),
+                  backgroundColor: AppColors.primaryBlue,
                   foregroundColor: Colors.white,
                   elevation: 8,
                   shape: const CircleBorder(),
@@ -216,7 +217,7 @@ class _NavBarItem extends StatelessWidget {
             ? const EdgeInsets.symmetric(horizontal: 16, vertical: 10)
             : const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0A6BE8) : Colors.transparent,
+          color: isSelected ? AppColors.primaryBlue : Colors.transparent,
           borderRadius: BorderRadius.circular(99),
         ),
         child: Row(
@@ -224,7 +225,7 @@ class _NavBarItem extends StatelessWidget {
           children: <Widget>[
             Icon(
               isSelected ? activeIcon : icon,
-              color: isSelected ? Colors.white : const Color(0xFF97A7C1),
+              color: isSelected ? Colors.white : AppColors.textMuted,
               size: 24,
             ),
             if (isSelected) ...<Widget>[

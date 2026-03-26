@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/account_providers.dart';
@@ -59,7 +60,7 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
         title: const Text(
           'Records',
           style: TextStyle(
-            color: Color(0xFF152039),
+            color: AppColors.textDark,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -172,8 +173,8 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                                 _selectedFilter = filter;
                               });
                             },
-                            selectedColor: const Color(0xFF0A6BE8),
-                            backgroundColor: const Color(0xFFEFF5FF),
+                            selectedColor: AppColors.primaryBlue,
+                            backgroundColor: AppColors.lightBlueBg,
                             labelStyle: TextStyle(
                               color: isSelected
                                   ? Colors.white
@@ -218,7 +219,7 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: const <BoxShadow>[
                         BoxShadow(
-                          color: Color(0x1209386D),
+                          color: AppColors.cardShadow,
                           blurRadius: 18,
                           offset: Offset(0, 8),
                         ),
@@ -230,20 +231,20 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                         const Icon(
                           Icons.account_balance_wallet_outlined,
                           size: 18,
-                          color: Color(0xFF0A6BE8),
+                          color: AppColors.primaryBlue,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           _accountFilterLabel(accounts),
                           style: const TextStyle(
-                            color: Color(0xFF152039),
+                            color: AppColors.textDark,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(width: 8),
                         const Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFF90A1BE),
+                          color: AppColors.textMuted,
                         ),
                       ],
                     ),
@@ -280,7 +281,7 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                                       child: Text(
                                         _groupLabel(entry.key),
                                         style: const TextStyle(
-                                          color: Color(0xFF0A6BE8),
+                                          color: AppColors.primaryBlue,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w900,
                                         ),
@@ -471,7 +472,7 @@ class _StateCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xFF152039),
+              color: AppColors.textDark,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
@@ -480,7 +481,7 @@ class _StateCard extends StatelessWidget {
           Text(
             message,
             style: const TextStyle(
-              color: Color(0xFF6E7F9C),
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w600,
               height: 1.5,
             ),

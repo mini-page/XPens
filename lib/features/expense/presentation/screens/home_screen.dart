@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/app_assets.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/account_providers.dart';
@@ -131,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const Text(
                       'RECENT TRANSACTIONS',
                       style: TextStyle(
-                        color: Color(0xFF0A6BE8),
+                        color: AppColors.primaryBlue,
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.4,
@@ -336,7 +338,7 @@ class _Header extends StatelessWidget {
     return Container(
       padding: EdgeInsets.fromLTRB(22, topPadding + 14, 22, 28),
       decoration: const BoxDecoration(
-        color: Color(0xFF0A6BE8),
+        color: AppColors.primaryBlue,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(44)),
       ),
       child: Column(
@@ -346,7 +348,7 @@ class _Header extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
-                  'assets/icon/xpensa_logo.png',
+                  AppAssets.logo,
                   width: 32,
                   height: 32,
                 ),
@@ -468,7 +470,7 @@ class _DateStripCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: const <BoxShadow>[
           BoxShadow(
-            color: Color(0x1209386D),
+            color: AppColors.cardShadow,
             blurRadius: 22,
             offset: Offset(0, 10),
           ),
@@ -482,7 +484,7 @@ class _DateStripCard extends StatelessWidget {
                 child: Text(
                   monthFormat.format(selectedDate),
                   style: const TextStyle(
-                    color: Color(0xFF17233D),
+                    color: AppColors.textDark,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
@@ -578,7 +580,7 @@ class _DateNavButton extends StatelessWidget {
         child: SizedBox(
           width: 36,
           height: 36,
-          child: Icon(icon, size: 18, color: const Color(0xFF7E8CA4)),
+          child: Icon(icon, size: 18, color: AppColors.textMuted),
         ),
       ),
     );
@@ -626,7 +628,7 @@ class _DayPill extends StatelessWidget {
               style: TextStyle(
                 color: isSelected
                     ? const Color(0xFF253411)
-                    : const Color(0xFF17233D),
+                    : AppColors.textDark,
                 fontWeight: FontWeight.w900,
                 fontSize: 18,
               ),
@@ -658,7 +660,7 @@ class _EmptyCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xFF13213B),
+              color: AppColors.textDark,
               fontWeight: FontWeight.w900,
               fontSize: 18,
             ),
@@ -712,7 +714,7 @@ class _AmountChip extends StatelessWidget {
               child: Text(
                 label,
                 style: const TextStyle(
-                  color: Color(0xFF13213B),
+                  color: AppColors.textDark,
                   fontWeight: FontWeight.w900,
                   fontSize: 18,
                 ),

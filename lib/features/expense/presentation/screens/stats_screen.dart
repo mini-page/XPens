@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../provider/expense_providers.dart';
 import '../provider/preferences_providers.dart';
 import '../widgets/amount_visibility.dart';
@@ -41,7 +42,7 @@ class StatsScreen extends ConsumerWidget {
                       const Text(
                         'ANALYTICS',
                         style: TextStyle(
-                          color: Color(0xFF0A6BE8),
+                          color: AppColors.primaryBlue,
                           letterSpacing: 1.8,
                           fontWeight: FontWeight.w800,
                         ),
@@ -53,7 +54,7 @@ class StatsScreen extends ConsumerWidget {
                             ?.copyWith(
                               height: 1,
                               fontWeight: FontWeight.w900,
-                              color: const Color(0xFF141E35),
+                              color: AppColors.textDark,
                             ),
                       ),
                     ],
@@ -70,7 +71,7 @@ class StatsScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: const <BoxShadow>[
                       BoxShadow(
-                        color: Color(0x1209386D),
+                        color: AppColors.cardShadow,
                         blurRadius: 22,
                         offset: Offset(0, 14),
                       ),
@@ -83,7 +84,7 @@ class StatsScreen extends ConsumerWidget {
                       Text(
                         _monthLabel.format(DateTime.now()).toUpperCase(),
                         style: const TextStyle(
-                          color: Color(0xFF0A6BE8),
+                          color: AppColors.primaryBlue,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -94,7 +95,7 @@ class StatsScreen extends ConsumerWidget {
                         child: Text(
                           '${formatSignedAmount(stats.monthNetTotal, currencyFormat, masked: privacyModeEnabled)} net',
                           style: const TextStyle(
-                            color: Color(0xFF152039),
+                            color: AppColors.textDark,
                             fontWeight: FontWeight.w900,
                             fontSize: 18,
                           ),
@@ -111,14 +112,14 @@ class StatsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(26),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: <Color>[Color(0xFF0A6BE8), Color(0xFF5DA2FF)],
+                  colors: <Color>[AppColors.primaryBlue, AppColors.primaryBlueLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(34),
                 boxShadow: const <BoxShadow>[
                   BoxShadow(
-                    color: Color(0x2209386D),
+                    color: AppColors.darkBlueShadow,
                     blurRadius: 28,
                     offset: Offset(0, 18),
                   ),
@@ -173,7 +174,7 @@ class StatsScreen extends ConsumerWidget {
                             currencyFormat.format(stats.monthTotal),
                             masked: privacyModeEnabled,
                           ),
-                          accent: const Color(0xFFFF5B6C),
+                          accent: AppColors.danger,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -184,7 +185,7 @@ class StatsScreen extends ConsumerWidget {
                             currencyFormat.format(stats.monthIncomeTotal),
                             masked: privacyModeEnabled,
                           ),
-                          accent: const Color(0xFF1DAA63),
+                          accent: AppColors.success,
                         ),
                       ),
                     ],
@@ -203,7 +204,7 @@ class StatsScreen extends ConsumerWidget {
                         const Text(
                           'NET THIS MONTH',
                           style: TextStyle(
-                            color: Color(0xFF8EA0BC),
+                            color: AppColors.textMuted,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.4,
                           ),
@@ -220,8 +221,8 @@ class StatsScreen extends ConsumerWidget {
                             ),
                             style: TextStyle(
                               color: stats.monthNetTotal >= 0
-                                  ? const Color(0xFF1DAA63)
-                                  : const Color(0xFFFF446D),
+                                  ? AppColors.success
+                                  : AppColors.danger,
                               fontSize: 38,
                               fontWeight: FontWeight.w900,
                             ),
@@ -300,7 +301,7 @@ class _MetricTile extends StatelessWidget {
             child: Text(
               value,
               style: const TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
               ),
@@ -339,7 +340,7 @@ class _BreakdownCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: const <BoxShadow>[
           BoxShadow(
-            color: Color(0x1209386D),
+            color: AppColors.cardShadow,
             blurRadius: 22,
             offset: Offset(0, 12),
           ),
@@ -351,7 +352,7 @@ class _BreakdownCard extends StatelessWidget {
           Text(
             title.toUpperCase(),
             style: const TextStyle(
-              color: Color(0xFF0A6BE8),
+              color: AppColors.primaryBlue,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.4,
             ),
@@ -361,7 +362,7 @@ class _BreakdownCard extends StatelessWidget {
             Text(
               emptyMessage,
               style: const TextStyle(
-                color: Color(0xFF6E7F9C),
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
@@ -377,7 +378,7 @@ class _BreakdownCard extends StatelessWidget {
                     vertical: 14,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F8FE),
+                    color: AppColors.surfaceLight,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -396,7 +397,7 @@ class _BreakdownCard extends StatelessWidget {
                         child: Text(
                           entry.key,
                           style: const TextStyle(
-                            color: Color(0xFF152039),
+                            color: AppColors.textDark,
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
                           ),
@@ -406,8 +407,8 @@ class _BreakdownCard extends StatelessWidget {
                         '${income ? '+' : ''}${maskAmount(currencyFormat.format(entry.value), masked: privacyModeEnabled)}',
                         style: TextStyle(
                           color: income
-                              ? const Color(0xFF1DAA63)
-                              : const Color(0xFF0A6BE8),
+                              ? AppColors.success
+                              : AppColors.primaryBlue,
                           fontSize: 17,
                           fontWeight: FontWeight.w900,
                         ),

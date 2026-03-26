@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class QuickActionItem {
   const QuickActionItem({
     required this.label,
@@ -27,7 +29,7 @@ class QuickActionBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: const <BoxShadow>[
           BoxShadow(
-            color: Color(0x1209386D),
+            color: AppColors.cardShadow,
             blurRadius: 28,
             offset: Offset(0, 16),
           ),
@@ -37,8 +39,8 @@ class QuickActionBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: actions.map((action) {
           final color = action.isHighlighted
-              ? const Color(0xFF0A6BE8)
-              : const Color(0xFF8EA0BF);
+              ? AppColors.primaryBlue
+              : AppColors.textMuted;
           return Semantics(
             button: true,
             label: action.label,

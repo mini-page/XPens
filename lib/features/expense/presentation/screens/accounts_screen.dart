@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/account_model.dart';
 import '../provider/account_providers.dart';
 import '../provider/expense_providers.dart';
@@ -34,35 +35,40 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     );
 
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _PillSwitch(
-              leftLabel: 'Accounts',
-              rightLabel: 'Tools',
-              isRightSelected: _showTools,
-              onChanged: (value) {
-                setState(() {
-                  _showTools = value;
-                });
-              },
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            sliver: SliverToBoxAdapter(
+              child: _PillSwitch(
+                leftLabel: 'Accounts',
+                rightLabel: 'Tools',
+                isRightSelected: _showTools,
+                onChanged: (value) {
+                  setState(() {
+                    _showTools = value;
+                  });
+                },
+              ),
             ),
-            const SizedBox(height: 24),
-            if (!_showTools)
-              _AccountsTabView(currency: currency)
-            else
-              const _ToolsTabView(),
-          ],
-        ),
+          ),
+          if (!_showTools)
+            _SliverAccountsTabView(currency: currency)
+          else
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20, 24, 20, 120),
+                child: _ToolsTabView(),
+              ),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _AccountsTabView extends ConsumerWidget {
-  const _AccountsTabView({required this.currency});
+class _SliverAccountsTabView extends ConsumerWidget {
+  const _SliverAccountsTabView({required this.currency});
   final NumberFormat currency;
 
   @override
@@ -73,116 +79,128 @@ class _AccountsTabView extends ConsumerWidget {
     final privacyModeEnabled = ref.watch(privacyModeEnabledProvider);
     final accounts = accountState.value ?? const <AccountModel>[];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: <Color>[Color(0xFF0A6BE8), Color(0xFF5DA2FF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: const <BoxShadow>[
-              BoxShadow(
-                color: Color(0x2209386D),
-                blurRadius: 26,
-                offset: Offset(0, 16),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const Text(
-                'Net Worth',
-                style: TextStyle(
-                  color: Color(0xD9FFFFFF),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+      sliver: SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: <Color>[AppColors.primaryBlue, AppColors.primaryBlueLight],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ),
-              const SizedBox(height: 6),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  maskAmount(
-                    currency.format(summary.totalBalance),
-                    masked: privacyModeEnabled,
-                  ),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: _SummaryChip(
-                      label: 'Expense',
-                      value: maskAmount(
-                        currency.format(stats.monthTotal),
-                        masked: privacyModeEnabled,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _SummaryChip(
-                      label: 'Income',
-                      value: maskAmount(
-                        currency.format(stats.monthIncomeTotal),
-                        masked: privacyModeEnabled,
-                      ),
-                    ),
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: const <BoxShadow>[
+                  BoxShadow(
+                    color: AppColors.darkBlueShadow,
+                    blurRadius: 26,
+                    offset: Offset(0, 16),
                   ),
                 ],
               ),
-            ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'Net Worth',
+                    style: TextStyle(
+                      color: Color(0xD9FFFFFF),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      maskAmount(
+                        currency.format(summary.totalBalance),
+                        masked: privacyModeEnabled,
+                      ),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: _SummaryChip(
+                          label: 'Expense',
+                          value: maskAmount(
+                            currency.format(stats.monthTotal),
+                            masked: privacyModeEnabled,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _SummaryChip(
+                          label: 'Income',
+                          value: maskAmount(
+                            currency.format(stats.monthIncomeTotal),
+                            masked: privacyModeEnabled,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Your Accounts',
-                style: TextStyle(
-                  color: Color(0xFF7D8EA9),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24, bottom: 12),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Your Accounts',
+                      style: TextStyle(
+                        color: AppColors.textSubtle,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton.filled(
+                    onPressed: () => _openAccountEditor(context, ref),
+                    icon: const Icon(Icons.add_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  ),
+                ],
               ),
             ),
-            IconButton.filled(
-              onPressed: () => _openAccountEditor(context, ref),
-              icon: const Icon(Icons.add_rounded),
-              style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFF0A6BE8),
+          ),
+          if (accountState.isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(minHeight: 2),
               ),
-              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (accountState.isLoading) const LinearProgressIndicator(minHeight: 2),
-        const SizedBox(height: 8),
-        accounts.isEmpty
-            ? _EmptyAccountsCard(
+          if (accounts.isEmpty)
+            SliverToBoxAdapter(
+              child: _EmptyAccountsCard(
                 onCreate: () => _openAccountEditor(context, ref),
-              )
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: accounts.length,
-                itemBuilder: (context, index) {
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
                   final account = accounts[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 14),
@@ -202,8 +220,11 @@ class _AccountsTabView extends ConsumerWidget {
                     ),
                   );
                 },
+                childCount: accounts.length,
               ),
-      ],
+            ),
+        ],
+      ),
     );
   }
 
@@ -279,7 +300,7 @@ class _PillSwitch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F4F9),
+        color: AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
@@ -319,14 +340,14 @@ class _SwitchOption extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF0A6BE8) : Colors.transparent,
+            color: isSelected ? AppColors.primaryBlue : Colors.transparent,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF6C7D99),
+              color: isSelected ? Colors.white : AppColors.textMuted,
               fontWeight: FontWeight.w800,
               fontSize: 16,
             ),
@@ -412,12 +433,12 @@ class _AccountCard extends StatelessWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F7FF),
+                  color: AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   resolveAccountIcon(account.iconKey),
-                  color: const Color(0xFF0A6BE8),
+                  color: AppColors.primaryBlue,
                 ),
               ),
               const SizedBox(width: 12),
@@ -428,7 +449,7 @@ class _AccountCard extends StatelessWidget {
                     Text(
                       account.name,
                       style: const TextStyle(
-                        color: Color(0xFF152039),
+                        color: AppColors.textDark,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
@@ -440,7 +461,7 @@ class _AccountCard extends StatelessWidget {
                       child: Text(
                         'Balance: ${isNegative ? '-' : ''}$balanceText',
                         style: TextStyle(
-                          color: isNegative ? const Color(0xFFFF446D) : const Color(0xFF0A6BE8),
+                          color: isNegative ? AppColors.danger : AppColors.primaryBlue,
                           fontWeight: FontWeight.w900,
                           fontSize: 16,
                         ),
@@ -450,7 +471,7 @@ class _AccountCard extends StatelessWidget {
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF90A1BE)),
+                icon: const Icon(Icons.more_horiz_rounded, color: AppColors.textMuted),
                 onSelected: (value) {
                   if (value == 'delete') {
                     onDelete();
@@ -487,12 +508,12 @@ class _EmptyAccountsCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.wallet_outlined, size: 42, color: Color(0xFF0A6BE8)),
+            const Icon(Icons.wallet_outlined, size: 42, color: AppColors.primaryBlue),
             const SizedBox(height: 12),
             const Text(
               'No accounts yet',
               style: TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -501,10 +522,16 @@ class _EmptyAccountsCard extends StatelessWidget {
             const Text(
               'Create your first account to track balances.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF90A1BE), fontWeight: FontWeight.w600),
+              style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
-            FilledButton(onPressed: onCreate, child: const Text('Create Account')),
+            FilledButton(
+              onPressed: onCreate,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+              ),
+              child: const Text('Create Account'),
+            ),
           ],
         ),
       ),

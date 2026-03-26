@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import 'expense_category.dart';
 
 class BudgetFormResult {
@@ -82,14 +83,14 @@ class _BudgetEditorSheetState extends State<_BudgetEditorSheet> {
             const Center(
               child: SizedBox(
                 width: 46,
-                child: Divider(thickness: 4, color: Color(0xFFD5DDEA)),
+                child: Divider(thickness: 4, color: AppColors.backgroundLight),
               ),
             ),
             const SizedBox(height: 18),
             const Text(
               'Set Monthly Budget',
               style: TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
               ),
@@ -98,7 +99,7 @@ class _BudgetEditorSheetState extends State<_BudgetEditorSheet> {
             const Text(
               'Choose a category and store a monthly spending limit.',
               style: TextStyle(
-                color: Color(0xFF8EA0BF),
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
@@ -140,7 +141,7 @@ class _BudgetEditorSheetState extends State<_BudgetEditorSheet> {
               child: FilledButton(
                 onPressed: _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A6BE8),
+                  backgroundColor: AppColors.primaryBlue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -162,7 +163,7 @@ class _BudgetEditorSheetState extends State<_BudgetEditorSheet> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: const Color(0xFFF5F7FB),
+      fillColor: AppColors.surfaceLight,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide.none,

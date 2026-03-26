@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/theme/app_colors.dart';
 import 'core/utils/hive_bootstrap.dart';
 import 'features/expense/presentation/provider/preferences_providers.dart';
 import 'features/expense/presentation/screens/app_shell.dart';
@@ -32,8 +33,8 @@ class XPensaApp extends ConsumerWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF3F7FC),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0A6BE8),
-          primary: const Color(0xFF0A6BE8),
+          seedColor: AppColors.primaryBlue,
+          primary: AppColors.primaryBlue,
           secondary: const Color(0xFFFF5B6C),
           surface: Colors.white,
         ),

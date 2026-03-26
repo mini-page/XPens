@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/account_model.dart';
 import 'account_icons.dart';
 
@@ -78,14 +79,14 @@ class _AccountEditorSheetState extends State<_AccountEditorSheet> {
             const Center(
               child: SizedBox(
                 width: 46,
-                child: Divider(thickness: 4, color: Color(0xFFD5DDEA)),
+                child: Divider(thickness: 4, color: AppColors.backgroundLight),
               ),
             ),
             const SizedBox(height: 18),
             Text(
               widget.account == null ? 'Add Account' : 'Edit Account',
               style: const TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
               ),
@@ -94,7 +95,7 @@ class _AccountEditorSheetState extends State<_AccountEditorSheet> {
             const Text(
               'Store a real account name, icon, and current balance for the accounts tab.',
               style: TextStyle(
-                color: Color(0xFF8EA0BF),
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
@@ -119,7 +120,7 @@ class _AccountEditorSheetState extends State<_AccountEditorSheet> {
             const Text(
               'Icon',
               style: TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -135,11 +136,11 @@ class _AccountEditorSheetState extends State<_AccountEditorSheet> {
                         option.icon,
                         color: isSelected
                             ? Colors.white
-                            : const Color(0xFF0A6BE8),
+                            : AppColors.primaryBlue,
                       ),
                       selected: isSelected,
-                      selectedColor: const Color(0xFF0A6BE8),
-                      backgroundColor: const Color(0xFFF1F5FB),
+                      selectedColor: AppColors.primaryBlue,
+                      backgroundColor: AppColors.lightBlueBg,
                       onSelected: (_) {
                         setState(() {
                           _iconKey = option.key;
@@ -155,7 +156,7 @@ class _AccountEditorSheetState extends State<_AccountEditorSheet> {
               child: FilledButton(
                 onPressed: _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A6BE8),
+                  backgroundColor: AppColors.primaryBlue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -177,7 +178,7 @@ class _AccountEditorSheetState extends State<_AccountEditorSheet> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: const Color(0xFFF5F7FB),
+      fillColor: AppColors.surfaceLight,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide.none,

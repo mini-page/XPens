@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../provider/preferences_providers.dart';
 import '../../data/models/expense_model.dart';
 import 'amount_visibility.dart';
@@ -41,8 +42,8 @@ class TransactionCard extends ConsumerWidget {
     );
     final signedPrefix = expense.isIncome ? '+' : '-';
     final amountColor = expense.isIncome
-        ? const Color(0xFF1DAA63)
-        : const Color(0xFFFF446D);
+        ? AppColors.success
+        : AppColors.danger;
     final sourceLabel = accountLabel?.trim().isNotEmpty ?? false
         ? accountLabel!
         : expense.accountId == null
@@ -63,7 +64,7 @@ class TransactionCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(26),
               boxShadow: const <BoxShadow>[
                 BoxShadow(
-                  color: Color(0x1209386D),
+                  color: AppColors.cardShadow,
                   blurRadius: 22,
                   offset: Offset(0, 10),
                 ),
@@ -93,7 +94,7 @@ class TransactionCard extends ConsumerWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF13213B),
+                          color: AppColors.textDark,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -104,7 +105,7 @@ class TransactionCard extends ConsumerWidget {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF97A7C1),
+                          color: AppColors.textSubtle,
                         ),
                       ),
                     ],
@@ -128,13 +129,13 @@ class TransactionCard extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFB4C1D5),
+                        color: AppColors.textMuted,
                       ),
                     ),
                     PopupMenuButton<String>(
                       icon: const Icon(Icons.more_horiz_rounded),
                       color: Colors.white,
-                      iconColor: const Color(0xFF96A6C2),
+                      iconColor: AppColors.textMuted,
                       onSelected: (value) {
                         if (value == 'delete') {
                           onDelete();

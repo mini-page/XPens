@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/account_providers.dart';
@@ -168,8 +169,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: _selectedType.isIncome
-                              ? const Color(0xFF1DAA63)
-                              : const Color(0xFF111A33),
+                              ? AppColors.success
+                              : AppColors.textDark,
                           fontSize: 52,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -1.5,
@@ -237,9 +238,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     icon: selectedAccount == null
                         ? Icons.account_balance_wallet_outlined
                         : resolveAccountIcon(selectedAccount.iconKey),
-                    iconColor: const Color(0xFF0A6BE8),
+                    iconColor: AppColors.primaryBlue,
                     label: selectedAccount?.name ?? 'No account',
-                    background: const Color(0xFFEFF5FF),
+                    background: AppColors.lightBlueBg,
                     onTap: accounts.isEmpty
                         ? null
                         : () => _pickAccount(accounts),
@@ -616,7 +617,7 @@ class _TopCircleButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: SizedBox(width: 42, height: 42, child: Icon(icon, color: color)),
+        child: SizedBox(width: 42, height: 42, child: Icon(icon, color: AppColors.textMuted)),
       ),
     );
   }
@@ -647,8 +648,8 @@ class _ModeTab extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected
-                ? const Color(0xFF111A33)
-                : const Color(0xFFA6B2C7),
+                ? AppColors.textDark
+                : AppColors.textMuted,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -681,12 +682,12 @@ class _InfoCapsule extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Icon(icon, size: 18, color: const Color(0xFF7D8BA5)),
+              Icon(icon, size: 18, color: AppColors.textMuted),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: const TextStyle(
-                  color: Color(0xFF4A5874),
+                  color: AppColors.textDark,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -762,7 +763,7 @@ class _KeypadButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: isPrimary ? const Color(0xFF383838) : const Color(0xFFF6F7FA),
+      color: isPrimary ? const Color(0xFF383838) : AppColors.surfaceLight,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
@@ -771,7 +772,7 @@ class _KeypadButton extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: isPrimary ? Colors.white : const Color(0xFF111A33),
+              color: isPrimary ? Colors.white : AppColors.textDark,
               fontSize: 28,
               fontWeight: FontWeight.w800,
             ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/recurring_subscription_model.dart';
 import '../provider/preferences_providers.dart';
 import '../provider/recurring_subscription_providers.dart';
@@ -35,7 +37,7 @@ class RecurringToolView extends ConsumerWidget {
                   Text(
                     'Recurring Bills',
                     style: TextStyle(
-                      color: Color(0xFF152039),
+                      color: AppColors.textDark,
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                     ),
@@ -43,7 +45,7 @@ class RecurringToolView extends ConsumerWidget {
                   Text(
                     'Manage your monthly subscriptions',
                     style: TextStyle(
-                      color: Color(0xFF90A1BE),
+                      color: AppColors.textMuted,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -54,7 +56,7 @@ class RecurringToolView extends ConsumerWidget {
               onPressed: () => _openEditor(context, ref),
               icon: const Icon(Icons.add_rounded),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFF0A6BE8),
+                backgroundColor: AppColors.primaryBlue,
               ),
             ),
           ],
@@ -142,12 +144,12 @@ class _SubscriptionTile extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F7FF),
+                  color: AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   resolveSubscriptionIcon(subscription.iconKey),
-                  color: const Color(0xFF0A6BE8),
+                  color: AppColors.primaryBlue,
                   size: 20,
                 ),
               ),
@@ -159,7 +161,7 @@ class _SubscriptionTile extends StatelessWidget {
                     Text(
                       subscription.name,
                       style: const TextStyle(
-                        color: Color(0xFF152039),
+                        color: AppColors.textDark,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
@@ -167,7 +169,7 @@ class _SubscriptionTile extends StatelessWidget {
                     Text(
                       'Next: ${DateFormat('d MMM').format(subscription.nextBillDate)}',
                       style: const TextStyle(
-                        color: Color(0xFF90A1BE),
+                        color: AppColors.textMuted,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -181,7 +183,7 @@ class _SubscriptionTile extends StatelessWidget {
                   Text(
                     amountText,
                     style: const TextStyle(
-                      color: Color(0xFF0A6BE8),
+                      color: AppColors.primaryBlue,
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
                     ),

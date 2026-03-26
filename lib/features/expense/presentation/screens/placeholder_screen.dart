@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class PlaceholderScreen extends StatelessWidget {
   const PlaceholderScreen({
     super.key,
@@ -25,7 +27,7 @@ class PlaceholderScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(32),
               boxShadow: const <BoxShadow>[
                 BoxShadow(
-                  color: Color(0x1209386D),
+                  color: AppColors.cardShadow,
                   blurRadius: 22,
                   offset: Offset(0, 14),
                 ),
@@ -36,15 +38,15 @@ class PlaceholderScreen extends StatelessWidget {
               children: <Widget>[
                 CircleAvatar(
                   radius: 38,
-                  backgroundColor: const Color(0xFFEBF3FF),
-                  child: Icon(icon, size: 36, color: const Color(0xFF0A6BE8)),
+                  backgroundColor: AppColors.lightBlueBg,
+                  child: Icon(icon, size: 36, color: AppColors.primaryBlue),
                 ),
                 const SizedBox(height: 18),
                 Text(
                   title,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w900,
-                    color: const Color(0xFF141E35),
+                    color: AppColors.textDark,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -52,7 +54,7 @@ class PlaceholderScreen extends StatelessWidget {
                   description,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Color(0xFF6F7F9C),
+                    color: AppColors.textMuted,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     height: 1.5,

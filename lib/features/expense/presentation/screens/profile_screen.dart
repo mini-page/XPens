@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../provider/preferences_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -24,7 +25,7 @@ class ProfileScreen extends ConsumerWidget {
               children: <Widget>[
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: Color(0xFF0A6BE8),
+                  backgroundColor: AppColors.primaryBlue,
                   child: Text(
                     'P',
                     style: TextStyle(
@@ -41,7 +42,7 @@ class ProfileScreen extends ConsumerWidget {
                     Text(
                       'XPensa',
                       style: TextStyle(
-                        color: Color(0xFF152039),
+                        color: AppColors.textDark,
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
                       ),
@@ -49,7 +50,7 @@ class ProfileScreen extends ConsumerWidget {
                     Text(
                       'Offline-first expense control',
                       style: TextStyle(
-                        color: Color(0xFF90A1BE),
+                        color: AppColors.textMuted,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -63,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
             const Text(
               'Preferences',
               style: TextStyle(
-                color: Color(0xFF0A6BE8),
+                color: AppColors.primaryBlue,
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
               ),
@@ -240,7 +241,7 @@ class _ProfileHeroCard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: <Color>[Color(0xFF0A6BE8), Color(0xFF3E90FF)],
+          colors: <Color>[AppColors.primaryBlue, Color(0xFF3E90FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -300,7 +301,7 @@ class _PreferenceToggleTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: const <BoxShadow>[
           BoxShadow(
-            color: Color(0x1209386D),
+            color: AppColors.cardShadow,
             blurRadius: 18,
             offset: Offset(0, 10),
           ),
@@ -317,7 +318,7 @@ class _PreferenceToggleTile extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Color(0xFF152039),
+                    color: AppColors.textDark,
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                   ),
@@ -326,7 +327,7 @@ class _PreferenceToggleTile extends StatelessWidget {
                 Text(
                   subtitle,
                   style: const TextStyle(
-                    color: Color(0xFF90A1BE),
+                    color: AppColors.textMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -351,10 +352,10 @@ class _TileIcon extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF4FF),
+        color: AppColors.lightBlueBg,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Icon(icon, color: const Color(0xFF0A6BE8)),
+      child: Icon(icon, color: AppColors.primaryBlue),
     );
   }
 }
@@ -369,13 +370,13 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF5FF),
+        color: AppColors.lightBlueBg,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF0A6BE8),
+          color: AppColors.primaryBlue,
           fontWeight: FontWeight.w800,
         ),
       ),

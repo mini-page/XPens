@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../provider/preferences_providers.dart';
 
 class SplitBillToolView extends ConsumerStatefulWidget {
@@ -12,7 +13,7 @@ class SplitBillToolView extends ConsumerStatefulWidget {
 }
 
 class _SplitBillToolViewState extends ConsumerState<SplitBillToolView> {
-  final TextEditingController _amountController = TextEditingController(text: '0');
+  final TextEditingController _amountController = TextEditingController();
   int _peopleCount = 2;
 
   @override
@@ -58,6 +59,7 @@ class _SplitBillToolViewState extends ConsumerState<SplitBillToolView> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
             labelText: 'Total amount',
+            hintText: '0',
             prefixText: '$symbol ',
             filled: true,
             fillColor: Colors.white,
@@ -121,7 +123,7 @@ class _SplitBillToolViewState extends ConsumerState<SplitBillToolView> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0A6BE8).withValues(alpha: 0.2),
+                color: AppColors.primaryBlue.withValues(alpha: 0.2),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),

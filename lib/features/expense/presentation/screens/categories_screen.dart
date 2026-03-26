@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/budget_providers.dart';
 import '../provider/expense_providers.dart';
@@ -84,7 +85,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               children: <Widget>[
                 Icon(
                   _showIncome ? Icons.savings_outlined : Icons.blur_on_rounded,
-                  color: const Color(0xFF0A6BE8),
+                  color: AppColors.primaryBlue,
                   size: 28,
                 ),
                 const SizedBox(width: 10),
@@ -99,7 +100,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         masked: privacyModeEnabled,
                       ),
                       style: const TextStyle(
-                        color: Color(0xFF152039),
+                        color: AppColors.textDark,
                         fontSize: 32,
                         fontWeight: FontWeight.w900,
                       ),
@@ -112,7 +113,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             Text(
               topLabel,
               style: const TextStyle(
-                color: Color(0xFF90A1BE),
+                color: AppColors.textMuted,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -145,7 +146,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                               budgets[expenseCategories.first.name] ?? 0,
                         ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A6BE8),
+                    backgroundColor: AppColors.primaryBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(22),
                     ),
@@ -275,7 +276,7 @@ class _PillSwitch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F4F9),
+        color: AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
@@ -315,14 +316,14 @@ class _SwitchOption extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF0A6BE8) : Colors.transparent,
+            color: isSelected ? AppColors.primaryBlue : Colors.transparent,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF6C7D99),
+              color: isSelected ? Colors.white : AppColors.textMuted,
               fontWeight: FontWeight.w800,
               fontSize: 16,
             ),
@@ -462,7 +463,7 @@ class _AddCategoryCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: const Center(
-          child: Icon(Icons.add_rounded, color: Color(0xFF6F829D), size: 40),
+          child: Icon(Icons.add_rounded, color: AppColors.textMuted, size: 40),
         ),
       ),
     );

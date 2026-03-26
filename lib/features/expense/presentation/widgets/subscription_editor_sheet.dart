@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/recurring_subscription_model.dart';
 import 'subscription_icons.dart';
 
@@ -99,7 +100,7 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
             const Center(
               child: SizedBox(
                 width: 46,
-                child: Divider(thickness: 4, color: Color(0xFFD5DDEA)),
+                child: Divider(thickness: 4, color: AppColors.backgroundLight),
               ),
             ),
             const SizedBox(height: 18),
@@ -108,7 +109,7 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
                   ? 'Add Recurring Subscription'
                   : 'Edit Subscription',
               style: const TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
               ),
@@ -117,7 +118,7 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
             const Text(
               'Store the next bill date and amount so recurring payments stay visible.',
               style: TextStyle(
-                color: Color(0xFF8EA0BF),
+                color: AppColors.textMuted,
                 fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
@@ -151,17 +152,17 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F7FB),
+                  color: AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Row(
                   children: <Widget>[
-                    const Icon(Icons.event_outlined, color: Color(0xFF0A6BE8)),
+                    const Icon(Icons.event_outlined, color: AppColors.primaryBlue),
                     const SizedBox(width: 10),
                     Text(
                       DateFormat('EEE, d MMM yyyy').format(_nextBillDate),
                       style: const TextStyle(
-                        color: Color(0xFF152039),
+                        color: AppColors.textDark,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -173,7 +174,7 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
             const Text(
               'Icon',
               style: TextStyle(
-                color: Color(0xFF152039),
+                color: AppColors.textDark,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -189,11 +190,11 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
                         option.icon,
                         color: isSelected
                             ? Colors.white
-                            : const Color(0xFF0A6BE8),
+                            : AppColors.primaryBlue,
                       ),
                       selected: isSelected,
-                      selectedColor: const Color(0xFF0A6BE8),
-                      backgroundColor: const Color(0xFFF1F5FB),
+                      selectedColor: AppColors.primaryBlue,
+                      backgroundColor: AppColors.lightBlueBg,
                       onSelected: (_) => setState(() => _iconKey = option.key),
                     );
                   })
@@ -215,7 +216,7 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
               child: FilledButton(
                 onPressed: _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A6BE8),
+                  backgroundColor: AppColors.primaryBlue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -239,7 +240,7 @@ class _SubscriptionEditorSheetState extends State<_SubscriptionEditorSheet> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: const Color(0xFFF5F7FB),
+      fillColor: AppColors.surfaceLight,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide.none,
