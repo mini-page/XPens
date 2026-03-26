@@ -1,4 +1,4 @@
-package com.xpensa.app
+package app.xpensa.finance
 
 import io.flutter.embedding.android.FlutterActivity
 
