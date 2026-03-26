@@ -10,6 +10,7 @@ import 'accounts_screen.dart';
 import 'add_expense_screen.dart';
 import 'categories_screen.dart';
 import 'home_screen.dart';
+import 'scanner_screen.dart';
 import 'stats_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -34,9 +35,10 @@ class _AppShellState extends ConsumerState<AppShell> {
           const SnackBar(content: Text('Split bill tool arriving soon.')),
         ),
         onScanner: () {
-          // Task 7 will implement the scanner
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Scanner arriving soon.')),
+          _menuOverlay?.remove();
+          _menuOverlay = null;
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ScannerScreen()),
           );
         },
         onClose: () {
