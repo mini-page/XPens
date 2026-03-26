@@ -116,8 +116,10 @@ class ExpenseModelAdapter extends TypeAdapter<ExpenseModel> {
     final id = reader.readString();
     final amount = reader.readDouble();
     final category = reader.readString();
-    final date =
-        DateTime.fromMillisecondsSinceEpoch(reader.readInt(), isUtc: true);
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      reader.readInt(),
+      isUtc: true,
+    );
     final note = reader.readString();
 
     String? accountId;

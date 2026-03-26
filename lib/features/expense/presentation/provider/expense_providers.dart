@@ -18,8 +18,8 @@ final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
 
 final expenseListProvider =
     AsyncNotifierProvider<ExpenseListNotifier, List<ExpenseModel>>(
-  ExpenseListNotifier.new,
-);
+      ExpenseListNotifier.new,
+    );
 
 final expenseControllerProvider = Provider<ExpenseController>((ref) {
   return ExpenseController(ref);
@@ -148,16 +148,19 @@ class ExpenseController {
     if (nextExpense?.accountId case final String accountId) {
       final account = pendingUpdates[accountId] ?? accountsById[accountId];
       if (account != null) {
-        final delta =
-            nextExpense!.isIncome ? nextExpense.amount : -nextExpense.amount;
+        final delta = nextExpense!.isIncome
+            ? nextExpense.amount
+            : -nextExpense.amount;
         pendingUpdates[accountId] = account.copyWith(
           balance: account.balance + delta,
         );
       }
     }
 
-    for (final account in pendingUpdates.values) {
-      await _accountRepository.saveAccount(account);
+    if (pendingUpdates.isNotEmpty) {
+      await _accountRepository.saveAccounts(
+        pendingUpdates.values.toList(growable: false),
+      );
     }
   }
 
@@ -176,8 +179,9 @@ class ExpenseController {
 
   Future<ExpenseModel?> _findExpenseById(String id) async {
     final currentExpenses = _ref.read(expenseListProvider).valueOrNull;
-    final loadedExpense =
-        currentExpenses?.where((expense) => expense.id == id).firstOrNull;
+    final loadedExpense = currentExpenses
+        ?.where((expense) => expense.id == id)
+        .firstOrNull;
     if (loadedExpense != null) {
       return loadedExpense;
     }
@@ -209,13 +213,18 @@ class ExpenseStats {
 
   factory ExpenseStats.fromExpenses(List<ExpenseModel> expenses) {
     final now = DateTime.now().toUtc();
-    final monthExpenses = expenses.where((expense) {
-      return expense.date.year == now.year && expense.date.month == now.month;
-    }).toList(growable: false);
+    final monthExpenses = expenses
+        .where((expense) {
+          return expense.date.year == now.year &&
+              expense.date.month == now.month;
+        })
+        .toList(growable: false);
 
-    final todayTransactions = monthExpenses.where((expense) {
-      return expense.date.day == now.day;
-    }).toList(growable: false);
+    final todayTransactions = monthExpenses
+        .where((expense) {
+          return expense.date.day == now.day;
+        })
+        .toList(growable: false);
 
     final expenseTotals = <String, double>{};
     final incomeTotals = <String, double>{};
@@ -255,8 +264,9 @@ class ExpenseStats {
       todayIncomeTotal: todayIncomeTotal,
       transactionCount: monthExpenses.length,
       categoryTotals: Map<String, double>.fromEntries(sortedExpenseEntries),
-      incomeCategoryTotals:
-          Map<String, double>.fromEntries(sortedIncomeEntries),
+      incomeCategoryTotals: Map<String, double>.fromEntries(
+        sortedIncomeEntries,
+      ),
     );
   }
 

@@ -24,8 +24,8 @@ final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
 
 final budgetTargetsProvider =
     AsyncNotifierProvider<BudgetTargetsNotifier, Map<String, double>>(
-  BudgetTargetsNotifier.new,
-);
+      BudgetTargetsNotifier.new,
+    );
 
 final budgetControllerProvider = Provider<BudgetController>((ref) {
   return BudgetController(ref);
@@ -59,10 +59,7 @@ class BudgetTargetsNotifier extends AsyncNotifier<Map<String, double>> {
       await _repository.saveBudget(
         BudgetModel(category: category, monthlyLimit: monthlyLimit),
       );
-      return <String, double>{
-        ...currentBudgets,
-        category: monthlyLimit,
-      };
+      return <String, double>{...currentBudgets, category: monthlyLimit};
     });
   }
 }
@@ -76,9 +73,8 @@ class BudgetController {
     required String category,
     required double monthlyLimit,
   }) async {
-    await _ref.read(budgetTargetsProvider.notifier).saveBudget(
-          category: category,
-          monthlyLimit: monthlyLimit,
-        );
+    await _ref
+        .read(budgetTargetsProvider.notifier)
+        .saveBudget(category: category, monthlyLimit: monthlyLimit);
   }
 }
