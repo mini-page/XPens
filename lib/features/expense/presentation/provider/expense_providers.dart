@@ -167,8 +167,10 @@ class ExpenseController {
       }
     }
 
-    for (final account in pendingUpdates.values) {
-      await _accountRepository.saveAccount(account);
+    if (pendingUpdates.isNotEmpty) {
+      await _accountRepository.saveAccounts(
+        pendingUpdates.values.toList(growable: false),
+      );
     }
   }
 
