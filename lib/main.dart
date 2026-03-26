@@ -35,7 +35,7 @@ class XPensaApp extends ConsumerWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primaryBlue,
           primary: AppColors.primaryBlue,
-          secondary: const Color(0xFFFF5B6C),
+          secondary: AppColors.danger,
           surface: Colors.white,
         ),
         useMaterial3: true,
@@ -43,9 +43,9 @@ class XPensaApp extends ConsumerWidget {
       darkTheme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFF0E1626),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4A9DFF),
+          seedColor: AppColors.primaryBlueLight,
           brightness: Brightness.dark,
-          primary: const Color(0xFF4A9DFF),
+          primary: AppColors.primaryBlueLight,
           secondary: const Color(0xFFFF6C89),
           surface: const Color(0xFF182234),
         ),

@@ -67,7 +67,33 @@ class _AppShellState extends ConsumerState<AppShell> {
       key: _scaffoldKey,
       extendBody: true,
       drawer: const AppDrawer(),
-      body: IndexedStack(index: _selectedIndex, children: pages),
+      body: Stack(
+        children: [
+          IndexedStack(index: _selectedIndex, children: pages),
+          // Bottom Gradient Overlay for Navbar Contrast
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 120,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.backgroundLight.withValues(alpha: 0.0),
+                      AppColors.backgroundLight.withValues(alpha: 0.8),
+                      AppColors.backgroundLight,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: _CustomFloatingNavBar(
         selectedIndex: _selectedIndex,
         onTap: (index) {
