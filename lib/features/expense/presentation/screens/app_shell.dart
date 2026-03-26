@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../provider/account_providers.dart';
 import '../widgets/account_editor_sheet.dart';
+import '../widgets/app_drawer.dart';
 import 'accounts_screen.dart';
 import 'add_expense_screen.dart';
 import 'categories_screen.dart';
 import 'home_screen.dart';
-import 'profile_screen.dart';
 import 'stats_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -19,6 +19,7 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
   List<Widget> _buildPages() {
@@ -27,7 +28,6 @@ class _AppShellState extends ConsumerState<AppShell> {
       StatsScreen(),
       const CategoriesScreen(),
       const AccountsScreen(),
-      const ProfileScreen(),
     ];
   }
 
@@ -36,11 +36,11 @@ class _AppShellState extends ConsumerState<AppShell> {
     final pages = _buildPages();
 
     return Scaffold(
+      key: _scaffoldKey,
       extendBody: true,
+      drawer: const AppDrawer(),
       body: IndexedStack(index: _selectedIndex, children: pages),
-      floatingActionButton: _selectedIndex == 4
-          ? null
-          : Padding(
+      floatingActionButton: Padding(
               padding: const EdgeInsets.only(bottom: 80),
               child: SizedBox(
                 width: 72,
@@ -138,7 +138,7 @@ class _CustomFloatingNavBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(99),
             boxShadow: const <BoxShadow>[
               BoxShadow(
-                color: Color(0x15000000),
+                color: AppColors.cardShadow,
                 blurRadius: 20,
                 offset: Offset(0, 8),
               ),
@@ -174,13 +174,6 @@ class _CustomFloatingNavBar extends StatelessWidget {
                 activeIcon: Icons.account_balance_wallet_rounded,
                 isSelected: selectedIndex == 3,
                 onTap: () => onTap(3),
-              ),
-              _NavBarItem(
-                label: 'Profile',
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
-                isSelected: selectedIndex == 4,
-                onTap: () => onTap(4),
               ),
             ],
           ),
