@@ -1,103 +1,35 @@
 # XPensa
 
-XPensa is a cross-platform expense tracker designed for a simple, focused money-management experience. The app aims to make daily spending easy to log, easy to review, and easy to understand without clutter.
+XPensa is a personal expense tracker designed for a simple, focused, and intuitive money-management experience. It makes daily spending easy to log, review, and understand—all without clutter or complex setups.
 
-## Overview
+## Core Philosophy
 
-| Item | Details |
-| --- | --- |
-| Product Type | Personal expense tracker |
-| Experience Goal | Fast expense logging with a clean, minimal UI |
-| Platforms | Android, iOS, Web, Windows, macOS, Linux |
-| Current Direction | Offline-first personal finance MVP |
-| Primary Focus | Add, view, delete, and summarize expenses |
+XPensa is built around a lightweight, distraction-free flow:
+- **Fast:** Add an expense in just a few taps.
+- **Clear:** View your spending and accounts in a clean layout.
+- **Insightful:** Review monthly totals, histories, and categories at a glance.
+- **Private:** All your personal finance data is kept available locally on your device.
 
-## Core Experience
+## Key Features
 
-XPensa is being shaped around a lightweight, distraction-free flow:
+- **Expense Tracking:** Capture the amount, category, date, and notes for every purchase.
+- **Accounts Management:** Track spending across multiple different accounts and wallets.
+- **Categories:** Organize your spending by categories to see exactly where your money goes.
+- **Budgets:** Set spending limits and keep your finances in check.
+- **Recurring Subscriptions:** Manage your monthly or annual recurring bills to never miss a payment.
+- **Statistics & History:** View easy-to-read charts and a detailed record history of your spending habits.
+- **Privacy Mode:** Hide amounts and balances from prying eyes with a simple toggle.
+- **Smart Reminders:** Get gentle notifications to log your daily expenses.
 
-- add an expense in a few taps
-- view spending in a clean list
-- review monthly totals at a glance
-- keep your personal finance data available locally
+## Supported Platforms
 
-## Feature Snapshot
-
-| Feature | Purpose | Status |
-| --- | --- | --- |
-| Expense list | Browse recorded expenses in one place | In progress |
-| Add expense flow | Capture amount, category, date, and note | In progress |
-| Delete action | Remove incorrect or unwanted entries | Planned in MVP |
-| Monthly summary | Quick overview of total spending | Planned in MVP |
-| Category insights | Better visibility into spending habits | Planned |
-| Cloud sync | Multi-device data sync | Later |
-
-## UI Direction
-
-| Area | Focus |
-| --- | --- |
-| Home screen | Clear expense list with fast entry access |
-| Add expense flow | Minimal form, low-friction input |
-| Stats view | Simple summaries instead of dense dashboards |
-| Visual style | Clean, readable, and practical |
-| Interaction model | Quick actions over complex navigation |
-
-## MVP Scope
-
-The first release is intentionally small and focused on the essentials:
-
-- add expense
-- show expense list
-- delete expense
-- display basic monthly totals
-
-This keeps the product lean while the core experience is validated.
-
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK
-- A configured emulator, simulator, or connected device
-
-### Run Locally
-
-```bash
-flutter pub get
-flutter run
-```
-
-### Useful Commands
-
-| Command | What it does |
-| --- | --- |
-| `flutter run` | Runs the app on the selected device |
-| `flutter analyze` | Checks the code for issues |
-| `dart format .` | Formats the Dart codebase |
-| `flutter build apk` | Builds an Android APK |
-
-## Platform Support
-
-XPensa is built with Flutter, which allows one codebase to target:
-
+Enjoy tracking your expenses on any device! XPensa supports:
 - Android
 - iOS
 - Web
 - Windows
 - macOS
 - Linux
-
-## Project Status
-
-XPensa is in an early build phase. The foundation is being prepared around a polished expense-entry experience first, with broader finance features planned after the MVP is stable.
-
-## Roadmap
-
-| Stage | Focus |
-| --- | --- |
-| MVP | Expense entry, list management, monthly totals |
-| Next | Categories, better summaries, UI refinement |
-| Later | Sync, authentication, advanced budgeting flows |
 
 ## License
 
