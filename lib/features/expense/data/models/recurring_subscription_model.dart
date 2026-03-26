@@ -12,18 +12,26 @@ class RecurringSubscriptionModel {
     this.note = '',
     this.isActive = true,
   }) : nextBillDate = DateTime(
-          nextBillDate.year,
-          nextBillDate.month,
-          nextBillDate.day,
-        ) {
+         nextBillDate.year,
+         nextBillDate.month,
+         nextBillDate.day,
+       ) {
     if (id.isEmpty) {
       throw ArgumentError.value(id, 'id', 'Subscription id cannot be empty.');
     }
     if (name.trim().isEmpty) {
-      throw ArgumentError.value(name, 'name', 'Subscription name cannot be empty.');
+      throw ArgumentError.value(
+        name,
+        'name',
+        'Subscription name cannot be empty.',
+      );
     }
     if (amount <= 0) {
-      throw ArgumentError.value(amount, 'amount', 'Subscription amount must be positive.');
+      throw ArgumentError.value(
+        amount,
+        'amount',
+        'Subscription amount must be positive.',
+      );
     }
   }
 
@@ -75,7 +83,8 @@ class RecurringSubscriptionModel {
   }
 }
 
-class RecurringSubscriptionModelAdapter extends TypeAdapter<RecurringSubscriptionModel> {
+class RecurringSubscriptionModelAdapter
+    extends TypeAdapter<RecurringSubscriptionModel> {
   static const int typeIdValue = 4;
 
   @override

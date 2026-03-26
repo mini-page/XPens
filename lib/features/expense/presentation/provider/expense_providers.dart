@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasource/expense_local_datasource.dart';
@@ -18,8 +20,8 @@ final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
 
 final expenseListProvider =
     AsyncNotifierProvider<ExpenseListNotifier, List<ExpenseModel>>(
-  ExpenseListNotifier.new,
-);
+      ExpenseListNotifier.new,
+    );
 
 final expenseControllerProvider = Provider<ExpenseController>((ref) {
   return ExpenseController(ref);
@@ -38,7 +40,8 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseModel>> {
   Future<List<ExpenseModel>> build() async {
     try {
       return _repository.getAllExpenses();
-    } catch (_) {
+    } catch (e, stackTrace) {
+      log('Error getting all expenses', error: e, stackTrace: stackTrace);
       return <ExpenseModel>[];
     }
   }
@@ -148,8 +151,9 @@ class ExpenseController {
     if (nextExpense?.accountId case final String accountId) {
       final account = pendingUpdates[accountId] ?? accountsById[accountId];
       if (account != null) {
-        final delta =
-            nextExpense!.isIncome ? nextExpense.amount : -nextExpense.amount;
+        final delta = nextExpense!.isIncome
+            ? nextExpense.amount
+            : -nextExpense.amount;
         pendingUpdates[accountId] = account.copyWith(
           balance: account.balance + delta,
         );
@@ -169,7 +173,8 @@ class ExpenseController {
 
     try {
       return await _accountRepository.getAllAccounts();
-    } catch (_) {
+    } catch (e, stackTrace) {
+      log('Error loading accounts', error: e, stackTrace: stackTrace);
       return <AccountModel>[];
     }
   }
@@ -188,7 +193,8 @@ class ExpenseController {
           return expense;
         }
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      log('Error finding expense by id', error: e, stackTrace: stackTrace);
       return null;
     }
 
@@ -215,13 +221,18 @@ class ExpenseStats {
 
   factory ExpenseStats.fromExpenses(List<ExpenseModel> expenses) {
     final now = DateTime.now().toUtc();
-    final monthExpenses = expenses.where((expense) {
-      return expense.date.year == now.year && expense.date.month == now.month;
-    }).toList(growable: false);
+    final monthExpenses = expenses
+        .where((expense) {
+          return expense.date.year == now.year &&
+              expense.date.month == now.month;
+        })
+        .toList(growable: false);
 
-    final todayTransactions = monthExpenses.where((expense) {
-      return expense.date.day == now.day;
-    }).toList(growable: false);
+    final todayTransactions = monthExpenses
+        .where((expense) {
+          return expense.date.day == now.day;
+        })
+        .toList(growable: false);
 
     final expenseTotals = <String, double>{};
     final incomeTotals = <String, double>{};
@@ -261,8 +272,9 @@ class ExpenseStats {
       todayIncomeTotal: todayIncomeTotal,
       transactionCount: monthExpenses.length,
       categoryTotals: Map<String, double>.fromEntries(sortedExpenseEntries),
-      incomeCategoryTotals:
-          Map<String, double>.fromEntries(sortedIncomeEntries),
+      incomeCategoryTotals: Map<String, double>.fromEntries(
+        sortedIncomeEntries,
+      ),
     );
   }
 
