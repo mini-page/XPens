@@ -21,20 +21,18 @@ class AccountsScreen extends ConsumerStatefulWidget {
 
 class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   bool _showTools = false;
-  late final NumberFormat _currency;
-
-  @override
-  void initState() {
-    super.initState();
-    _currency = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
+    final currency = NumberFormat.currency(
+      locale: locale,
+      symbol: symbol,
+      decimalDigits: 0,
+    );
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
@@ -53,7 +51,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
             ),
             const SizedBox(height: 24),
             if (!_showTools)
-              _AccountsTabView(currency: _currency)
+              _AccountsTabView(currency: currency)
             else
               const _ToolsTabView(),
           ],

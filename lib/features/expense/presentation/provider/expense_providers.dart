@@ -193,33 +193,24 @@ class ExpenseController {
 
   Future<ExpenseModel?> _findExpenseById(String id) async {
     final currentExpenses = _ref.read(expenseListProvider).value;
-    final loadedExpense = currentExpenses
+    final cachedExpense = currentExpenses
         ?.where((expense) => expense.id == id)
         .firstOrNull;
-    if (loadedExpense != null) {
-      return loadedExpense;
+    if (cachedExpense != null) {
+      return cachedExpense;
     }
 
     try {
-      final expenses = await _expenseRepository.getAllExpenses();
-      for (final expense in expenses) {
-        if (expense.id == id) {
-          return expense;
-        }
-      }
-    } catch (e) {
-      try {
-        return await _expenseRepository.getExpenseById(id);
-      } catch (e) {
+      return await _expenseRepository.getExpenseById(id);
+    } catch (e, stackTrace) {
       dev.log(
-        'Failed to find expense by id',
+        'Failed to find expense by id: $id',
         error: e,
+        stackTrace: stackTrace,
         name: 'ExpenseController',
       );
       return null;
     }
-    }
-    return null;
   }
 
   void _refreshState() {
@@ -241,17 +232,18 @@ class ExpenseStats {
   });
 
   factory ExpenseStats.fromExpenses(List<ExpenseModel> expenses) {
-    final now = DateTime.now().toUtc();
+    final now = DateTime.now();
     final monthExpenses = expenses
         .where((expense) {
-          return expense.date.year == now.year &&
-              expense.date.month == now.month;
+          final localDate = expense.date.toLocal();
+          return localDate.year == now.year &&
+              localDate.month == now.month;
         })
         .toList(growable: false);
 
     final todayTransactions = monthExpenses
         .where((expense) {
-          return expense.date.day == now.day;
+          return expense.date.toLocal().day == now.day;
         })
         .toList(growable: false);
 

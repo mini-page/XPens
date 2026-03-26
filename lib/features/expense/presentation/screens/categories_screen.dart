@@ -26,9 +26,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final stats = ref.watch(statsProvider);
     final budgetState = ref.watch(budgetTargetsProvider);
     final privacyModeEnabled = ref.watch(privacyModeEnabledProvider);
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
     final currency = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
+      locale: locale,
+      symbol: symbol,
       decimalDigits: 0,
     );
     final budgets = budgetState.value ?? defaultBudgetTargets;

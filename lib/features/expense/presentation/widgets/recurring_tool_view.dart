@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/recurring_subscription_model.dart';
+import '../provider/preferences_providers.dart';
 import '../provider/recurring_subscription_providers.dart';
 import '../widgets/subscription_editor_sheet.dart';
 import '../widgets/subscription_icons.dart';
@@ -13,9 +14,12 @@ class RecurringToolView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final subscriptionState = ref.watch(recurringSubscriptionListProvider);
     final subscriptions = subscriptionState.value ?? const <RecurringSubscriptionModel>[];
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
     final currency = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
+      locale: locale,
+      symbol: symbol,
       decimalDigits: 0,
     );
 

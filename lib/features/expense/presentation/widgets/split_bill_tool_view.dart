@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class SplitBillToolView extends StatefulWidget {
+import '../provider/preferences_providers.dart';
+
+class SplitBillToolView extends ConsumerStatefulWidget {
   const SplitBillToolView({super.key});
 
   @override
-  State<SplitBillToolView> createState() => _SplitBillToolViewState();
+  ConsumerState<SplitBillToolView> createState() => _SplitBillToolViewState();
 }
 
-class _SplitBillToolViewState extends State<SplitBillToolView> {
+class _SplitBillToolViewState extends ConsumerState<SplitBillToolView> {
   final TextEditingController _amountController = TextEditingController(text: '0');
   int _peopleCount = 2;
 
@@ -20,9 +23,12 @@ class _SplitBillToolViewState extends State<SplitBillToolView> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
     final currency = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
+      locale: locale,
+      symbol: symbol,
       decimalDigits: 0,
     );
     final totalAmount = double.tryParse(_amountController.text) ?? 0;
@@ -52,7 +58,7 @@ class _SplitBillToolViewState extends State<SplitBillToolView> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
             labelText: 'Total amount',
-            prefixText: '₹ ',
+            prefixText: '$symbol ',
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(

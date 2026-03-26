@@ -36,6 +36,16 @@ final privacyModeEnabledProvider = Provider<bool>((ref) {
       AppPreferencesModel.defaults.privacyModeEnabled;
 });
 
+final localeProvider = Provider<String>((ref) {
+  return ref.watch(appPreferencesProvider).value?.locale ??
+      AppPreferencesModel.defaults.locale;
+});
+
+final currencySymbolProvider = Provider<String>((ref) {
+  return ref.watch(appPreferencesProvider).value?.currencySymbol ??
+      AppPreferencesModel.defaults.currencySymbol;
+});
+
 final smartRemindersEnabledProvider = Provider<bool>((ref) {
   return ref.watch(appPreferencesProvider).value?.smartRemindersEnabled ??
       AppPreferencesModel.defaults.smartRemindersEnabled;

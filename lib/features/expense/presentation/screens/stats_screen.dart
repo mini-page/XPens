@@ -8,21 +8,22 @@ import '../widgets/amount_visibility.dart';
 import '../widgets/expense_category.dart';
 
 class StatsScreen extends ConsumerWidget {
-  StatsScreen({super.key})
-    : _monthLabel = DateFormat('MMMM\nyyyy'),
-      _currencyFormat = NumberFormat.currency(
-        locale: 'en_IN',
-        symbol: '₹',
-        decimalDigits: 0,
-      );
+  const StatsScreen({super.key});
 
-  final DateFormat _monthLabel;
-  final NumberFormat _currencyFormat;
+  static final DateFormat _monthLabel = DateFormat('MMMM\nyyyy');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(statsProvider);
     final privacyModeEnabled = ref.watch(privacyModeEnabledProvider);
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
+    final currencyFormat = NumberFormat.currency(
+      locale: locale,
+      symbol: symbol,
+      decimalDigits: 0,
+    );
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -86,7 +87,7 @@ class StatsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${formatSignedAmount(stats.monthNetTotal, _currencyFormat, masked: privacyModeEnabled)} net',
+                        '${formatSignedAmount(stats.monthNetTotal, currencyFormat, masked: privacyModeEnabled)} net',
                         style: const TextStyle(
                           color: Color(0xFF152039),
                           fontWeight: FontWeight.w900,
@@ -163,7 +164,7 @@ class StatsScreen extends ConsumerWidget {
                         child: _MetricTile(
                           label: 'Spent',
                           value: maskAmount(
-                            _currencyFormat.format(stats.monthTotal),
+                            currencyFormat.format(stats.monthTotal),
                             masked: privacyModeEnabled,
                           ),
                           accent: const Color(0xFFFF5B6C),
@@ -174,7 +175,7 @@ class StatsScreen extends ConsumerWidget {
                         child: _MetricTile(
                           label: 'Income',
                           value: maskAmount(
-                            _currencyFormat.format(stats.monthIncomeTotal),
+                            currencyFormat.format(stats.monthIncomeTotal),
                             masked: privacyModeEnabled,
                           ),
                           accent: const Color(0xFF1DAA63),
@@ -205,7 +206,7 @@ class StatsScreen extends ConsumerWidget {
                         Text(
                           formatSignedAmount(
                             stats.monthNetTotal,
-                            _currencyFormat,
+                            currencyFormat,
                             masked: privacyModeEnabled,
                           ),
                           style: TextStyle(
@@ -229,7 +230,7 @@ class StatsScreen extends ConsumerWidget {
                   'No expenses yet. Add a transaction to see category mix.',
               entries: stats.categoryTotals.entries.toList(growable: false),
               privacyModeEnabled: privacyModeEnabled,
-              currencyFormat: _currencyFormat,
+              currencyFormat: currencyFormat,
               income: false,
             ),
             const SizedBox(height: 16),
@@ -241,7 +242,7 @@ class StatsScreen extends ConsumerWidget {
                 growable: false,
               ),
               privacyModeEnabled: privacyModeEnabled,
-              currencyFormat: _currencyFormat,
+              currencyFormat: currencyFormat,
               income: true,
             ),
           ],

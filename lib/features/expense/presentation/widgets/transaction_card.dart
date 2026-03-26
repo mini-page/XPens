@@ -1,37 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../provider/preferences_providers.dart';
 import '../../data/models/expense_model.dart';
 import 'amount_visibility.dart';
 import 'expense_category.dart';
 
-class TransactionCard extends StatelessWidget {
-  TransactionCard({
+class TransactionCard extends ConsumerWidget {
+  const TransactionCard({
     super.key,
     required this.expense,
     required this.onDelete,
     this.onEdit,
     this.accountLabel,
     this.maskAmounts = false,
-  }) : _currencyFormat = NumberFormat.currency(
-         locale: 'en_IN',
-         symbol: '₹',
-         decimalDigits: expense.amount.truncateToDouble() == expense.amount
-             ? 0
-             : 2,
-       ),
-       _timeFormat = DateFormat('HH:mm');
+  });
 
   final ExpenseModel expense;
   final VoidCallback onDelete;
   final VoidCallback? onEdit;
   final String? accountLabel;
   final bool maskAmounts;
-  final NumberFormat _currencyFormat;
-  final DateFormat _timeFormat;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
+    final currencyFormat = NumberFormat.currency(
+      locale: locale,
+      symbol: symbol,
+      decimalDigits: expense.amount.truncateToDouble() == expense.amount ? 0 : 2,
+    );
+    final timeFormat = DateFormat('HH:mm');
+
     final category = resolveCategory(
       expense.category,
       income: expense.isIncome,
@@ -112,7 +115,7 @@ class TransactionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
                     Text(
-                      '$signedPrefix${maskAmount(_currencyFormat.format(expense.amount), masked: maskAmounts)}',
+                      '$signedPrefix${maskAmount(currencyFormat.format(expense.amount), masked: maskAmounts)}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -121,7 +124,7 @@ class TransactionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _timeFormat.format(expense.date.toLocal()),
+                      timeFormat.format(expense.date.toLocal()),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

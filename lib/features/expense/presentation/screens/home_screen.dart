@@ -40,9 +40,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(accountListProvider).value ?? const <AccountModel>[];
     final stats = ref.watch(statsProvider);
     final privacyModeEnabled = ref.watch(privacyModeEnabledProvider);
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
     final currencyFormat = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
+      locale: locale,
+      symbol: symbol,
       decimalDigits: 0,
     );
     final visibleDates = List<DateTime>.generate(

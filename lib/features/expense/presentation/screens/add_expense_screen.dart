@@ -6,6 +6,7 @@ import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/account_providers.dart';
 import '../provider/expense_providers.dart';
+import '../provider/preferences_providers.dart';
 import '../widgets/account_icons.dart';
 import '../widgets/expense_category.dart';
 
@@ -105,7 +106,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     );
     final selectedAccount = _resolveSelectedAccount(accounts);
     final amount = double.tryParse(_amountText) ?? 0;
-    final amountLabel = amount <= 0 ? '₹0' : _formatAmount(amount);
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
+    final amountLabel = amount <= 0 ? '$symbol' '0' : _formatAmount(amount, locale, symbol);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -299,10 +303,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     return accounts.first;
   }
 
-  String _formatAmount(double amount) {
+  String _formatAmount(double amount, String locale, String symbol) {
     return NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
+      locale: locale,
+      symbol: symbol,
       decimalDigits: amount.truncateToDouble() == amount ? 0 : 2,
     ).format(amount);
   }

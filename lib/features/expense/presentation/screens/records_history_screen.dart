@@ -37,9 +37,13 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
     final accounts = accountState.value ?? const <AccountModel>[];
     final filteredExpenses = _filterExpenses(expenses);
     final groupedExpenses = _groupExpenses(filteredExpenses);
+
+    final locale = ref.watch(localeProvider);
+    final symbol = ref.watch(currencySymbolProvider);
+
     final currency = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
+      locale: locale,
+      symbol: symbol,
       decimalDigits: 0,
     );
     final filteredTotal = filteredExpenses.fold<double>(
