@@ -83,8 +83,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      AppColors.backgroundLight.withValues(alpha: 0.0),
-                      AppColors.backgroundLight.withValues(alpha: 0.8),
+                      AppColors.backgroundLight.withOpacity(0.0),
+                      AppColors.backgroundLight.withOpacity(0.8),
                       AppColors.backgroundLight,
                     ],
                   ),
@@ -95,12 +95,13 @@ class _AppShellState extends ConsumerState<AppShell> {
         ],
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(bottom: 92),
         child: PowerPill(
           onTap: _handleFabPressed,
           onLongPress: _showPowerMenu,
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: _CustomFloatingNavBar(
         selectedIndex: _selectedIndex,
         onTap: (index) {
@@ -170,7 +171,7 @@ class _CustomFloatingNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 80, 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Container(
           height: 64,
           padding: const EdgeInsets.symmetric(horizontal: 8),

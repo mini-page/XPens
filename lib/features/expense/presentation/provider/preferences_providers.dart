@@ -46,6 +46,11 @@ final currencySymbolProvider = Provider<String>((ref) {
       AppPreferencesModel.defaults.currencySymbol;
 });
 
+final isOnboardingCompletedProvider = Provider<bool>((ref) {
+  return ref.watch(appPreferencesProvider).value?.isOnboardingCompleted ??
+      AppPreferencesModel.defaults.isOnboardingCompleted;
+});
+
 final smartRemindersEnabledProvider = Provider<bool>((ref) {
   return ref.watch(appPreferencesProvider).value?.smartRemindersEnabled ??
       AppPreferencesModel.defaults.smartRemindersEnabled;
@@ -118,5 +123,41 @@ class AppPreferencesController {
     await _ref
         .read(appPreferencesProvider.notifier)
         .save(_current.copyWith(smartRemindersEnabled: enabled));
+  }
+
+  Future<void> setOnboardingCompleted(bool completed) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(isOnboardingCompleted: completed));
+  }
+
+  Future<void> setLocale(String locale) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(locale: locale));
+  }
+
+  Future<void> setCurrencySymbol(String currencySymbol) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(currencySymbol: currencySymbol));
+  }
+
+  Future<void> updateAll({
+    required String themeModeKey,
+    required String locale,
+    required String currencySymbol,
+    required bool smartRemindersEnabled,
+    required bool isOnboardingCompleted,
+  }) async {
+    await _ref.read(appPreferencesProvider.notifier).save(
+      _current.copyWith(
+        themeModeKey: themeModeKey,
+        locale: locale,
+        currencySymbol: currencySymbol,
+        smartRemindersEnabled: smartRemindersEnabled,
+        isOnboardingCompleted: isOnboardingCompleted,
+      ),
+    );
   }
 }

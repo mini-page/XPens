@@ -387,7 +387,7 @@ class _BreakdownCard extends StatelessWidget {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: category.color.withValues(alpha: 0.16),
+                          color: category.color.withOpacity(0.16),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Icon(category.icon, color: category.color),

@@ -91,7 +91,7 @@ class _TransactionSearchScreenState extends ConsumerState<TransactionSearchScree
           Icon(
             query.isEmpty ? Icons.search_rounded : Icons.search_off_rounded,
             size: 64,
-            color: AppColors.textMuted.withValues(alpha: 0.5),
+            color: AppColors.textMuted.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(

@@ -231,7 +231,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     icon: selectedCategory.icon,
                     iconColor: selectedCategory.color,
                     label: selectedCategory.name,
-                    background: selectedCategory.color.withValues(alpha: 0.13),
+                    background: selectedCategory.color.withOpacity(0.13),
                     onTap: _pickCategory,
                   ),
                   _SelectionCapsule(
@@ -391,7 +391,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: CircleAvatar(
-                      backgroundColor: category.color.withValues(alpha: 0.15),
+                      backgroundColor: category.color.withOpacity(0.15),
                       child: Icon(category.icon, color: category.color),
                     ),
                     title: Text(

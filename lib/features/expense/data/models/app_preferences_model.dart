@@ -7,6 +7,7 @@ class AppPreferencesModel {
     required this.smartRemindersEnabled,
     required this.locale,
     required this.currencySymbol,
+    required this.isOnboardingCompleted,
   });
 
   static const AppPreferencesModel defaults = AppPreferencesModel(
@@ -15,6 +16,7 @@ class AppPreferencesModel {
     smartRemindersEnabled: true,
     locale: 'en_IN',
     currencySymbol: '₹',
+    isOnboardingCompleted: false,
   );
 
   final String themeModeKey;
@@ -22,6 +24,7 @@ class AppPreferencesModel {
   final bool smartRemindersEnabled;
   final String locale;
   final String currencySymbol;
+  final bool isOnboardingCompleted;
 
   AppPreferencesModel copyWith({
     String? themeModeKey,
@@ -29,6 +32,7 @@ class AppPreferencesModel {
     bool? smartRemindersEnabled,
     String? locale,
     String? currencySymbol,
+    bool? isOnboardingCompleted,
   }) {
     return AppPreferencesModel(
       themeModeKey: themeModeKey ?? this.themeModeKey,
@@ -37,6 +41,8 @@ class AppPreferencesModel {
           smartRemindersEnabled ?? this.smartRemindersEnabled,
       locale: locale ?? this.locale,
       currencySymbol: currencySymbol ?? this.currencySymbol,
+      isOnboardingCompleted:
+          isOnboardingCompleted ?? this.isOnboardingCompleted,
     );
   }
 }
@@ -56,6 +62,8 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
     // Migration: Check if more data exists for new fields
     String locale = AppPreferencesModel.defaults.locale;
     String currencySymbol = AppPreferencesModel.defaults.currencySymbol;
+    bool isOnboardingCompleted =
+        AppPreferencesModel.defaults.isOnboardingCompleted;
 
     try {
       if (reader.availableBytes > 0) {
@@ -63,6 +71,9 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       }
       if (reader.availableBytes > 0) {
         currencySymbol = reader.readString();
+      }
+      if (reader.availableBytes > 0) {
+        isOnboardingCompleted = reader.readBool();
       }
     } catch (_) {
       // Fallback to defaults if reading fails
@@ -74,6 +85,7 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       smartRemindersEnabled: smartRemindersEnabled,
       locale: locale,
       currencySymbol: currencySymbol,
+      isOnboardingCompleted: isOnboardingCompleted,
     );
   }
 
@@ -84,6 +96,7 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       ..writeBool(obj.privacyModeEnabled)
       ..writeBool(obj.smartRemindersEnabled)
       ..writeString(obj.locale)
-      ..writeString(obj.currencySymbol);
+      ..writeString(obj.currencySymbol)
+      ..writeBool(obj.isOnboardingCompleted);
   }
 }

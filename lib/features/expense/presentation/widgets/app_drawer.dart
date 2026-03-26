@@ -12,6 +12,8 @@ class AppDrawer extends ConsumerWidget {
     final smartReminders = ref.watch(smartRemindersEnabledProvider);
     final privacyMode = ref.watch(privacyModeEnabledProvider);
     final themeMode = ref.watch(appThemeModeProvider);
+    final locale = ref.watch(localeProvider);
+    final currencySymbol = ref.watch(currencySymbolProvider);
 
     return Drawer(
       backgroundColor: AppColors.backgroundLight,
@@ -26,6 +28,8 @@ class AppDrawer extends ConsumerWidget {
               children: [
                 const _SectionHeader(title: 'Settings'),
                 _buildThemeTile(context, ref, themeMode, controller),
+                _buildLanguageTile(context, locale, controller),
+                _buildCurrencyTile(context, currencySymbol, controller),
                 _buildToggleTile(
                   icon: Icons.security_outlined,
                   title: 'Privacy Mode',
@@ -164,6 +168,69 @@ class AppDrawer extends ConsumerWidget {
           DropdownMenuItem(value: 'light', child: Text('Light')),
           DropdownMenuItem(value: 'dark', child: Text('Dark')),
           DropdownMenuItem(value: 'system', child: Text('System')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(
+    BuildContext context,
+    String currentLocale,
+    AppPreferencesController controller,
+  ) {
+    return ListTile(
+      leading: const _TileIcon(icon: Icons.language_rounded),
+      title: const Text(
+        'Language',
+        style: TextStyle(
+          color: AppColors.textDark,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      trailing: DropdownButton<String>(
+        value: currentLocale,
+        underline: const SizedBox(),
+        onChanged: (value) {
+          if (value != null) {
+            controller.setLocale(value);
+          }
+        },
+        items: [
+          const DropdownMenuItem(value: 'en_IN', child: Text('English (IN)')),
+          const DropdownMenuItem(value: 'en_US', child: Text('English (US)')),
+          const DropdownMenuItem(value: 'hi_IN', child: Text('हिन्दी')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrencyTile(
+    BuildContext context,
+    String currentCurrency,
+    AppPreferencesController controller,
+  ) {
+    return ListTile(
+      leading: const _TileIcon(icon: Icons.payments_outlined),
+      title: const Text(
+        'Currency',
+        style: TextStyle(
+          color: AppColors.textDark,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      trailing: DropdownButton<String>(
+        value: currentCurrency,
+        underline: const SizedBox(),
+        onChanged: (value) {
+          if (value != null) {
+            controller.setCurrencySymbol(value);
+          }
+        },
+        items: [
+          const DropdownMenuItem(value: '\u20B9', child: Text('Rupee (\u20B9)')),
+          const DropdownMenuItem(value: '\$', child: Text('Dollar (\$)')),
+          const DropdownMenuItem(value: '\u20AC', child: Text('Euro (\u20AC)')),
+          const DropdownMenuItem(value: '\u00A3', child: Text('Pound (\u00A3)')),
         ],
       ),
     );

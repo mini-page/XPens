@@ -6,6 +6,7 @@ import 'core/theme/app_colors.dart';
 import 'core/utils/hive_bootstrap.dart';
 import 'features/expense/presentation/provider/preferences_providers.dart';
 import 'features/expense/presentation/screens/app_shell.dart';
+import 'features/expense/presentation/screens/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,8 @@ class XPensaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(appThemeModeProvider);
+    final onboardingCompleted = ref.watch(isOnboardingCompletedProvider);
+    final preferencesAsync = ref.watch(appPreferencesProvider);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -52,7 +55,11 @@ class XPensaApp extends ConsumerWidget {
         useMaterial3: true,
       ),
       themeMode: themeMode,
-      home: const AppShell(),
+      home: preferencesAsync.when(
+        data: (_) => onboardingCompleted ? const AppShell() : const OnboardingScreen(),
+        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (_, __) => const AppShell(), // Fallback
+      ),
     );
   }
 }

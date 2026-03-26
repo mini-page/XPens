@@ -142,7 +142,7 @@ class PowerPill extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              color: AppColors.primaryBlue.withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

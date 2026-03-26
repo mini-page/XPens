@@ -76,7 +76,7 @@ class TransactionCard extends ConsumerWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: category.color.withValues(alpha: 0.14),
+                    color: category.color.withOpacity(0.14),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(category.icon, color: category.color),

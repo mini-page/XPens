@@ -356,7 +356,7 @@ class _GridCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: tone.withValues(alpha: 0.18),
+      color: tone.withOpacity(0.18),
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
         onTap: onTap,
@@ -372,7 +372,7 @@ class _GridCategoryCard extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: tone.withValues(alpha: 0.55),
+                      color: tone.withOpacity(0.55),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(icon, color: Colors.white, size: 22),
@@ -427,7 +427,7 @@ class _GridCategoryCard extends StatelessWidget {
               child: PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert_rounded,
-                  color: tone.withValues(alpha: 0.7),
+                  color: tone.withOpacity(0.7),
                   size: 20,
                 ),
                 padding: EdgeInsets.zero,
