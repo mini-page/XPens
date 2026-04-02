@@ -5,399 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XPensa - Your Personal Finance, Simplified</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            light: '#42A5F5',
+                            DEFAULT: '#1E88E5',
+                            dark: '#1565C0',
+                        },
+                        accent: '#FF6B6B',
+                        success: '#4CAF50',
+                        warning: '#FFC107',
+                        bgLight: '#F5F7FA',
+                        textPrimary: '#1A1A2E',
+                        textSecondary: '#616161',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                        'slide-in-left': 'slideInLeft 0.6s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.6s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideInLeft: {
+                            '0%': { opacity: '0', transform: 'translateX(-50px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(50px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 0 0 rgba(30, 136, 229, 0.7)' },
+                            '50%': { boxShadow: '0 0 0 15px rgba(30, 136, 229, 0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #1E88E5;
-            --primary-dark: #1565C0;
-            --primary-light: #42A5F5;
-            --accent: #FF6B6B;
-            --success: #4CAF50;
-            --warning: #FFC107;
-            --bg-light: #F5F7FA;
-            --text-primary: #1A1A2E;
-            --text-secondary: #616161;
-        }
-
-        * {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background: linear-gradient(135deg, #F5F7FA 0%, #E8F0F8 100%);
-            color: var(--text-primary);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
-        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
         /* Smooth scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-light);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 5px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(30, 136, 229, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 15px rgba(30, 136, 229, 0);
-            }
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -1000px 0;
-            }
-            100% {
-                background-position: 1000px 0;
-            }
-        }
-
-        @keyframes countUp {
-            from {
-                counter-increment: none;
-            }
-        }
-
-        .animate-fadeInUp {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        .animate-slideInLeft {
-            animation: slideInLeft 0.6s ease-out;
-        }
-
-        .animate-slideInRight {
-            animation: slideInRight 0.6s ease-out;
-        }
-
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .animate-pulse-glow {
-            animation: pulse-glow 2s infinite;
-        }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #F5F7FA; }
+        ::-webkit-scrollbar-thumb { background: #1E88E5; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1565C0; }
 
         .stagger-1 { animation-delay: 0.1s; }
         .stagger-2 { animation-delay: 0.2s; }
         .stagger-3 { animation-delay: 0.3s; }
         .stagger-4 { animation-delay: 0.4s; }
-        .stagger-5 { animation-delay: 0.5s; }
-
-        /* Gradient text */
-        .gradient-text {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Button styles */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 12px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
-        }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transition: left 0.5s;
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(30, 136, 229, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: var(--primary);
-            padding: 12px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            border: 2px solid var(--primary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-light);
-            transform: translateY(-3px);
-        }
-
-        .btn-disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #CCCCCC !important;
-            border-color: #CCCCCC !important;
-        }
-
-        .btn-disabled:hover {
-            transform: none !important;
-        }
-
-        /* Feature cards */
-        .feature-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(30, 136, 229, 0.05), transparent);
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(30, 136, 229, 0.15);
-            border-color: var(--primary);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .feature-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            transition: all 0.3s;
-            margin-bottom: 12px;
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotate(-5deg);
-        }
-
-        /* Mockup phone */
-        .phone-mockup {
-            width: 280px;
-            height: 580px;
-            background: black;
-            border-radius: 40px;
-            padding: 12px;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            margin: 0 auto;
-        }
-
-        .phone-mockup::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 28px;
-            background: black;
-            border-radius: 0 0 25px 25px;
-            z-index: 10;
-        }
-
-        .phone-screen {
-            width: 100%;
-            height: 100%;
-            background: white;
-            border-radius: 35px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .screen-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 24px 16px;
-            text-align: center;
-        }
-
-        .screen-header h3 {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .screen-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .account-balance {
-            background: var(--bg-light);
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        .stat-box {
-            display: inline-block;
-            width: 48%;
-            background: white;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 11px;
-            margin: 2%;
-        }
-
-        .stat-box-large {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .feature-button {
-            background: var(--bg-light);
-            padding: 12px;
-            border-radius: 10px;
-            margin: 8px 0;
-            font-size: 10px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .quick-amount {
-            display: inline-block;
-            width: 23%;
-            background: var(--bg-light);
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 600;
-            margin: 1%;
-        }
-
-        .category-icon {
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 4px;
-        }
-
-        .category-label {
-            font-size: 9px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .nav-icon {
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        /* Stat counters */
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .phone-mockup {
-                width: 240px;
-                height: 500px;
-            }
-
-            .screen-header h3 {
-                font-size: 20px;
-            }
-        }
 
         /* Scroll reveal */
         .reveal {
@@ -405,916 +77,398 @@
             transform: translateY(50px);
             transition: all 0.6s ease-out;
         }
-
         .reveal.active {
             opacity: 1;
             transform: translateY(0);
         }
-
-        /* Nav bar */
-        nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        nav a {
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: color 0.3s;
-            position: relative;
-            font-weight: 500;
-        }
-
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
-            transition: width 0.3s;
-        }
-
-        nav a:hover {
-            color: var(--primary);
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        /* Accessibility */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
     </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-bgLight to-blue-50 text-textPrimary overflow-x-hidden">
+
     <!-- Navigation -->
-    <nav class="py-4 px-6">
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm py-4 px-6">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-wallet text-white text-lg"></i>
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-wallet text-white text-lg" aria-hidden="true"></i>
                 </div>
-                <span class="text-2xl font-bold gradient-text">XPensa</span>
+                <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary-light">XPensa</span>
             </div>
             <div class="hidden md:flex gap-8">
-                <a href="#features">Features</a>
-                <a href="#mockup">Demo</a>
-                <a href="#download">Download</a>
+                <a href="#features" class="font-medium text-textPrimary hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary">Features</a>
+                <a href="#mockup" class="font-medium text-textPrimary hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary">Demo</a>
+                <a href="#download" class="font-medium text-textPrimary hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary">Download</a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative py-20 px-6 overflow-hidden">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -mr-40 -mt-40"></div>
-        <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -ml-40"></div>
+    <main>
+        <!-- Hero Section -->
+        <section class="relative py-20 px-6 overflow-hidden" aria-labelledby="hero-heading">
+            <!-- Background Decorations -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -mr-40 -mt-40 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -ml-40 pointer-events-none"></div>
 
-        <div class="max-w-6xl mx-auto relative z-10">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <!-- Left side - Hero content -->
-                <div class="space-y-6">
-                    <h1 class="text-5xl md:text-6xl font-bold leading-tight animate-fadeInUp stagger-1">
-                        Money Management Made <span class="gradient-text">Simple</span>
-                    </h1>
-                    <p class="text-lg text-gray-600 animate-fadeInUp stagger-2">
-                        Track expenses, manage budgets, and gain insights into your spending habits with XPensa. Fast, simple, and private—all your data stays on your device.
-                    </p>
-                    <div class="flex gap-4 flex-wrap animate-fadeInUp stagger-3">
-                        <button class="btn-primary" onclick="document.getElementById('download').scrollIntoView()">
-                            <i class="fas fa-download mr-2"></i> Get App
-                        </button>
-                        <button class="btn-secondary">
-                            <i class="fas fa-github mr-2"></i> GitHub
-                        </button>
-                    </div>
+            <div class="max-w-6xl mx-auto relative z-10">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
 
-                    <!-- Trust badges -->
-                    <div class="flex gap-6 pt-4 animate-fadeInUp stagger-4">
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-lock text-green-500"></i>
-                            <span class="text-sm text-gray-700">100% Private</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-code text-blue-500"></i>
-                            <span class="text-sm text-gray-700">Open Source</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-feather text-purple-500"></i>
-                            <span class="text-sm text-gray-700">Lightweight</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right side - Floating card -->
-                <div class="relative h-96 animate-slideInRight stagger-2">
-                    <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl transform -rotate-6 opacity-10"></div>
-                    <div class="absolute inset-0 bg-white rounded-2xl shadow-2xl p-8 space-y-4 transform hover:rotate-1 transition-transform duration-300">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-gray-800">All Accounts</h3>
-                            <i class="fas fa-sliders text-blue-500"></i>
-                        </div>
-                        <div class="text-3xl font-bold text-gray-900">₹0</div>
-                        <div class="grid grid-cols-2 gap-4 pt-4">
-                            <div class="bg-blue-50 p-3 rounded-lg">
-                                <div class="text-xs text-gray-600 font-semibold">EXPENSES</div>
-                                <div class="text-xl font-bold text-blue-600">₹0</div>
-                            </div>
-                            <div class="bg-green-50 p-3 rounded-lg">
-                                <div class="text-xs text-gray-600 font-semibold">INCOME</div>
-                                <div class="text-xl font-bold text-green-600">₹0</div>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 pt-2">
-                            <button class="flex-1 bg-blue-500 text-white py-2 rounded-lg text-xs font-bold hover:bg-blue-600">
-                                <i class="fas fa-exchange-alt mr-1"></i> Split
+                    <!-- Left side - Hero content -->
+                    <div class="space-y-6">
+                        <h1 id="hero-heading" class="text-5xl md:text-6xl font-bold leading-tight opacity-0 animate-fade-in-up stagger-1">
+                            Money Management Made <span class="bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary-light">Simple</span>
+                        </h1>
+                        <p class="text-lg text-gray-600 opacity-0 animate-fade-in-up stagger-2">
+                            Track expenses, manage budgets, and gain insights into your spending habits with XPensa. Fast, simple, and completely private—all your data stays on your device. No sign-ups required.
+                        </p>
+                        <div class="flex gap-4 flex-wrap opacity-0 animate-fade-in-up stagger-3">
+                            <button onclick="document.getElementById('download').scrollIntoView()" class="bg-gradient-to-br from-primary to-primary-dark text-white px-8 py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:-translate-y-1 hover:shadow-xl transition-all relative overflow-hidden group">
+                                <span class="absolute inset-0 w-full h-full bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-500"></span>
+                                <i class="fas fa-download mr-2" aria-hidden="true"></i> Get App
                             </button>
-                            <button class="flex-1 bg-purple-500 text-white py-2 rounded-lg text-xs font-bold hover:bg-purple-600">
-                                <i class="fas fa-repeat mr-1"></i> Recurring
-                            </button>
+                            <a href="https://github.com/mini-page/XPensa" target="_blank" rel="noopener noreferrer" class="bg-white text-primary border-2 border-primary px-8 py-3 rounded-xl font-semibold hover:bg-bgLight hover:-translate-y-1 transition-all flex items-center">
+                                <i class="fab fa-github mr-2" aria-hidden="true"></i> GitHub
+                            </a>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Features Grid -->
-    <section id="features" class="py-20 px-6 bg-white">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-4xl font-bold mb-4">Packed with Features</h2>
-                <p class="text-gray-600 text-lg">Everything you need to take control of your finances</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- Feature 1 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #FF6B6B20, #FF6B6B40); color: var(--accent);">
-                        <i class="fas fa-receipt"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Smart Expense Logging</h3>
-                    <p class="text-gray-600 text-sm">Log expenses instantly with multiple input methods—manual entry, voice input, or SMS. Add notes and dates effortlessly.</p>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #42A5F520, #42A5F540); color: var(--success);">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Visual Analytics</h3>
-                    <p class="text-gray-600 text-sm">Beautiful charts and graphs show spending patterns. Understand where your money goes with detailed category breakdowns.</p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #FFC10720, #FFC10740); color: var(--warning);">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Budget Planning</h3>
-                    <p class="text-gray-600 text-sm">Set budgets for categories and get smart alerts when you're approaching limits. Take control of your spending.</p>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #1E88E520, #1E88E540); color: var(--primary);">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Multi-Account Support</h3>
-                    <p class="text-gray-600 text-sm">Manage multiple accounts and wallets in one place. Track different spending sources and consolidate your finances.</p>
-                </div>
-
-                <!-- Feature 5 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #EC407A20, #EC407A40); color: #EC407A;">
-                        <i class="fas fa-repeat"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Recurring Subscriptions</h3>
-                    <p class="text-gray-600 text-sm">Never forget a subscription. Track recurring payments and manage all your bills in one central hub.</p>
-                </div>
-
-                <!-- Feature 6 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #29B6F620, #29B6F640); color: #29B6F6;">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">100% Private</h3>
-                    <p class="text-gray-600 text-sm">All your financial data stays on your device. No cloud sync, no tracking, no ads—complete privacy guaranteed.</p>
-                </div>
-
-                <!-- Feature 7 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #AB47BC20, #AB47BC40); color: #AB47BC;">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Split Bills</h3>
-                    <p class="text-gray-600 text-sm">Divide expenses with friends effortlessly. Track who owes whom and settle debts with the split feature.</p>
-                </div>
-
-                <!-- Feature 8 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #EF534120, #EF534140); color: #EF5350;">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Smart Reminders</h3>
-                    <p class="text-gray-600 text-sm">Get notifications for upcoming bills, budget limits, and recurring payments. Never miss an important date.</p>
-                </div>
-
-                <!-- Feature 9 -->
-                <div class="feature-card reveal animate-fadeInUp">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #5C6BC020, #5C6BC040); color: #5C6BC0;">
-                        <i class="fas fa-eye-slash"></i>
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Privacy Mode</h3>
-                    <p class="text-gray-600 text-sm">Hide sensitive information with privacy mode. Perfect for showing your phone without revealing financial details.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Mockup Section -->
-    <section id="mockup" class="py-20 px-6">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4 reveal">See It In Action</h2>
-                <p class="text-gray-600 text-lg reveal">Intuitive interface designed for speed and simplicity</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-12 items-center">
-                <!-- Left - Feature list -->
-                <div class="space-y-4 reveal animate-slideInLeft">
-                    <div class="flex gap-4 items-start">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-lightning text-blue-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Lightning Fast</h3>
-                            <p class="text-sm text-gray-600">Quick entry and instant calculations</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-start">
-                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-mobile text-green-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Beautiful UI</h3>
-                            <p class="text-sm text-gray-600">Sleek design that feels great to use</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-start">
-                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-fingerprint text-purple-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Secure</h3>
-                            <p class="text-sm text-gray-600">Local storage, no online tracking</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-start">
-                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-magic text-orange-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Smart Features</h3>
-                            <p class="text-sm text-gray-600">Voice input, SMS logging, split bills</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Center - Phone mockup -->
-                <div class="flex justify-center reveal animate-float">
-                    <div class="phone-mockup">
-                        <div class="phone-screen">
-                            <div class="screen-header">
-                                <i class="fas fa-wallet text-2xl mb-2"></i>
-                                <h3>XPensa</h3>
+                        <!-- Trust badges -->
+                        <div class="flex gap-6 pt-4 opacity-0 animate-fade-in-up stagger-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-lock text-green-500" aria-hidden="true"></i>
+                                <span class="text-sm font-medium text-gray-700">100% Private</span>
                             </div>
-                            <div class="screen-content">
-                                <div class="account-balance">
-                                    <strong>All Accounts</strong><br>₹2,450
-                                </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-code text-blue-500" aria-hidden="true"></i>
+                                <span class="text-sm font-medium text-gray-700">Open Source</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-wifi text-purple-500" aria-hidden="true"></i>
+                                <span class="text-sm font-medium text-gray-700">Offline Ready</span>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                                    <div class="stat-box">
-                                        <div>EXPENSE</div>
-                                        <div class="stat-box-large">₹1,800</div>
-                                    </div>
-                                    <div class="stat-box">
-                                        <div>INCOME</div>
-                                        <div class="stat-box-large">₹4,250</div>
-                                    </div>
+                    <!-- Right side - Floating UI Card -->
+                    <div class="relative h-96 opacity-0 animate-slide-in-right stagger-2 hidden md:block">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl transform -rotate-6 opacity-10"></div>
+                        <div class="absolute inset-0 bg-white rounded-2xl shadow-2xl p-8 space-y-4 transform hover:rotate-1 transition-transform duration-300">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-gray-800">All Accounts</h3>
+                                <i class="fas fa-sliders text-primary" aria-hidden="true"></i>
+                            </div>
+                            <div class="text-4xl font-bold text-gray-900">₹14,250</div>
+                            <div class="grid grid-cols-2 gap-4 pt-4">
+                                <div class="bg-blue-50 p-4 rounded-xl">
+                                    <div class="text-xs text-gray-600 font-bold mb-1">EXPENSES</div>
+                                    <div class="text-xl font-bold text-blue-600">₹2,800</div>
                                 </div>
-
-                                <div style="margin-top: 8px;">
-                                    <div class="feature-button">💰 Split Bills</div>
-                                    <div class="feature-button">🔄 Recurring Subs</div>
+                                <div class="bg-green-50 p-4 rounded-xl">
+                                    <div class="text-xs text-gray-600 font-bold mb-1">INCOME</div>
+                                    <div class="text-xl font-bold text-green-600">₹17,050</div>
                                 </div>
-
-                                <div style="margin: 12px 0; padding: 8px; background: #F5F7FA; border-radius: 10px; text-align: center; font-weight: bold;">
-                                    <small>Quick Entry</small>
+                            </div>
+                            <div class="flex gap-3 pt-4">
+                                <div class="flex-1 bg-gray-100 py-3 rounded-xl text-sm font-bold text-center text-gray-700">
+                                    <i class="fas fa-plus-circle text-primary mr-1" aria-hidden="true"></i> Add Record
                                 </div>
-
-                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
-                                    <div class="quick-amount">₹50</div>
-                                    <div class="quick-amount">₹100</div>
-                                    <div class="quick-amount">₹200</div>
-                                    <div class="quick-amount">₹500</div>
-                                </div>
-
-                                <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
-                                    <div>
-                                        <div class="category-icon">🍽️</div>
-                                        <div class="category-label">Food</div>
-                                    </div>
-                                    <div>
-                                        <div class="category-icon">🚗</div>
-                                        <div class="category-label">Transport</div>
-                                    </div>
-                                    <div>
-                                        <div class="category-icon">🛍️</div>
-                                        <div class="category-label">Shopping</div>
-                                    </div>
-                                </div>
-
-                                <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; font-size: 12px;">
-                                    <div style="color: #1E88E5;">
-                                        <i class="nav-icon fas fa-bars"></i>
-                                        Records
-                                    </div>
-                                    <div style="color: #999;">
-                                        <i class="nav-icon fas fa-chart-line"></i>
-                                        Analysis
-                                    </div>
-                                    <div style="color: #999;">
-                                        <i class="nav-icon fas fa-th"></i>
-                                        Categories
-                                    </div>
-                                    <div style="color: #999;">
-                                        <i class="nav-icon fas fa-wallet"></i>
-                                        Accounts
-                                    </div>
-                                    <div style="color: #999;">
-                                        <i class="nav-icon fas fa-user"></i>
-                                        Profile
-                                    </div>
+                                <div class="flex-1 bg-gray-100 py-3 rounded-xl text-sm font-bold text-center text-gray-700">
+                                    <i class="fas fa-chart-pie text-purple-500 mr-1" aria-hidden="true"></i> Analysis
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <!-- Right - More features -->
-                <div class="space-y-4 reveal animate-slideInRight">
-                    <div class="flex gap-4 items-start flex-row-reverse">
-                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-chart-bar text-red-600"></i>
+        <!-- Features Grid -->
+        <section id="features" class="py-20 px-6 bg-white" aria-labelledby="features-heading">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 id="features-heading" class="text-4xl font-bold mb-4">Everything You Need to Take Control</h2>
+                    <p class="text-gray-600 text-lg">Powerful tools built into a fast, simple interface.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-primary/30 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group reveal relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-14 h-14 rounded-xl bg-blue-50 text-primary flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                            <i class="fas fa-receipt" aria-hidden="true"></i>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Insights</h3>
-                            <p class="text-sm text-gray-600">Detailed reports and spending trends</p>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900">Smart Expense Logging</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">Log expenses instantly. Add amounts, categories, dates, and detailed notes in just a few taps.</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-success/30 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group reveal relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-14 h-14 rounded-xl bg-green-50 text-success flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
                         </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900">Visual Analytics</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">Beautiful charts and graphs show spending patterns. Understand where your money goes with detailed breakdowns.</p>
                     </div>
-                    <div class="flex gap-4 items-start flex-row-reverse">
-                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-tag text-indigo-600"></i>
+
+                    <!-- Feature 3 -->
+                    <div class="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-warning/30 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group reveal relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-14 h-14 rounded-xl bg-yellow-50 text-warning flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                            <i class="fas fa-bullseye" aria-hidden="true"></i>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Categories</h3>
-                            <p class="text-sm text-gray-600">Organize expenses by type</p>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900">Budget Planning</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">Set monthly budgets for different categories and track your progress to prevent overspending.</p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-primary-dark/30 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group reveal relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary-dark/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-14 h-14 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                            <i class="fas fa-wallet" aria-hidden="true"></i>
                         </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900">Multi-Account Support</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">Manage multiple accounts, banks, and cash wallets in one place. Consolidate your finances effortlessly.</p>
                     </div>
-                    <div class="flex gap-4 items-start flex-row-reverse">
-                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-share-alt text-pink-600"></i>
+
+                    <!-- Feature 5 -->
+                    <div class="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-pink-500/30 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group reveal relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-14 h-14 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                            <i class="fas fa-repeat" aria-hidden="true"></i>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Share & Export</h3>
-                            <p class="text-sm text-gray-600">Export data for backup and sharing</p>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900">Recurring Subscriptions</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">Track recurring payments, bills, and subscriptions so you never miss a due date or get surprised by auto-renewals.</p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-purple-500/30 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all group reveal relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-14 h-14 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                            <i class="fas fa-eye-slash" aria-hidden="true"></i>
                         </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-900">Privacy Mode</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">Hide sensitive balances and amounts with a quick toggle. Perfect for using the app in public spaces.</p>
                     </div>
-                    <div class="flex gap-4 items-start flex-row-reverse">
-                        <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-cogs text-cyan-600"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Coming Soon / Additional Methods -->
+        <section class="py-20 px-6 bg-blue-50" aria-labelledby="roadmap-heading">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 id="roadmap-heading" class="text-4xl font-bold mb-4">More Ways to Log (Coming Soon)</h2>
+                    <p class="text-gray-600 text-lg">We are actively building new, frictionless ways to manage your money.</p>
+                </div>
+
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-xl p-6 text-center shadow-sm reveal">
+                        <div class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mb-4">COMING SOON</div>
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl mx-auto mb-3">
+                            <i class="fas fa-microphone" aria-hidden="true"></i>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900">Customizable</h3>
-                            <p class="text-sm text-gray-600">Personalize categories and themes</p>
+                        <h3 class="font-bold text-gray-900 mb-1">Voice Input</h3>
+                        <p class="text-xs text-gray-500">Log expenses hands-free</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 text-center shadow-sm reveal">
+                        <div class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mb-4">COMING SOON</div>
+                        <div class="w-12 h-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xl mx-auto mb-3">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
                         </div>
+                        <h3 class="font-bold text-gray-900 mb-1">SMS Parsing</h3>
+                        <p class="text-xs text-gray-500">Auto-log from bank texts</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 text-center shadow-sm reveal">
+                        <div class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mb-4">COMING SOON</div>
+                        <div class="w-12 h-12 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-xl mx-auto mb-3">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1">Split Bills</h3>
+                        <p class="text-xs text-gray-500">Divide tabs with friends</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 text-center shadow-sm reveal">
+                        <div class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mb-4">COMING SOON</div>
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl mx-auto mb-3">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1">Web Version</h3>
+                        <p class="text-xs text-gray-500">Manage from your desktop</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Stats Section -->
-    <section class="py-20 px-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-        <div class="max-w-6xl mx-auto">
-            <div class="grid md:grid-cols-4 gap-8 text-center">
-                <div class="reveal">
-                    <div class="stat-number mb-2" data-target="50">0</div>
-                    <p>Expense Categories</p>
+        <!-- Why XPensa -->
+        <section class="py-20 px-6 bg-white" aria-labelledby="why-heading">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 id="why-heading" class="text-4xl font-bold mb-4">Why Choose XPensa?</h2>
+                    <p class="text-gray-600 text-lg">Designed to respect your data and your time.</p>
                 </div>
-                <div class="reveal">
-                    <div class="stat-number mb-2" data-target="10">0</div>
-                    <p>Input Methods</p>
-                </div>
-                <div class="reveal">
-                    <div class="stat-number mb-2" data-target="100">0</div>
-                    <p>% Open Source</p>
-                </div>
-                <div class="reveal">
-                    <div class="stat-number mb-2" data-target="0">0</div>
-                    <p>Privacy Concerns</p>
+
+                <div class="grid md:grid-cols-2 gap-12">
+                    <div class="bg-gray-50 rounded-2xl p-8 reveal border border-gray-100 hover:shadow-lg transition-shadow">
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-gray-900">Absolute Privacy First</h3>
+                        <p class="text-gray-600 mb-6">Unlike other trackers, XPensa keeps all your financial data stored entirely on your device. We don't have servers, we don't sell data, and there are no ads.</p>
+                        <ul class="space-y-3 text-sm text-gray-700">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-success mr-3 text-lg" aria-hidden="true"></i> Local-only SQLite storage</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-success mr-3 text-lg" aria-hidden="true"></i> No internet connection required</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-success mr-3 text-lg" aria-hidden="true"></i> No hidden tracking or analytics</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-2xl p-8 reveal border border-gray-100 hover:shadow-lg transition-shadow">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-bolt" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-gray-900">Lightning Fast Performance</h3>
+                        <p class="text-gray-600 mb-6">Built with Flutter for native performance. Add an expense in seconds without wading through complex menus or waiting for cloud syncs.</p>
+                        <ul class="space-y-3 text-sm text-gray-700">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-3 text-lg" aria-hidden="true"></i> Instant app startup</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-3 text-lg" aria-hidden="true"></i> Smooth 60fps animations</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-3 text-lg" aria-hidden="true"></i> Minimal battery & RAM usage</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Entry Methods Section -->
-    <section class="py-20 px-6 bg-white">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-4 reveal">Multiple Input Methods</h2>
-            <p class="text-center text-gray-600 mb-12 reveal">Choose how you want to log expenses</p>
-
-            <div class="grid md:grid-cols-5 gap-6">
-                <div class="feature-card text-center reveal animate-fadeInUp">
-                    <div class="feature-icon mx-auto" style="background: #E3F2FD; color: var(--primary);">
-                        <i class="fas fa-keyboard"></i>
-                    </div>
-                    <h3 class="font-bold mb-2">Manual Entry</h3>
-                    <p class="text-sm text-gray-600">Quick and straightforward expense logging</p>
+        <!-- Tech Stack -->
+        <section class="py-16 px-6 bg-gray-900 text-white" aria-labelledby="tech-heading">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12 reveal">
+                    <h2 id="tech-heading" class="text-3xl font-bold mb-4">Built with Modern Tech</h2>
                 </div>
-
-                <div class="feature-card text-center reveal animate-fadeInUp">
-                    <div class="feature-icon mx-auto" style="background: #F3E5F5; color: #9C27B0;">
-                        <i class="fas fa-microphone"></i>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="text-center reveal">
+                        <i class="fas fa-mobile-alt text-3xl mb-3 text-blue-400" aria-hidden="true"></i>
+                        <h3 class="font-bold">Flutter</h3>
+                        <p class="text-xs text-gray-400 mt-1">Cross-platform UI</p>
                     </div>
-                    <h3 class="font-bold mb-2">Voice Input</h3>
-                    <p class="text-sm text-gray-600">Log expenses hands-free</p>
-                </div>
-
-                <div class="feature-card text-center reveal animate-fadeInUp">
-                    <div class="feature-icon mx-auto" style="background: #FCE4EC; color: #E91E63;">
-                        <i class="fas fa-envelope"></i>
+                    <div class="text-center reveal">
+                        <i class="fas fa-code text-3xl mb-3 text-blue-300" aria-hidden="true"></i>
+                        <h3 class="font-bold">Dart</h3>
+                        <p class="text-xs text-gray-400 mt-1">High-performance</p>
                     </div>
-                    <h3 class="font-bold mb-2">SMS Entry</h3>
-                    <p class="text-sm text-gray-600">Log via text message</p>
-                </div>
-
-                <div class="feature-card text-center reveal animate-fadeInUp">
-                    <div class="feature-icon mx-auto" style="background: #E0F2F1; color: #009688;">
-                        <i class="fas fa-users"></i>
+                    <div class="text-center reveal">
+                        <i class="fas fa-database text-3xl mb-3 text-green-400" aria-hidden="true"></i>
+                        <h3 class="font-bold">Hive/SQLite</h3>
+                        <p class="text-xs text-gray-400 mt-1">Local Storage</p>
                     </div>
-                    <h3 class="font-bold mb-2">Split Bills</h3>
-                    <p class="text-sm text-gray-600">Divide with friends instantly</p>
-                </div>
-
-                <div class="feature-card text-center reveal animate-fadeInUp">
-                    <div class="feature-icon mx-auto" style="background: #FFF3E0; color: #FF9800;">
-                        <i class="fas fa-plus-circle"></i>
+                    <div class="text-center reveal">
+                        <i class="fab fa-osi text-3xl mb-3 text-purple-400" aria-hidden="true"></i>
+                        <h3 class="font-bold">Open Source</h3>
+                        <p class="text-xs text-gray-400 mt-1">MIT Licensed</p>
                     </div>
-                    <h3 class="font-bold mb-2">Quick Add</h3>
-                    <p class="text-sm text-gray-600">Pre-set amounts for speed</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Categories Showcase -->
-    <section class="py-20 px-6 bg-blue-50">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-4 reveal">Organized by Categories</h2>
-            <p class="text-center text-gray-600 mb-12 reveal">Track spending across different areas of life</p>
+        <!-- Download Section -->
+        <section id="download" class="py-24 px-6 bg-gradient-to-br from-blue-50 to-white" aria-labelledby="download-heading">
+            <div class="max-w-2xl mx-auto text-center">
+                <h2 id="download-heading" class="text-4xl font-bold mb-4 reveal text-gray-900">Get XPensa Now</h2>
+                <p class="text-gray-600 mb-12 reveal text-lg">Free. Private. Simple. Take control of your money today.</p>
 
-            <div class="grid grid-cols-3 md:grid-cols-5 gap-6">
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">🍽️</div>
-                    <p class="font-semibold text-gray-800">Food & Dining</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">🚗</div>
-                    <p class="font-semibold text-gray-800">Transportation</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">🛍️</div>
-                    <p class="font-semibold text-gray-800">Shopping</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">💆‍♀️</div>
-                    <p class="font-semibold text-gray-800">Beauty & Care</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">🎉</div>
-                    <p class="font-semibold text-gray-800">Entertainment</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">✈️</div>
-                    <p class="font-semibold text-gray-800">Travel</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">🏠</div>
-                    <p class="font-semibold text-gray-800">Utilities</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">⚕️</div>
-                    <p class="font-semibold text-gray-800">Healthcare</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">📚</div>
-                    <p class="font-semibold text-gray-800">Education</p>
-                </div>
-                <div class="text-center reveal animate-fadeInUp">
-                    <div class="text-5xl mb-2">🎮</div>
-                    <p class="font-semibold text-gray-800">Gaming</p>
-                </div>
-            </div>
-        </div>
-    </section>
+                <div class="space-y-6 reveal">
+                    <div class="grid sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+                        <a href="https://github.com/mini-page/XPensa/releases" target="_blank" rel="noopener noreferrer" class="bg-gray-900 text-white flex items-center justify-center gap-3 w-full py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg">
+                            <i class="fab fa-github text-2xl" aria-hidden="true"></i>
+                            <div class="text-left">
+                                <div class="text-xs font-normal opacity-80">Download from</div>
+                                <div class="leading-none">GitHub Releases</div>
+                            </div>
+                        </a>
 
-    <!-- Why XPensa -->
-    <section class="py-20 px-6 bg-white">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-16 reveal">Why Choose XPensa?</h2>
-
-            <div class="grid md:grid-cols-2 gap-12">
-                <div class="reveal animate-slideInLeft">
-                    <h3 class="text-2xl font-bold mb-4 text-gray-900">Privacy First</h3>
-                    <p class="text-gray-600 mb-4">Unlike other expense trackers, XPensa keeps all your financial data on your device. No cloud sync, no selling your data, no ads. Your money, your data, your business.</p>
-                    <ul class="space-y-2 text-sm text-gray-700">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Local-only storage</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> No internet required</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> No tracking or analytics</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Open source code</li>
-                    </ul>
-                </div>
-
-                <div class="reveal animate-slideInRight">
-                    <h3 class="text-2xl font-bold mb-4 text-gray-900">Lightning Speed</h3>
-                    <p class="text-gray-600 mb-4">Designed for speed from the ground up. Add an expense in seconds. No waiting, no lag, no unnecessary animations. Just efficient finance management.</p>
-                    <ul class="space-y-2 text-sm text-gray-700">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Instant expense logging</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Quick calculations</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Smooth performance</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Zero bloat</li>
-                    </ul>
-                </div>
-
-                <div class="reveal animate-slideInLeft">
-                    <h3 class="text-2xl font-bold mb-4 text-gray-900">Completely Free</h3>
-                    <p class="text-gray-600 mb-4">XPensa is open source and always free. No in-app purchases, no premium tiers, no hidden costs. Get all features without spending a rupee.</p>
-                    <ul class="space-y-2 text-sm text-gray-700">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Forever free</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> No premium features</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> No subscriptions</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Open source MIT license</li>
-                    </ul>
-                </div>
-
-                <div class="reveal animate-slideInRight">
-                    <h3 class="text-2xl font-bold mb-4 text-gray-900">Made for You</h3>
-                    <p class="text-gray-600 mb-4">Built with real users in mind. Every feature solves an actual problem. Active development, regular updates, and community-driven improvements.</p>
-                    <ul class="space-y-2 text-sm text-gray-700">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Regular updates</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Community feedback</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Issue tracking</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Active development</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Tech Stack -->
-    <section class="py-20 px-6 bg-gray-900 text-white">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-4 reveal">Built with Modern Tech</h2>
-            <p class="text-center text-gray-400 mb-12 reveal">Flutter + Dart for a beautiful, fast Android app</p>
-
-            <div class="grid md:grid-cols-4 gap-6">
-                <div class="bg-gray-800 p-6 rounded-lg text-center reveal animate-fadeInUp hover:scale-105 transition-transform">
-                    <i class="fas fa-mobile text-4xl mb-3 text-blue-400"></i>
-                    <h3 class="font-bold mb-2">Flutter</h3>
-                    <p class="text-sm text-gray-400">Cross-platform framework for beautiful native apps</p>
-                </div>
-
-                <div class="bg-gray-800 p-6 rounded-lg text-center reveal animate-fadeInUp hover:scale-105 transition-transform">
-                    <i class="fas fa-code text-4xl mb-3 text-blue-300"></i>
-                    <h3 class="font-bold mb-2">Dart</h3>
-                    <p class="text-sm text-gray-400">Fast, productive language for building apps</p>
-                </div>
-
-                <div class="bg-gray-800 p-6 rounded-lg text-center reveal animate-fadeInUp hover:scale-105 transition-transform">
-                    <i class="fas fa-database text-4xl mb-3 text-green-400"></i>
-                    <h3 class="font-bold mb-2">Local Storage</h3>
-                    <p class="text-sm text-gray-400">Efficient on-device data persistence</p>
-                </div>
-
-                <div class="bg-gray-800 p-6 rounded-lg text-center reveal animate-fadeInUp hover:scale-105 transition-transform">
-                    <i class="fas fa-lock text-4xl mb-3 text-red-400"></i>
-                    <h3 class="font-bold mb-2">Privacy</h3>
-                    <p class="text-sm text-gray-400">Zero external dependencies or tracking</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Download Section -->
-    <section id="download" class="py-20 px-6 bg-gradient-to-br from-blue-50 to-white">
-        <div class="max-w-2xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-4 reveal">Get XPensa Now</h2>
-            <p class="text-gray-600 mb-12 reveal">Free. Private. Simple. Download today.</p>
-
-            <div class="space-y-4 reveal">
-                <div class="grid md:grid-cols-2 gap-4">
-                    <!-- GitHub APK -->
-                    <button class="btn-primary flex items-center justify-center gap-2 w-full" onclick="alert('Redirecting to GitHub Releases...')">
-                        <i class="fab fa-github text-xl"></i>
-                        <span>GitHub APK</span>
-                    </button>
-
-                    <!-- Play Store -->
-                    <button class="btn-disabled flex items-center justify-center gap-2 w-full" disabled title="Coming Soon to Play Store">
-                        <i class="fab fa-google-play text-xl"></i>
-                        <span>Google Play</span>
-                        <span class="text-xs">(Soon)</span>
-                    </button>
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-2 text-sm">
-                    <!-- F-Droid -->
-                    <button class="btn-disabled py-2" disabled title="Coming Soon to F-Droid">
-                        <i class="fas fa-box mr-1"></i> F-Droid (Soon)
-                    </button>
-
-                    <!-- Amazon -->
-                    <button class="btn-disabled py-2" disabled title="Coming Soon to Amazon Appstore">
-                        <i class="fas fa-amazon mr-1"></i> Amazon (Soon)
-                    </button>
-
-                    <!-- Web -->
-                    <button class="btn-disabled py-2" disabled title="Web version coming soon">
-                        <i class="fas fa-globe mr-1"></i> Web (Soon)
-                    </button>
-                </div>
-            </div>
-
-            <div class="mt-12 p-6 bg-white rounded-lg border-l-4 border-blue-500 reveal">
-                <h3 class="font-bold text-gray-900 mb-2">🎯 Coming Soon</h3>
-                <p class="text-sm text-gray-600">More platforms and distribution channels are on the way. Follow the GitHub repository to stay updated on releases.</p>
-            </div>
-
-            <div class="mt-8 flex justify-center gap-4 reveal">
-                <a href="https://github.com/mini-page/XPensa" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2">
-                    <i class="fab fa-github"></i> View on GitHub
-                </a>
-                <span class="text-gray-400">•</span>
-                <a href="https://github.com/mini-page/XPensa/releases" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2">
-                    <i class="fas fa-download"></i> Latest Release
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="py-20 px-6 bg-white">
-        <div class="max-w-3xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-12 reveal">Frequently Asked Questions</h2>
-
-            <div class="space-y-4">
-                <details class="group reveal">
-                    <summary class="flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-6 py-4 font-bold text-gray-900 hover:bg-gray-200">
-                        Is my data safe?
-                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <div class="px-6 py-4 text-gray-700">
-                        Yes! All data is stored locally on your device. Nothing is sent to servers or the cloud. Your financial information never leaves your phone.
+                        <button disabled class="bg-gray-200 text-gray-500 flex items-center justify-center gap-3 w-full py-4 rounded-xl font-bold cursor-not-allowed">
+                            <i class="fab fa-google-play text-2xl" aria-hidden="true"></i>
+                            <div class="text-left">
+                                <div class="text-xs font-normal opacity-80">Coming Soon to</div>
+                                <div class="leading-none">Google Play</div>
+                            </div>
+                        </button>
                     </div>
-                </details>
 
-                <details class="group reveal">
-                    <summary class="flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-6 py-4 font-bold text-gray-900 hover:bg-gray-200">
-                        Can I export my data?
-                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <div class="px-6 py-4 text-gray-700">
-                        Yes, XPensa supports exporting your data in multiple formats. You can backup and restore your data anytime.
+                    <div class="flex flex-wrap justify-center gap-4 text-sm mt-8">
+                        <span class="px-4 py-2 bg-white rounded-full border border-gray-200 text-gray-500 font-medium shadow-sm flex items-center">
+                            <i class="fas fa-box mr-2" aria-hidden="true"></i> F-Droid (Soon)
+                        </span>
+                        <span class="px-4 py-2 bg-white rounded-full border border-gray-200 text-gray-500 font-medium shadow-sm flex items-center">
+                            <i class="fab fa-apple mr-2" aria-hidden="true"></i> iOS App Store (Planned)
+                        </span>
                     </div>
-                </details>
-
-                <details class="group reveal">
-                    <summary class="flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-6 py-4 font-bold text-gray-900 hover:bg-gray-200">
-                        Will there be a web version?
-                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <div class="px-6 py-4 text-gray-700">
-                        A web version is in the roadmap. Keep an eye on the GitHub repository for announcements.
-                    </div>
-                </details>
-
-                <details class="group reveal">
-                    <summary class="flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-6 py-4 font-bold text-gray-900 hover:bg-gray-200">
-                        Can I contribute to the project?
-                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <div class="px-6 py-4 text-gray-700">
-                        Absolutely! XPensa is open source. You can contribute on GitHub by submitting issues, pull requests, or suggesting features.
-                    </div>
-                </details>
-
-                <details class="group reveal">
-                    <summary class="flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-6 py-4 font-bold text-gray-900 hover:bg-gray-200">
-                        What are the system requirements?
-                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <div class="px-6 py-4 text-gray-700">
-                        XPensa requires Android 5.0+. It's optimized for phones with minimal RAM usage and works offline.
-                    </div>
-                </details>
+                </div>
             </div>
-        </div>
-    </section>
-
-    <!-- CTA Banner -->
-    <section class="py-16 px-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
-        <div class="max-w-4xl mx-auto text-center reveal">
-            <h2 class="text-3xl font-bold mb-4">Take Control of Your Money Today</h2>
-            <p class="text-lg mb-8 opacity-90">Join thousands of users who trust XPensa for their personal finance management.</p>
-            <button class="btn-primary" onclick="document.getElementById('download').scrollIntoView()">
-                <i class="fas fa-download mr-2"></i> Download XPensa
-            </button>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-12 px-6">
+    <footer class="bg-gray-900 text-gray-400 py-12 px-6">
         <div class="max-w-6xl mx-auto">
-            <div class="grid md:grid-cols-4 gap-8 mb-8">
-                <div>
+            <div class="grid md:grid-cols-4 gap-8 mb-8 border-b border-gray-800 pb-12">
+                <div class="md:col-span-2">
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-wallet text-white"></i>
+                        <div class="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
+                            <i class="fas fa-wallet text-white text-sm" aria-hidden="true"></i>
                         </div>
                         <span class="text-xl font-bold text-white">XPensa</span>
                     </div>
-                    <p class="text-sm">Personal finance management, simplified.</p>
+                    <p class="text-sm leading-relaxed max-w-sm">A fast, private, and offline personal finance tracker. Open source and built with Flutter. Your data belongs to you.</p>
                 </div>
 
                 <div>
-                    <h3 class="font-bold text-white mb-4">Product</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#features" class="hover:text-blue-400">Features</a></li>
-                        <li><a href="#download" class="hover:text-blue-400">Download</a></li>
-                        <li><a href="https://github.com/mini-page/XPensa" class="hover:text-blue-400">GitHub</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="font-bold text-white mb-4">Community</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="https://github.com/mini-page/XPensa/issues" class="hover:text-blue-400">Issues</a></li>
-                        <li><a href="https://github.com/mini-page/XPensa" class="hover:text-blue-400">Contribute</a></li>
-                        <li><a href="#" class="hover:text-blue-400">Discussions</a></li>
+                    <h3 class="font-bold text-white mb-4">Project Links</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="https://github.com/mini-page/XPensa" class="hover:text-white transition-colors flex items-center"><i class="fab fa-github w-5" aria-hidden="true"></i> Repository</a></li>
+                        <li><a href="https://github.com/mini-page/XPensa/issues" class="hover:text-white transition-colors flex items-center"><i class="fas fa-bug w-5" aria-hidden="true"></i> Report an Issue</a></li>
+                        <li><a href="https://github.com/mini-page/XPensa/releases" class="hover:text-white transition-colors flex items-center"><i class="fas fa-download w-5" aria-hidden="true"></i> Releases</a></li>
                     </ul>
                 </div>
 
                 <div>
                     <h3 class="font-bold text-white mb-4">Legal</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-blue-400">Privacy</a></li>
-                        <li><a href="#" class="hover:text-blue-400">License (MIT)</a></li>
-                        <li><a href="#" class="hover:text-blue-400">Terms</a></li>
+                    <ul class="space-y-3 text-sm">
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Privacy Policy (Local Only)</span></li>
+                        <li><a href="https://github.com/mini-page/XPensa/blob/main/LICENSE" class="hover:text-white transition-colors">MIT License</a></li>
                     </ul>
                 </div>
             </div>
 
-            <div class="border-t border-gray-800 pt-8">
-                <div class="flex justify-between items-center flex-wrap gap-4">
-                    <p class="text-sm">© 2026 XPensa. Built with Flutter & Dart. Open Source & Privacy-First.</p>
-                    <div class="flex gap-4">
-                        <a href="https://github.com/mini-page" class="hover:text-blue-400" title="GitHub">
-                            <i class="fab fa-github text-xl"></i>
-                        </a>
-                        <a href="#" class="hover:text-blue-400" title="Twitter">
-                            <i class="fab fa-twitter text-xl"></i>
-                        </a>
-                        <a href="#" class="hover:text-blue-400" title="LinkedIn">
-                            <i class="fab fa-linkedin text-xl"></i>
-                        </a>
-                    </div>
+            <div class="flex justify-between items-center flex-col md:flex-row gap-4">
+                <p class="text-sm">© 2026 XPensa. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a href="https://github.com/mini-page" class="text-gray-400 hover:text-white transition-colors" aria-label="GitHub Developer Profile">
+                        <i class="fab fa-github text-xl" aria-hidden="true"></i>
+                    </a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Scroll Reveal Script -->
+    <!-- Scripts -->
     <script>
-        // Scroll reveal animation
-        const reveals = document.querySelectorAll('.reveal');
-        
-        function reveal() {
-            reveals.forEach(element => {
-                const windowHeight = window.innerHeight;
-                const revealTop = element.getBoundingClientRect().top;
-                const revealPoint = 150;
-
-                if (revealTop < windowHeight - revealPoint) {
-                    element.classList.add('active');
-                }
-            });
-        }
-
-        window.addEventListener('scroll', reveal);
-        reveal(); // Initial call on page load
-
-        // Counter animation
-        const observerOptions = {
-            threshold: 0.5
-        };
-
-        const observer = new IntersectionObserver((entries) => {
+        // Intersection Observer for scroll animations
+        const revealCallback = (entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const statsSection = entry.target;
-                    const statNumbers = statsSection.querySelectorAll('.stat-number');
-                    
-                    statNumbers.forEach(stat => {
-                        const target = parseInt(stat.getAttribute('data-target'));
-                        animateCounter(stat, target);
-                    });
-                    
-                    observer.unobserve(statsSection);
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
                 }
             });
-        }, observerOptions);
+        };
 
-        const statsSection = document.querySelector('.py-20.px-6.bg-gradient-to-r');
-        if (statsSection) {
-            observer.observe(statsSection);
-        }
+        const revealOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
 
-        function animateCounter(element, target) {
-            let current = 0;
-            const increment = target / 30;
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    element.textContent = target;
-                    clearInterval(timer);
-                } else {
-                    element.textContent = Math.floor(current);
-                }
-            }, 30);
-        }
-
-        // Smooth scroll for navigation
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href !== '#' && document.querySelector(href)) {
-                    e.preventDefault();
-                    document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-
-        // Add click feedback to buttons
-        document.querySelectorAll('button').forEach(button => {
-            button.addEventListener('click', function(e) {
-                if (!this.classList.contains('btn-disabled')) {
-                    const ripple = document.createElement('span');
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.width = ripple.style.height = size + 'px';
-                    ripple.style.left = x + 'px';
-                    ripple.style.top = y + 'px';
-                }
-            });
-        });
-
-        // Disable button hover effect message
-        document.querySelectorAll('.btn-disabled').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-            });
-        });
+        const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     </script>
 </body>
 </html>

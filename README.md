@@ -1,6 +1,6 @@
 # XPensa 💸
 
-XPensa is a modern, personal expense tracker designed for a simple, focused, and intuitive money-management experience. It makes daily spending easy to log, review, and understand—all without clutter or complex setups.
+XPensa is a modern, personal expense tracker designed for a simple, focused, and intuitive money-management experience. It makes daily spending easy to log, review, and understand—all without clutter, complex setups, or privacy compromises.
 
 <p align="center">
   <img src="public_assets/Google-Pixel5-localhost.png" width="300" alt="XPensa App Screenshot"/>
@@ -8,37 +8,50 @@ XPensa is a modern, personal expense tracker designed for a simple, focused, and
 
 ---
 
-## ✨ Core Philosophy
+## ✨ Why Choose XPensa?
 
-| Principle | Description |
+| Advantage | Description |
 | :---: | --- |
-| ⚡ **Fast** | Add an expense in just a few taps. We respect your time. |
-| 🪟 **Clear** | View your spending and accounts in a clean layout. |
-| 💡 **Insightful** | Review monthly totals, histories, and categories at a glance. |
-| 🔒 **Private** | All your personal finance data is kept available locally on your device. |
+| 🛡️ **Absolute Privacy** | We don't have servers, we don't sell data, and there are no ads. All data is kept strictly on your local device. |
+| ⚡ **Lightning Fast** | Built with Flutter for native performance. Add an expense in seconds without waiting for cloud syncs. |
+| 🪟 **Clear Interface** | View your spending and accounts in a clean, distraction-free layout. |
+| 📴 **Offline Ready** | No internet required. Manage your money anytime, anywhere. |
 
 ---
 
-## 🚀 Key Features
+## 🚀 Core Features
 
 | Feature | What it does |
 | --- | --- |
-| 📝 **Expense Tracking** | Capture the amount, category, date, and notes for every purchase. |
-| 🏦 **Accounts Management** | Track spending across multiple different accounts and wallets. |
+| 📝 **Smart Expense Logging** | Instantly capture the amount, category, date, and notes for every purchase. |
+| 🏦 **Multi-Account Support** | Manage multiple accounts, banks, and cash wallets in one place to consolidate your finances. |
+| 📉 **Budget Planning** | Set monthly budgets for different categories and track your progress to prevent overspending. |
+| 📊 **Visual Analytics** | Beautiful charts and graphs show spending patterns. Understand where your money goes. |
 | 🏷️ **Categories** | Organize your spending by categories to see exactly where your money goes. |
-| 📉 **Budgets** | Set spending limits and keep your finances in check. |
-| 🔁 **Recurring Subscriptions**| Manage your monthly or annual recurring bills to never miss a payment. |
-| 📊 **Statistics & History** | View easy-to-read charts and a detailed record history of your spending habits. |
-| 🙈 **Privacy Mode** | Hide amounts and balances from prying eyes with a simple toggle. |
-| ⏰ **Smart Reminders** | Get gentle notifications to log your daily expenses. |
+| 🔁 **Recurring Subscriptions**| Manage your monthly or annual recurring bills so you never miss a payment. |
+| 🙈 **Privacy Mode** | Hide sensitive balances and amounts with a quick toggle for public spaces. |
+
+---
+
+## 🎯 Roadmap (Coming Soon)
+
+We are actively building new, frictionless ways to manage your money:
+
+*   **Voice Input:** Log expenses hands-free.
+*   **SMS Parsing:** Auto-log from bank text messages.
+*   **Split Bills:** Divide tabs with friends easily.
+*   **Web Version:** Manage from your desktop browser.
+*   **Google Play / App Store Availability:** Expanded distribution options.
 
 ---
 
 ## 📱 Supported Platforms
 
-Enjoy tracking your expenses on any device! XPensa supports:
+Enjoy tracking your expenses on any device! XPensa currently supports:
 
-✅ Android
+✅ Android (via GitHub Releases)
+🔜 iOS (Planned)
+🔜 Web Version (Planned)
 
 ---
 
