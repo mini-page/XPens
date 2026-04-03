@@ -472,10 +472,32 @@
                 </div>
                 <span class="text-2xl font-bold gradient-text">XPensa</span>
             </div>
+
+            <!-- Desktop Menu -->
             <div class="hidden md:flex gap-8">
                 <a href="#features">Features</a>
                 <a href="#mockup">Demo</a>
                 <a href="#download">Download</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-gray-700 hover:text-primary transition-colors text-2xl" aria-label="Toggle Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xl z-50 overflow-hidden animate-fadeInUp">
+            <div class="flex flex-col p-6 space-y-4">
+                <a href="#features" class="text-lg font-semibold text-gray-700 hover:text-primary transition-colors flex items-center gap-3">
+                    <i class="fas fa-rocket w-6 text-primary"></i> Features
+                </a>
+                <a href="#mockup" class="text-lg font-semibold text-gray-700 hover:text-primary transition-colors flex items-center gap-3">
+                    <i class="fas fa-play-circle w-6 text-primary"></i> Demo
+                </a>
+                <a href="#download" class="text-lg font-semibold text-gray-700 hover:text-primary transition-colors flex items-center gap-3">
+                    <i class="fas fa-download w-6 text-primary"></i> Download
+                </a>
             </div>
         </div>
     </nav>
@@ -1327,6 +1349,33 @@
                 e.preventDefault();
             });
         });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-bars');
+                    icon.classList.toggle('fa-times');
+                }
+            });
+
+            // Close menu on link click
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    const icon = mobileMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>
