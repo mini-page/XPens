@@ -7,12 +7,10 @@ import '../provider/account_providers.dart';
 import '../widgets/account_editor_sheet.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/power_pill_menu.dart';
-import '../widgets/ui_feedback.dart';
 import 'accounts_screen.dart';
 import 'add_expense_screen.dart';
 import 'categories_screen.dart';
 import 'home_screen.dart';
-import 'scanner_screen.dart';
 import 'stats_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {

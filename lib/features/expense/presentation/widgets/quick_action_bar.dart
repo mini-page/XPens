@@ -105,6 +105,6 @@ class QuickActionBar extends StatelessWidget {
           );
         }).toList(growable: false),
       ),
-    );
+    ));
   }
 }

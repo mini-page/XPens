@@ -129,6 +129,18 @@
       "type": "file"
     },
     {
+      "path": "lib\\features\\expense\\presentation\\screens\\home_screen.dart",
+      "accessCount": 9,
+      "lastAccessed": 1775230474018,
+      "type": "file"
+    },
+    {
+      "path": "lib\\features\\expense\\presentation\\screens\\app_shell.dart",
+      "accessCount": 8,
+      "lastAccessed": 1775230665215,
+      "type": "file"
+    },
+    {
       "path": "lib\\features\\expense\\presentation\\screens\\categories_screen.dart",
       "accessCount": 7,
       "lastAccessed": 1775223588964,
@@ -141,9 +153,9 @@
       "type": "file"
     },
     {
-      "path": "lib\\features\\expense\\presentation\\screens\\home_screen.dart",
-      "accessCount": 6,
-      "lastAccessed": 1775222962439,
+      "path": "lib\\features\\expense\\presentation\\widgets\\quick_action_bar.dart",
+      "accessCount": 5,
+      "lastAccessed": 1775230664037,
       "type": "file"
     },
     {
@@ -153,15 +165,15 @@
       "type": "file"
     },
     {
-      "path": "lib\\features\\expense\\presentation\\provider\\expense_providers.dart",
-      "accessCount": 3,
-      "lastAccessed": 1775222886947,
+      "path": "lib\\features\\expense\\presentation\\widgets\\power_pill_menu.dart",
+      "accessCount": 4,
+      "lastAccessed": 1775230526631,
       "type": "file"
     },
     {
-      "path": "lib\\features\\expense\\presentation\\screens\\app_shell.dart",
+      "path": "lib\\features\\expense\\presentation\\provider\\expense_providers.dart",
       "accessCount": 3,
-      "lastAccessed": 1775222952936,
+      "lastAccessed": 1775222886947,
       "type": "file"
     },
     {
@@ -180,6 +192,24 @@
       "path": "android\\local.properties",
       "accessCount": 1,
       "lastAccessed": 1775224792609,
+      "type": "file"
+    },
+    {
+      "path": "lib\\core\\theme\\app_tokens.dart",
+      "accessCount": 1,
+      "lastAccessed": 1775230217462,
+      "type": "file"
+    },
+    {
+      "path": "docs\\plans\\2026-04-03-quick-actions-refactor-design.md",
+      "accessCount": 1,
+      "lastAccessed": 1775230228147,
+      "type": "file"
+    },
+    {
+      "path": "docs\\plans\\2026-04-03-quick-actions-refactor.md",
+      "accessCount": 1,
+      "lastAccessed": 1775230264617,
       "type": "file"
     }
   ],
