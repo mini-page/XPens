@@ -8,6 +8,10 @@ class AppPreferencesModel {
     required this.locale,
     required this.currencySymbol,
     required this.isOnboardingCompleted,
+    this.autoBackupEnabled = false,
+    this.backupFrequency = 'daily',
+    this.backupDirectoryPath,
+    this.lastBackupDateTime,
   });
 
   static const AppPreferencesModel defaults = AppPreferencesModel(
@@ -17,6 +21,8 @@ class AppPreferencesModel {
     locale: 'en_IN',
     currencySymbol: '₹',
     isOnboardingCompleted: false,
+    autoBackupEnabled: false,
+    backupFrequency: 'daily',
   );
 
   final String themeModeKey;
@@ -25,6 +31,10 @@ class AppPreferencesModel {
   final String locale;
   final String currencySymbol;
   final bool isOnboardingCompleted;
+  final bool autoBackupEnabled;
+  final String backupFrequency;
+  final String? backupDirectoryPath;
+  final DateTime? lastBackupDateTime;
 
   AppPreferencesModel copyWith({
     String? themeModeKey,
@@ -33,6 +43,11 @@ class AppPreferencesModel {
     String? locale,
     String? currencySymbol,
     bool? isOnboardingCompleted,
+    bool? autoBackupEnabled,
+    String? backupFrequency,
+    String? backupDirectoryPath,
+    DateTime? lastBackupDateTime,
+    bool clearBackupDirectory = false,
   }) {
     return AppPreferencesModel(
       themeModeKey: themeModeKey ?? this.themeModeKey,
@@ -43,6 +58,10 @@ class AppPreferencesModel {
       currencySymbol: currencySymbol ?? this.currencySymbol,
       isOnboardingCompleted:
           isOnboardingCompleted ?? this.isOnboardingCompleted,
+      autoBackupEnabled: autoBackupEnabled ?? this.autoBackupEnabled,
+      backupFrequency: backupFrequency ?? this.backupFrequency,
+      backupDirectoryPath: clearBackupDirectory ? null : (backupDirectoryPath ?? this.backupDirectoryPath),
+      lastBackupDateTime: lastBackupDateTime ?? this.lastBackupDateTime,
     );
   }
 }
@@ -59,24 +78,31 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
     final privacyModeEnabled = reader.readBool();
     final smartRemindersEnabled = reader.readBool();
 
-    // Migration: Check if more data exists for new fields
+    // Defaults for existing fields
     String locale = AppPreferencesModel.defaults.locale;
     String currencySymbol = AppPreferencesModel.defaults.currencySymbol;
-    bool isOnboardingCompleted =
-        AppPreferencesModel.defaults.isOnboardingCompleted;
+    bool isOnboardingCompleted = AppPreferencesModel.defaults.isOnboardingCompleted;
+    bool autoBackupEnabled = AppPreferencesModel.defaults.autoBackupEnabled;
+    String backupFrequency = AppPreferencesModel.defaults.backupFrequency;
+    String? backupDirectoryPath;
+    DateTime? lastBackupDateTime;
 
     try {
+      if (reader.availableBytes > 0) locale = reader.readString();
+      if (reader.availableBytes > 0) currencySymbol = reader.readString();
+      if (reader.availableBytes > 0) isOnboardingCompleted = reader.readBool();
+      if (reader.availableBytes > 0) autoBackupEnabled = reader.readBool();
+      if (reader.availableBytes > 0) backupFrequency = reader.readString();
       if (reader.availableBytes > 0) {
-        locale = reader.readString();
+        final path = reader.readString();
+        backupDirectoryPath = path.isEmpty ? null : path;
       }
       if (reader.availableBytes > 0) {
-        currencySymbol = reader.readString();
-      }
-      if (reader.availableBytes > 0) {
-        isOnboardingCompleted = reader.readBool();
+        final millis = reader.readInt();
+        lastBackupDateTime = millis == 0 ? null : DateTime.fromMillisecondsSinceEpoch(millis);
       }
     } catch (_) {
-      // Fallback to defaults if reading fails
+      // Fallback if reading fails
     }
 
     return AppPreferencesModel(
@@ -86,6 +112,10 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       locale: locale,
       currencySymbol: currencySymbol,
       isOnboardingCompleted: isOnboardingCompleted,
+      autoBackupEnabled: autoBackupEnabled,
+      backupFrequency: backupFrequency,
+      backupDirectoryPath: backupDirectoryPath,
+      lastBackupDateTime: lastBackupDateTime,
     );
   }
 
@@ -97,6 +127,10 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       ..writeBool(obj.smartRemindersEnabled)
       ..writeString(obj.locale)
       ..writeString(obj.currencySymbol)
-      ..writeBool(obj.isOnboardingCompleted);
+      ..writeBool(obj.isOnboardingCompleted)
+      ..writeBool(obj.autoBackupEnabled)
+      ..writeString(obj.backupFrequency)
+      ..writeString(obj.backupDirectoryPath ?? '')
+      ..writeInt(obj.lastBackupDateTime?.millisecondsSinceEpoch ?? 0);
   }
 }

@@ -2,11 +2,14 @@ import 'dart:developer' as dev;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:workmanager/workmanager.dart';
 
 import '../../data/datasource/preferences_local_datasource.dart';
 import '../../data/models/app_preferences_model.dart';
 import '../../data/repositories/hive_preferences_repository.dart';
 import '../../domain/repositories/preferences_repository.dart';
+
+const String backupTaskTag = 'xpensa_offline_backup';
 
 final preferencesLocalDatasourceProvider = Provider<PreferencesLocalDatasource>(
   (ref) {
@@ -54,6 +57,24 @@ final isOnboardingCompletedProvider = Provider<bool>((ref) {
 final smartRemindersEnabledProvider = Provider<bool>((ref) {
   return ref.watch(appPreferencesProvider).value?.smartRemindersEnabled ??
       AppPreferencesModel.defaults.smartRemindersEnabled;
+});
+
+final autoBackupEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appPreferencesProvider).value?.autoBackupEnabled ??
+      AppPreferencesModel.defaults.autoBackupEnabled;
+});
+
+final backupFrequencyProvider = Provider<String>((ref) {
+  return ref.watch(appPreferencesProvider).value?.backupFrequency ??
+      AppPreferencesModel.defaults.backupFrequency;
+});
+
+final backupDirectoryPathProvider = Provider<String?>((ref) {
+  return ref.watch(appPreferencesProvider).value?.backupDirectoryPath;
+});
+
+final lastBackupDateTimeProvider = Provider<DateTime?>((ref) {
+  return ref.watch(appPreferencesProvider).value?.lastBackupDateTime;
 });
 
 final appThemeModeProvider = Provider<ThemeMode>((ref) {
@@ -139,6 +160,67 @@ class AppPreferencesController {
     await _ref
         .read(appPreferencesProvider.notifier)
         .save(_current.copyWith(currencySymbol: currencySymbol));
+  }
+
+  Future<void> setAutoBackup(bool enabled) async {
+    final next = _current.copyWith(autoBackupEnabled: enabled);
+    await _ref.read(appPreferencesProvider.notifier).save(next);
+
+    if (enabled) {
+      _scheduleBackup(next.backupFrequency);
+    } else {
+      Workmanager().cancelByTag(backupTaskTag);
+    }
+  }
+
+  Future<void> setBackupFrequency(String frequency) async {
+    final next = _current.copyWith(backupFrequency: frequency);
+    await _ref.read(appPreferencesProvider.notifier).save(next);
+
+    if (next.autoBackupEnabled) {
+      _scheduleBackup(frequency);
+    }
+  }
+
+  void _scheduleBackup(String frequency) {
+    Duration duration;
+    switch (frequency) {
+      case 'weekly':
+        duration = const Duration(days: 7);
+        break;
+      case 'monthly':
+        duration = const Duration(days: 30);
+        break;
+      default:
+        duration = const Duration(days: 1);
+    }
+
+    Workmanager().registerPeriodicTask(
+      'xpensa-periodic-backup',
+      'xpensa-periodic-backup-task',
+      tag: backupTaskTag,
+      frequency: duration,
+      existingWorkPolicy: ExistingWorkPolicy.replace,
+      constraints: Constraints(
+        networkType: NetworkType.not_required,
+        requiresStorageNotLow: true,
+      ),
+    );
+  }
+
+  Future<void> setBackupDirectory(String? path) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(
+          backupDirectoryPath: path,
+          clearBackupDirectory: path == null,
+        ));
+  }
+
+  Future<void> setLastBackup(DateTime dateTime) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(lastBackupDateTime: dateTime));
   }
 
   Future<void> updateAll({

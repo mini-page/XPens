@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:workmanager/workmanager.dart';
 
 import 'core/theme/app_colors.dart';
+import 'core/utils/background_backup.dart';
 import 'core/utils/hive_bootstrap.dart';
 import 'features/expense/presentation/provider/preferences_providers.dart';
 import 'features/expense/presentation/screens/app_shell.dart';
@@ -10,6 +12,12 @@ import 'features/expense/presentation/screens/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Workmanager().initialize(
+    callbackDispatcher,
+    isInDebugMode: false,
+  );
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
