@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasource/expense_local_datasource.dart';
@@ -20,15 +21,16 @@ final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
 
 final expenseListProvider =
     AsyncNotifierProvider<ExpenseListNotifier, List<ExpenseModel>>(
-  ExpenseListNotifier.new,
-);
+      ExpenseListNotifier.new,
+    );
 
 final expenseControllerProvider = Provider<ExpenseController>((ref) {
   return ExpenseController(ref);
 });
 
-final searchQueryProvider =
-    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
+final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
+  SearchQueryNotifier.new,
+);
 
 class SearchQueryNotifier extends Notifier<String> {
   @override
@@ -67,12 +69,14 @@ class ExpenseListNotifier extends AsyncNotifier<List<ExpenseModel>> {
     try {
       return _repository.getAllExpenses();
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to fetch all expenses',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'ExpenseListNotifier',
-      );
+      if (kDebugMode) {
+        dev.log(
+          'Failed to fetch all expenses',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'ExpenseListNotifier',
+        );
+      }
       return <ExpenseModel>[];
     }
   }
@@ -182,8 +186,9 @@ class ExpenseController {
     if (nextExpense?.accountId case final String accountId) {
       final account = pendingUpdates[accountId] ?? accountsById[accountId];
       if (account != null) {
-        final delta =
-            nextExpense!.isIncome ? nextExpense.amount : -nextExpense.amount;
+        final delta = nextExpense!.isIncome
+            ? nextExpense.amount
+            : -nextExpense.amount;
         pendingUpdates[accountId] = account.copyWith(
           balance: account.balance + delta,
         );
@@ -206,20 +211,23 @@ class ExpenseController {
     try {
       return await _accountRepository.getAllAccounts();
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to load accounts for balance adjustments',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'ExpenseController',
-      );
+      if (kDebugMode) {
+        dev.log(
+          'Failed to load accounts for balance adjustments',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'ExpenseController',
+        );
+      }
       return <AccountModel>[];
     }
   }
 
   Future<ExpenseModel?> _findExpenseById(String id) async {
     final currentExpenses = _ref.read(expenseListProvider).value;
-    final cachedExpense =
-        currentExpenses?.where((expense) => expense.id == id).firstOrNull;
+    final cachedExpense = currentExpenses
+        ?.where((expense) => expense.id == id)
+        .firstOrNull;
     if (cachedExpense != null) {
       return cachedExpense;
     }
@@ -227,12 +235,14 @@ class ExpenseController {
     try {
       return await _expenseRepository.getExpenseById(id);
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to find expense by id: $id',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'ExpenseController',
-      );
+      if (kDebugMode) {
+        dev.log(
+          'Failed to find expense by id: $id',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'ExpenseController',
+        );
+      }
       return null;
     }
   }
@@ -257,25 +267,62 @@ class ExpenseStats {
 
   factory ExpenseStats.fromExpenses(List<ExpenseModel> expenses) {
     final now = DateTime.now();
-    final monthExpenses = expenses.where((expense) {
-      final localDate = expense.date.toLocal();
-      return localDate.year == now.year && localDate.month == now.month;
-    }).toList(growable: false);
+    final monthExpenses = expenses
+        .where((expense) {
+          final localDate = expense.date.toLocal();
+          return localDate.year == now.year && localDate.month == now.month;
+        })
+        .toList(growable: false);
 
-    final todayTransactions = monthExpenses.where((expense) {
-      return expense.date.toLocal().day == now.day;
-    }).toList(growable: false);
+    final todayTransactions = monthExpenses
+        .where((expense) {
+          return expense.date.toLocal().day == now.day;
+        })
+        .toList(growable: false);
+    final int currentYear = now.year;
+    final int currentMonth = now.month;
+    final int currentDay = now.day;
+
+    int transactionCount = 0;
 
     final expenseTotals = <String, double>{};
     final incomeTotals = <String, double>{};
 
-    for (final expense in monthExpenses) {
-      final targetMap = expense.isIncome ? incomeTotals : expenseTotals;
-      targetMap.update(
-        expense.category,
-        (value) => value + expense.amount,
-        ifAbsent: () => expense.amount,
-      );
+    double monthExpenseTotal = 0;
+    double monthIncomeTotal = 0;
+    double todayExpenseTotal = 0;
+    double todayIncomeTotal = 0;
+
+    for (final expense in expenses) {
+      final localDate = expense.date.toLocal();
+      if (localDate.year == currentYear && localDate.month == currentMonth) {
+        transactionCount++;
+
+        final bool isIncome = expense.isIncome;
+        final double amount = expense.amount;
+
+        final Map<String, double> targetMap =
+            isIncome ? incomeTotals : expenseTotals;
+        targetMap.update(
+          expense.category,
+          (value) => value + amount,
+          ifAbsent: () => amount,
+        );
+
+        final bool isToday = localDate.day == currentDay;
+
+        if (isIncome) {
+          monthIncomeTotal += amount;
+          if (isToday) {
+            todayIncomeTotal += amount;
+          }
+        } else {
+          monthExpenseTotal += amount;
+          if (isToday) {
+            todayExpenseTotal += amount;
+          }
+        }
+      }
     }
 
     final sortedExpenseEntries = expenseTotals.entries.toList()
@@ -283,26 +330,13 @@ class ExpenseStats {
     final sortedIncomeEntries = incomeTotals.entries.toList()
       ..sort((left, right) => right.value.compareTo(left.value));
 
-    final monthExpenseTotal = monthExpenses
-        .where((expense) => !expense.isIncome)
-        .fold<double>(0, (sum, expense) => sum + expense.amount);
-    final monthIncomeTotal = monthExpenses
-        .where((expense) => expense.isIncome)
-        .fold<double>(0, (sum, expense) => sum + expense.amount);
-    final todayExpenseTotal = todayTransactions
-        .where((expense) => !expense.isIncome)
-        .fold<double>(0, (sum, expense) => sum + expense.amount);
-    final todayIncomeTotal = todayTransactions
-        .where((expense) => expense.isIncome)
-        .fold<double>(0, (sum, expense) => sum + expense.amount);
-
     return ExpenseStats(
       monthTotal: monthExpenseTotal,
       monthIncomeTotal: monthIncomeTotal,
       monthNetTotal: monthIncomeTotal - monthExpenseTotal,
       todayTotal: todayExpenseTotal,
       todayIncomeTotal: todayIncomeTotal,
-      transactionCount: monthExpenses.length,
+      transactionCount: transactionCount,
       categoryTotals: Map<String, double>.fromEntries(sortedExpenseEntries),
       incomeCategoryTotals: Map<String, double>.fromEntries(
         sortedIncomeEntries,

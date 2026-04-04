@@ -37,6 +37,7 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
     final privacyModeEnabled = ref.watch(privacyModeEnabledProvider);
     final expenses = expenseState.value ?? const <ExpenseModel>[];
     final accounts = accountState.value ?? const <AccountModel>[];
+    final accountMap = {for (final account in accounts) account.id: account};
     final filteredExpenses = _filterExpenses(expenses);
     final groupedExpenses = _groupExpenses(filteredExpenses);
 
@@ -98,6 +99,100 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                 },
                 allAccountsKey: _allAccountsKey,
                 accountFilterLabel: _accountFilterLabel(accounts),
+              SizedBox(
+                height: 42,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: RecordsFilter.values
+                      .map((filter) {
+                        final isSelected = _selectedFilter == filter;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ChoiceChip(
+                            label: Text(_labelForFilter(filter)),
+                            selected: isSelected,
+                            onSelected: (_) {
+                              setState(() {
+                                _selectedFilter = filter;
+                              });
+                            },
+                            selectedColor: AppColors.primaryBlue,
+                            backgroundColor: AppColors.lightBlueBg,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF48607E),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        );
+                      })
+                      .toList(growable: false),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: PopupMenuButton<String>(
+                  color: Colors.white,
+                  onSelected: (value) {
+                    setState(() {
+                      _selectedAccountFilter = value;
+                    });
+                  },
+                  itemBuilder: (context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: _allAccountsKey,
+                      child: Text('All accounts'),
+                    ),
+                    ...accounts.map((account) {
+                      return PopupMenuItem<String>(
+                        value: account.id,
+                        child: Text(account.name),
+                      );
+                    }),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(
+                          color: AppColors.cardShadow,
+                          blurRadius: 18,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: 18,
+                          color: AppColors.primaryBlue,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _accountFilterLabel(accountMap),
+                          style: const TextStyle(
+                            color: AppColors.textDark,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: AppColors.textMuted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 18),
               Expanded(
@@ -124,6 +219,52 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                             _openEditExpenseScreen(context, expense),
                         onDelete: (expense) =>
                             _confirmDeleteExpense(context, ref, expense),
+                    : ListView(
+                        children: groupedExpenses.entries
+                            .map((entry) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 18),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 10,
+                                      ),
+                                      child: Text(
+                                        _groupLabel(entry.key),
+                                        style: const TextStyle(
+                                          color: AppColors.primaryBlue,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                    ...entry.value.map((expense) {
+                                      return TransactionCard(
+                                        expense: expense,
+                                        accountLabel: _accountLabelFor(
+                                          expense,
+                                          accounts,
+                                          accountMap,
+                                        ),
+                                        maskAmounts: privacyModeEnabled,
+                                        onEdit: () => _openEditExpenseScreen(
+                                          context,
+                                          expense,
+                                        ),
+                                        onDelete: () => _confirmDeleteExpense(
+                                          context,
+                                          ref,
+                                          expense,
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              );
+                            })
+                            .toList(growable: false),
                       ),
               ),
             ],
@@ -134,6 +275,56 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
   }
 
   List<ExpenseModel> _filterExpenses(List<ExpenseModel> expenses) {
+    final nowLocal = DateTime.now();
+    final todayLocal = DateUtils.dateOnly(nowLocal);
+
+    DateTime? startBoundLocal;
+    DateTime? endBoundLocal;
+
+    switch (_selectedFilter) {
+      case RecordsFilter.today:
+        startBoundLocal = todayLocal;
+        endBoundLocal = todayLocal.add(const Duration(days: 1));
+        break;
+      case RecordsFilter.week:
+        startBoundLocal = todayLocal.subtract(
+          Duration(days: nowLocal.weekday - 1),
+        );
+        endBoundLocal = todayLocal.add(const Duration(days: 1));
+        break;
+      case RecordsFilter.month:
+        startBoundLocal = DateTime(todayLocal.year, todayLocal.month, 1);
+        endBoundLocal = DateTime(todayLocal.year, todayLocal.month + 1, 1);
+        break;
+      case RecordsFilter.future:
+        startBoundLocal = todayLocal.add(const Duration(days: 1));
+        endBoundLocal = null;
+        break;
+      case RecordsFilter.all:
+        startBoundLocal = null;
+        endBoundLocal = null;
+        break;
+    }
+
+    final startBoundUtc = startBoundLocal?.toUtc();
+    final endBoundUtc = endBoundLocal?.toUtc();
+
+    final filterByAccount = _selectedAccountFilter != _allAccountsKey;
+
+    return expenses
+        .where((expense) {
+          if (filterByAccount && expense.accountId != _selectedAccountFilter) {
+            return false;
+          }
+
+          if (startBoundUtc != null && expense.date.isBefore(startBoundUtc)) {
+            return false;
+          }
+          if (endBoundUtc != null && !expense.date.isBefore(endBoundUtc)) {
+            return false;
+          }
+
+          return true;
     final now = DateTime.now();
     final today = DateUtils.dateOnly(now);
     final weekStart = today.subtract(Duration(days: now.weekday - 1));
@@ -198,18 +389,12 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
     }
   }
 
-  String _accountFilterLabel(List<AccountModel> accounts) {
+  String _accountFilterLabel(Map<String, AccountModel> accountMap) {
     if (_selectedAccountFilter == _allAccountsKey) {
       return 'All accounts';
     }
 
-    for (final account in accounts) {
-      if (account.id == _selectedAccountFilter) {
-        return account.name;
-      }
-    }
-
-    return 'Archived account';
+    return accountMap[_selectedAccountFilter]?.name ?? 'Archived account';
   }
 
   String _groupLabel(DateTime date) {
@@ -224,18 +409,15 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
     return DateFormat('EEE, d MMM yyyy').format(date);
   }
 
-  String? _accountLabelFor(ExpenseModel expense, List<AccountModel> accounts) {
+  String? _accountLabelFor(
+    ExpenseModel expense,
+    Map<String, AccountModel> accountMap,
+  ) {
     if (expense.accountId == null) {
       return null;
     }
 
-    for (final account in accounts) {
-      if (account.id == expense.accountId) {
-        return account.name;
-      }
-    }
-
-    return 'Archived Account';
+    return accountMap[expense.accountId]?.name ?? 'Archived Account';
   }
 
   Future<void> _openEditExpenseScreen(
