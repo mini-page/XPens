@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasource/recurring_subscription_local_datasource.dart';
@@ -30,24 +31,26 @@ final List<RecurringSeed> defaultSubscriptions = <RecurringSeed>[
 
 final recurringSubscriptionLocalDatasourceProvider =
     Provider<RecurringSubscriptionLocalDatasource>((ref) {
-  return RecurringSubscriptionLocalDatasource();
-});
+      return RecurringSubscriptionLocalDatasource();
+    });
 
 final recurringSubscriptionRepositoryProvider =
     Provider<RecurringSubscriptionRepository>((ref) {
-  return HiveRecurringSubscriptionRepository(
-    ref.watch(recurringSubscriptionLocalDatasourceProvider),
-  );
-});
+      return HiveRecurringSubscriptionRepository(
+        ref.watch(recurringSubscriptionLocalDatasourceProvider),
+      );
+    });
 
-final recurringSubscriptionListProvider = AsyncNotifierProvider<
-    RecurringSubscriptionListNotifier,
-    List<RecurringSubscriptionModel>>(RecurringSubscriptionListNotifier.new);
+final recurringSubscriptionListProvider =
+    AsyncNotifierProvider<
+      RecurringSubscriptionListNotifier,
+      List<RecurringSubscriptionModel>
+    >(RecurringSubscriptionListNotifier.new);
 
 final recurringSubscriptionControllerProvider =
     Provider<RecurringSubscriptionController>((ref) {
-  return RecurringSubscriptionController(ref);
-});
+      return RecurringSubscriptionController(ref);
+    });
 
 class RecurringSubscriptionListNotifier
     extends AsyncNotifier<List<RecurringSubscriptionModel>> {
@@ -79,12 +82,14 @@ class RecurringSubscriptionListNotifier
 
       return seeded;
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to fetch or seed subscriptions',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'RecurringSubscriptionListNotifier',
-      );
+      if (kDebugMode) {
+        dev.log(
+          'Failed to fetch or seed subscriptions',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'RecurringSubscriptionListNotifier',
+        );
+      }
       return defaultSubscriptions
           .map(
             (seed) => RecurringSubscriptionModel.create(
