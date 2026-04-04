@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../../core/constants/app_assets.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../data/models/expense_model.dart';
+import '../../provider/expense_providers.dart';
 import '../../widgets/amount_visibility.dart';
 
 /// Blue hero header showing the app bar, net total, and monthly metrics.

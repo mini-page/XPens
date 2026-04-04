@@ -7,7 +7,6 @@ import 'stats/stats_widgets.dart';
 import '../provider/expense_providers.dart';
 import '../provider/preferences_providers.dart';
 import '../widgets/amount_visibility.dart';
-import '../widgets/expense_category.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -265,3 +264,5 @@ class StatsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+

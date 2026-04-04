@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../data/models/expense_model.dart';
 import '../../widgets/amount_visibility.dart';
 
 /// Summary card shown at the top of the records history screen, displaying the

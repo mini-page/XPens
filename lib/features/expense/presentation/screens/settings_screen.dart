@@ -371,3 +371,5 @@ class SettingsScreen extends ConsumerWidget {
       onTap: onTap,
     );
   }
+}
+
