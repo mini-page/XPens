@@ -641,8 +641,8 @@ class _DateNavButton extends StatelessWidget {
             onTap: onTap,
             customBorder: const CircleBorder(),
             child: SizedBox(
-              width: 36,
-              height: 36,
+              width: kMinInteractiveDimension,
+              height: kMinInteractiveDimension,
               child: Icon(icon, size: 18, color: AppColors.textMuted),
             ),
           ),
