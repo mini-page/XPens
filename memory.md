@@ -13,7 +13,8 @@ XPensa/
 │       ├── kotlin/app/xpensa/finance/MainActivity.kt
 │       └── res/                      # Launcher icons, splash assets
 ├── assets/
-│   └── icon/                         # app_icon.png, xpensa_logo.png, splash_mark.png
+│   ├── icon/                         # Launcher/splash build-time icons (app_icon.png, app_icon_fg.png, splash_mark.png)
+│   └── images/                       # In-app runtime images (xpensa_logo.png)
 ├── benchmark/                        # Standalone Dart performance benchmarks
 ├── docs/
 │   ├── ai/                           # Agent guides: AGENTS.md, CLAUDE.md, NEW_SESSION_PLAN.md
@@ -56,21 +57,24 @@ XPensa/
 ## 2. File Classification
 
 ### Screens (`lib/features/expense/presentation/screens/`)
-| File | Role |
-|------|------|
-| `app_shell.dart` | Root scaffold with IndexedStack + custom bottom nav |
-| `home_screen.dart` | Dashboard: hero stats, date strip, recent transactions |
-| `stats_screen.dart` | Monthly analytics with charts |
-| `categories_screen.dart` | Spending by category + budget targets |
-| `accounts_screen.dart` | Account list, balance overview, tools tab |
-| `add_expense_screen.dart` | Create / edit a transaction (expense or income) |
-| `records_history_screen.dart` | Full transaction history with filters |
-| `transaction_search_screen.dart` | Fuzzy search across all transactions |
-| `settings_screen.dart` | App preferences, theme, backup / restore |
-| `onboarding_screen.dart` | First-run setup flow |
-| `scanner_screen.dart` | QR / UPI barcode scanner → auto-fills AddExpense |
-| `profile_screen.dart` | User profile (mostly placeholder) |
-| `placeholder_screen.dart` | Generic "coming soon" stub |
+
+Each large screen has a dedicated subdirectory `screens/<name>/` containing extracted private-widget files.
+
+| File | Role | Sub-widgets directory |
+|------|------|-----------------------|
+| `app_shell.dart` | Root scaffold with IndexedStack + custom bottom nav | — |
+| `home_screen.dart` | Dashboard: hero stats, date strip, recent transactions | `home/` |
+| `stats_screen.dart` | Monthly analytics with charts | `stats/` |
+| `categories_screen.dart` | Spending by category + budget targets | `categories/` |
+| `accounts_screen.dart` | Account list, balance overview, tools tab | `accounts/` |
+| `add_expense_screen.dart` | Create / edit a transaction (expense or income) | `add_expense/` |
+| `records_history_screen.dart` | Full transaction history with filters | `records_history/` |
+| `transaction_search_screen.dart` | Fuzzy search across all transactions | — |
+| `settings_screen.dart` | App preferences, theme, backup / restore | `settings/` |
+| `onboarding_screen.dart` | First-run setup flow | — |
+| `scanner_screen.dart` | QR / UPI barcode scanner → auto-fills AddExpense | — |
+| `profile_screen.dart` | User profile (mostly placeholder) | — |
+| `placeholder_screen.dart` | Generic "coming soon" stub | — |
 
 ### Widgets (`lib/features/expense/presentation/widgets/`)
 | File | Role |
@@ -310,3 +314,12 @@ All `push` / `pushReplacement` calls are centralised through **`AppRoutes`** in 
 | 2026-04-04 | Added barrel `index.dart` exports (screens, widgets, provider, models, theme, utils, constants) | 7 files |
 | 2026-04-04 | Extracted `FloatingNavBar` + `NavBarItem` from `app_shell.dart` → `lib/shared/widgets/floating_nav_bar.dart`; `app_shell.dart` reduced from 263 to 127 lines | `app_shell.dart`, `floating_nav_bar.dart` |
 | 2026-04-04 | Added barrel `index.dart` exports for remaining directories (datasource, data/repositories, domain/repositories, routes, shared/widgets) | 5 files |
+| 2026-04-04 | Organized assets: moved `xpensa_logo.png` from `assets/icon/` → `assets/images/`; updated `AppAssets.logo` + `pubspec.yaml` flutter assets block | `assets/images/xpensa_logo.png`, `app_assets.dart`, `pubspec.yaml` |
+| 2026-04-04 | Fixed `home_screen.dart` merge artifacts: duplicate `accountsMap`/`accountMap` variable, duplicate `accountLabel:` param, unreachable `return` | `home_screen.dart` |
+| 2026-04-04 | Split `home_screen.dart` 810→337 L: extracted `HomeHeader`, `HomeMetricColumn`, `formatSignedCurrencyForHome`, `HomeDateStrip`, `HomeDateNavButton`, `HomeDayPill`, `HomeEmptyCard`, `HomeAmountChip` | `screens/home/home_header.dart`, `screens/home/home_date_strip.dart`, `screens/home/home_misc_widgets.dart` |
+| 2026-04-04 | Split `records_history_screen.dart` 786→276 L + fixed severe merge artifacts (two parallel build/filter implementations): extracted `RecordsSummaryCard`, `RecordsStateCard`, `RecordsFilterChips`, `RecordsAccountDropdown`, `RecordsExpenseList`, `RecordsFilter` enum | `screens/records_history/records_cards.dart`, `records_filter_bar.dart`, `records_expense_list.dart`, `records_filter.dart` |
+| 2026-04-04 | Split `add_expense_screen.dart` 797→598 L: extracted `AddExpenseTopButton`, `AddExpenseModeTab`, `AddExpenseInfoCapsule`, `AddExpenseSelectionCapsule`, `AddExpenseKeypadButton`, `TransactionTypeX` extension | `screens/add_expense/add_expense_widgets.dart` |
+| 2026-04-04 | Split `stats_screen.dart` 427→267 L: extracted `StatsMetricTile`, `StatsBreakdownCard` | `screens/stats/stats_widgets.dart` |
+| 2026-04-04 | Split `settings_screen.dart` 446→373 L: extracted `SettingsSectionHeader`, `SettingsCard`, `SettingsTileIcon` | `screens/settings/settings_widgets.dart` |
+| 2026-04-04 | Split `accounts_screen.dart` 563→286 L: extracted `AccountsToolsTabView`, `AccountsPillSwitch`, `AccountsSummaryChip`, `AccountCard`, `EmptyAccountsCard` | `screens/accounts/accounts_widgets.dart` |
+| 2026-04-04 | Split `categories_screen.dart` 490→257 L: extracted `CategoriesPillSwitch`, `CategoryGridCard`, `AddCategoryCard`, `CategoryGridData` | `screens/categories/categories_widgets.dart` |
