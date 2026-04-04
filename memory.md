@@ -35,8 +35,12 @@ XPensa/
 │   │   │   └── analytics.dart                  # Re-export barrel for the analytics/stats feature
 │   │   ├── categories/
 │   │   │   └── categories.dart                 # Re-export barrel for the categories/budget feature
+│   │   ├── recurring/
+│   │   │   └── recurring.dart                  # Re-export barrel for recurring subscriptions
 │   │   ├── settings/
 │   │   │   └── settings.dart                   # Re-export barrel for the settings/prefs feature
+│   │   ├── transactions/
+│   │   │   └── transactions.dart               # Re-export barrel for the transactions feature
 │   │   └── expense/                            # Core expense feature (all data layer lives here)
 │   │       ├── data/
 │   │       │   ├── datasource/                 # Raw Hive box read/write
@@ -247,13 +251,12 @@ All `push` / `pushReplacement` calls are centralised through **`AppRoutes`** in 
 - `lib/shared/widgets/` directory created for cross-feature UI components
 - All large screens split into sub-widget directories (see §8 change log)
 - `SliverAccountsTabView` extracted: `accounts_screen.dart` 563→57 L
-- Feature-namespace barrels created: `accounts/`, `analytics/`, `settings/`, `categories/`
+- Feature-namespace barrels created: `accounts/`, `analytics/`, `settings/`, `categories/`, `recurring/`, `transactions/`
 - Assets organised: `assets/images/` for runtime images, `assets/icon/` for build icons
 
 ### Recommended Next Steps (future sessions)
 1. **Physical feature migration** – move providers and data layer files into the new feature namespaces (`lib/features/accounts/`, etc.) once `flutter analyze` is available to validate import changes
-2. **Recurring subscriptions feature** – create `lib/features/recurring/` for the subscription models, providers, and editor sheet
-3. **Add-expense flow** – consider extracting a `lib/features/transactions/` feature for `add_expense_screen`, `records_history_screen`, and `transaction_search_screen`
+2. **Issue #6** – Remove or wire up `placeholder_screen.dart` (currently unused in navigation)
 
 ---
 
@@ -345,3 +348,5 @@ All `push` / `pushReplacement` calls are centralised through **`AppRoutes`** in 
 | 2026-04-04 | Extracted `SliverAccountsTabView` as ConsumerWidget → `screens/accounts/accounts_widgets.dart`; stripped 14 redundant imports from `accounts_screen.dart`; `accounts_screen.dart` reduced to 57 lines | `accounts_screen.dart`, `accounts/accounts_widgets.dart` |
 | 2026-04-04 | Updated `screens/index.dart` barrel to also export all per-screen sub-widget files | `screens/index.dart` |
 | 2026-04-04 | Created feature-namespace re-export barrels: `lib/features/accounts/accounts.dart`, `analytics/analytics.dart`, `settings/settings.dart`, `categories/categories.dart` | 4 new files |
+| 2026-04-04 | Created `lib/features/recurring/recurring.dart` re-export barrel (widgets, providers, model) | 1 new file |
+| 2026-04-04 | Created `lib/features/transactions/transactions.dart` re-export barrel (add-expense + records-history + search screens + providers + model) | 1 new file |
