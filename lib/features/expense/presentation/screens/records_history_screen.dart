@@ -72,183 +72,32 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color(0x1209386D),
-                      blurRadius: 22,
-                      offset: Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const Text(
-                            'Filtered Net',
-                            style: TextStyle(
-                              color: Color(0xFF0A6BE8),
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              formatSignedAmount(
-                                filteredTotal,
-                                currency,
-                                masked: privacyModeEnabled,
-                              ),
-                              style: TextStyle(
-                                color: filteredTotal >= 0
-                                    ? const Color(0xFF1DAA63)
-                                    : const Color(0xFFFF446D),
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF5FF),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Column(
-                        children: <Widget>[
-                          const Text(
-                            'TXNS',
-                            style: TextStyle(
-                              color: Color(0xFF7A8BA8),
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.1,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '${filteredExpenses.length}',
-                            style: const TextStyle(
-                              color: Color(0xFF0A6BE8),
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              _SummaryCard(
+                filteredTotal: filteredTotal,
+                transactionCount: filteredExpenses.length,
+                currency: currency,
+                privacyModeEnabled: privacyModeEnabled,
               ),
               const SizedBox(height: 18),
-              SizedBox(
-                height: 42,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: RecordsFilter.values.map((filter) {
-                    final isSelected = _selectedFilter == filter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: ChoiceChip(
-                        label: Text(_labelForFilter(filter)),
-                        selected: isSelected,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedFilter = filter;
-                          });
-                        },
-                        selectedColor: AppColors.primaryBlue,
-                        backgroundColor: AppColors.lightBlueBg,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF48607E),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    );
-                  }).toList(growable: false),
-                ),
+              _FilterChips(
+                selectedFilter: _selectedFilter,
+                onFilterSelected: (filter) {
+                  setState(() {
+                    _selectedFilter = filter;
+                  });
+                },
+                labelForFilter: _labelForFilter,
               ),
               const SizedBox(height: 14),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: PopupMenuButton<String>(
-                  color: Colors.white,
-                  onSelected: (value) {
-                    setState(() {
-                      _selectedAccountFilter = value;
-                    });
-                  },
-                  itemBuilder: (context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: _allAccountsKey,
-                      child: Text('All accounts'),
-                    ),
-                    ...accounts.map((account) {
-                      return PopupMenuItem<String>(
-                        value: account.id,
-                        child: Text(account.name),
-                      );
-                    }),
-                  ],
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: const <BoxShadow>[
-                        BoxShadow(
-                          color: AppColors.cardShadow,
-                          blurRadius: 18,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const Icon(
-                          Icons.account_balance_wallet_outlined,
-                          size: 18,
-                          color: AppColors.primaryBlue,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _accountFilterLabel(accounts),
-                          style: const TextStyle(
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: AppColors.textMuted,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              _AccountDropdown(
+                accounts: accounts,
+                onAccountSelected: (value) {
+                  setState(() {
+                    _selectedAccountFilter = value;
+                  });
+                },
+                allAccountsKey: _allAccountsKey,
+                accountFilterLabel: _accountFilterLabel(accounts),
               ),
               const SizedBox(height: 18),
               Expanded(
@@ -259,60 +108,23 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                             'The transaction history is not available right now.',
                       )
                     : expenseState.isLoading && expenses.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
-                        : filteredExpenses.isEmpty
-                            ? const _StateCard(
-                                title: 'No matching transactions',
-                                message:
-                                    'Try another filter or add a new expense.',
-                              )
-                            : ListView(
-                                children: groupedExpenses.entries.map((entry) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 18),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 10,
-                                          ),
-                                          child: Text(
-                                            _groupLabel(entry.key),
-                                            style: const TextStyle(
-                                              color: AppColors.primaryBlue,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ),
-                                        ...entry.value.map((expense) {
-                                          return TransactionCard(
-                                            expense: expense,
-                                            accountLabel: _accountLabelFor(
-                                              expense,
-                                              accounts,
-                                            ),
-                                            maskAmounts: privacyModeEnabled,
-                                            onEdit: () =>
-                                                _openEditExpenseScreen(
-                                              context,
-                                              expense,
-                                            ),
-                                            onDelete: () =>
-                                                _confirmDeleteExpense(
-                                              context,
-                                              ref,
-                                              expense,
-                                            ),
-                                          );
-                                        }),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(growable: false),
-                              ),
+                    ? const Center(child: CircularProgressIndicator())
+                    : filteredExpenses.isEmpty
+                    ? const _StateCard(
+                        title: 'No matching transactions',
+                        message: 'Try another filter or add a new expense.',
+                      )
+                    : _ExpenseList(
+                        groupedExpenses: groupedExpenses,
+                        accounts: accounts,
+                        privacyModeEnabled: privacyModeEnabled,
+                        groupLabel: _groupLabel,
+                        accountLabelFor: _accountLabelFor,
+                        onEdit: (expense) =>
+                            _openEditExpenseScreen(context, expense),
+                        onDelete: (expense) =>
+                            _confirmDeleteExpense(context, ref, expense),
+                      ),
               ),
             ],
           ),
@@ -326,29 +138,33 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
     final today = DateUtils.dateOnly(now);
     final weekStart = today.subtract(Duration(days: now.weekday - 1));
 
-    return expenses.where((expense) {
-      final localDate = expense.date.toLocal();
-      final dateOnly = DateUtils.dateOnly(localDate);
-      final matchesAccount = _selectedAccountFilter == _allAccountsKey ||
-          expense.accountId == _selectedAccountFilter;
+    return expenses
+        .where((expense) {
+          final localDate = expense.date.toLocal();
+          final dateOnly = DateUtils.dateOnly(localDate);
+          final matchesAccount =
+              _selectedAccountFilter == _allAccountsKey ||
+              expense.accountId == _selectedAccountFilter;
 
-      if (!matchesAccount) {
-        return false;
-      }
+          if (!matchesAccount) {
+            return false;
+          }
 
-      switch (_selectedFilter) {
-        case RecordsFilter.today:
-          return DateUtils.isSameDay(dateOnly, today);
-        case RecordsFilter.week:
-          return !dateOnly.isBefore(weekStart) && !dateOnly.isAfter(today);
-        case RecordsFilter.month:
-          return dateOnly.year == today.year && dateOnly.month == today.month;
-        case RecordsFilter.future:
-          return dateOnly.isAfter(today);
-        case RecordsFilter.all:
-          return true;
-      }
-    }).toList(growable: false)
+          switch (_selectedFilter) {
+            case RecordsFilter.today:
+              return DateUtils.isSameDay(dateOnly, today);
+            case RecordsFilter.week:
+              return !dateOnly.isBefore(weekStart) && !dateOnly.isAfter(today);
+            case RecordsFilter.month:
+              return dateOnly.year == today.year &&
+                  dateOnly.month == today.month;
+            case RecordsFilter.future:
+              return dateOnly.isAfter(today);
+            case RecordsFilter.all:
+              return true;
+          }
+        })
+        .toList(growable: false)
       ..sort((left, right) => right.date.compareTo(left.date));
   }
 
@@ -466,6 +282,278 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Transaction removed.')));
+  }
+}
+
+class _ExpenseList extends StatelessWidget {
+  const _ExpenseList({
+    required this.groupedExpenses,
+    required this.accounts,
+    required this.privacyModeEnabled,
+    required this.groupLabel,
+    required this.accountLabelFor,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final SplayTreeMap<DateTime, List<ExpenseModel>> groupedExpenses;
+  final List<AccountModel> accounts;
+  final bool privacyModeEnabled;
+  final String Function(DateTime) groupLabel;
+  final String? Function(ExpenseModel, List<AccountModel>) accountLabelFor;
+  final void Function(ExpenseModel) onEdit;
+  final void Function(ExpenseModel) onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: groupedExpenses.entries
+          .map((entry) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      groupLabel(entry.key),
+                      style: const TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  ...entry.value.map((expense) {
+                    return TransactionCard(
+                      expense: expense,
+                      accountLabel: accountLabelFor(expense, accounts),
+                      maskAmounts: privacyModeEnabled,
+                      onEdit: () => onEdit(expense),
+                      onDelete: () => onDelete(expense),
+                    );
+                  }),
+                ],
+              ),
+            );
+          })
+          .toList(growable: false),
+    );
+  }
+}
+
+class _AccountDropdown extends StatelessWidget {
+  const _AccountDropdown({
+    required this.accounts,
+    required this.onAccountSelected,
+    required this.allAccountsKey,
+    required this.accountFilterLabel,
+  });
+
+  final List<AccountModel> accounts;
+  final ValueChanged<String> onAccountSelected;
+  final String allAccountsKey;
+  final String accountFilterLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: PopupMenuButton<String>(
+        color: Colors.white,
+        onSelected: onAccountSelected,
+        itemBuilder: (context) => <PopupMenuEntry<String>>[
+          PopupMenuItem<String>(
+            value: allAccountsKey,
+            child: const Text('All accounts'),
+          ),
+          ...accounts.map((account) {
+            return PopupMenuItem<String>(
+              value: account.id,
+              child: Text(account.name),
+            );
+          }),
+        ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: AppColors.cardShadow,
+                blurRadius: 18,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 18,
+                color: AppColors.primaryBlue,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                accountFilterLabel,
+                style: const TextStyle(
+                  color: AppColors.textDark,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textMuted,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChips extends StatelessWidget {
+  const _FilterChips({
+    required this.selectedFilter,
+    required this.onFilterSelected,
+    required this.labelForFilter,
+  });
+
+  final RecordsFilter selectedFilter;
+  final ValueChanged<RecordsFilter> onFilterSelected;
+  final String Function(RecordsFilter) labelForFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 42,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: RecordsFilter.values
+            .map((filter) {
+              final isSelected = selectedFilter == filter;
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: ChoiceChip(
+                  label: Text(labelForFilter(filter)),
+                  selected: isSelected,
+                  onSelected: (_) => onFilterSelected(filter),
+                  selectedColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.lightBlueBg,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF48607E),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+            })
+            .toList(growable: false),
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.filteredTotal,
+    required this.transactionCount,
+    required this.currency,
+    required this.privacyModeEnabled,
+  });
+
+  final double filteredTotal;
+  final int transactionCount;
+  final NumberFormat currency;
+  final bool privacyModeEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: const <BoxShadow>[
+          BoxShadow(
+            color: Color(0x1209386D),
+            blurRadius: 22,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text(
+                  'Filtered Net',
+                  style: TextStyle(
+                    color: Color(0xFF0A6BE8),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    formatSignedAmount(
+                      filteredTotal,
+                      currency,
+                      masked: privacyModeEnabled,
+                    ),
+                    style: TextStyle(
+                      color: filteredTotal >= 0
+                          ? const Color(0xFF1DAA63)
+                          : const Color(0xFFFF446D),
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF5FF),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: <Widget>[
+                const Text(
+                  'TXNS',
+                  style: TextStyle(
+                    color: Color(0xFF7A8BA8),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$transactionCount',
+                  style: const TextStyle(
+                    color: Color(0xFF0A6BE8),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
