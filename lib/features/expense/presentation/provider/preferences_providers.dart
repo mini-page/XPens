@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workmanager/workmanager.dart';
@@ -25,8 +26,8 @@ final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
 
 final appPreferencesProvider =
     AsyncNotifierProvider<AppPreferencesNotifier, AppPreferencesModel>(
-  AppPreferencesNotifier.new,
-);
+      AppPreferencesNotifier.new,
+    );
 
 final appPreferencesControllerProvider = Provider<AppPreferencesController>((
   ref,
@@ -78,7 +79,8 @@ final lastBackupDateTimeProvider = Provider<DateTime?>((ref) {
 });
 
 final appThemeModeProvider = Provider<ThemeMode>((ref) {
-  final key = ref.watch(appPreferencesProvider).value?.themeModeKey ??
+  final key =
+      ref.watch(appPreferencesProvider).value?.themeModeKey ??
       AppPreferencesModel.defaults.themeModeKey;
   switch (key) {
     case 'dark':
@@ -99,12 +101,14 @@ class AppPreferencesNotifier extends AsyncNotifier<AppPreferencesModel> {
     try {
       return await _repository.getPreferences();
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to fetch preferences',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'AppPreferencesNotifier',
-      );
+      if (kDebugMode) {
+        dev.log(
+          'Failed to fetch preferences',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'AppPreferencesNotifier',
+        );
+      }
       return AppPreferencesModel.defaults;
     }
   }
@@ -211,10 +215,12 @@ class AppPreferencesController {
   Future<void> setBackupDirectory(String? path) async {
     await _ref
         .read(appPreferencesProvider.notifier)
-        .save(_current.copyWith(
-          backupDirectoryPath: path,
-          clearBackupDirectory: path == null,
-        ));
+        .save(
+          _current.copyWith(
+            backupDirectoryPath: path,
+            clearBackupDirectory: path == null,
+          ),
+        );
   }
 
   Future<void> setLastBackup(DateTime dateTime) async {
@@ -230,7 +236,9 @@ class AppPreferencesController {
     required bool smartRemindersEnabled,
     required bool isOnboardingCompleted,
   }) async {
-    await _ref.read(appPreferencesProvider.notifier).save(
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(
           _current.copyWith(
             themeModeKey: themeModeKey,
             locale: locale,

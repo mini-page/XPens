@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasource/budget_local_datasource.dart';
@@ -26,8 +27,8 @@ final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
 
 final budgetTargetsProvider =
     AsyncNotifierProvider<BudgetTargetsNotifier, Map<String, double>>(
-  BudgetTargetsNotifier.new,
-);
+      BudgetTargetsNotifier.new,
+    );
 
 final budgetControllerProvider = Provider<BudgetController>((ref) {
   return BudgetController(ref);
@@ -46,12 +47,14 @@ class BudgetTargetsNotifier extends AsyncNotifier<Map<String, double>> {
       }
       return merged;
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to fetch or merge budgets',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'BudgetTargetsNotifier',
-      );
+      if (kDebugMode) {
+        dev.log(
+          'Failed to fetch or merge budgets',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'BudgetTargetsNotifier',
+        );
+      }
       return <String, double>{...defaultBudgetTargets};
     }
   }

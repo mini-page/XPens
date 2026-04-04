@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasource/account_local_datasource.dart';
@@ -24,8 +25,8 @@ final accountRepositoryProvider = Provider<AccountRepository>((ref) {
 
 final accountListProvider =
     AsyncNotifierProvider<AccountListNotifier, List<AccountModel>>(
-  AccountListNotifier.new,
-);
+      AccountListNotifier.new,
+    );
 
 final accountControllerProvider = Provider<AccountController>((ref) {
   return AccountController(ref);
@@ -55,31 +56,37 @@ class AccountListNotifier extends AsyncNotifier<List<AccountModel>> {
         return accounts;
       }
 
-      final seededAccounts = defaultAccounts.map((seed) {
-        return AccountModel.create(
-          name: seed.name,
-          iconKey: seed.iconKey,
-          balance: seed.balance,
-        );
-      }).toList(growable: false);
+      final seededAccounts = defaultAccounts
+          .map((seed) {
+            return AccountModel.create(
+              name: seed.name,
+              iconKey: seed.iconKey,
+              balance: seed.balance,
+            );
+          })
+          .toList(growable: false);
 
       await _repository.saveAccounts(seededAccounts);
 
       return seededAccounts;
     } catch (e, stackTrace) {
-      dev.log(
-        'Failed to fetch or seed accounts',
-        error: e,
-        stackTrace: stackTrace,
-        name: 'AccountListNotifier',
-      );
-      return defaultAccounts.map((seed) {
-        return AccountModel.create(
-          name: seed.name,
-          iconKey: seed.iconKey,
-          balance: seed.balance,
+      if (kDebugMode) {
+        dev.log(
+          'Failed to fetch or seed accounts',
+          error: e,
+          stackTrace: stackTrace,
+          name: 'AccountListNotifier',
         );
-      }).toList(growable: false);
+      }
+      return defaultAccounts
+          .map((seed) {
+            return AccountModel.create(
+              name: seed.name,
+              iconKey: seed.iconKey,
+              balance: seed.balance,
+            );
+          })
+          .toList(growable: false);
     }
   }
 
