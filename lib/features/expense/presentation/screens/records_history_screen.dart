@@ -161,29 +161,31 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                 height: 42,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  children: RecordsFilter.values.map((filter) {
-                    final isSelected = _selectedFilter == filter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: ChoiceChip(
-                        label: Text(_labelForFilter(filter)),
-                        selected: isSelected,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedFilter = filter;
-                          });
-                        },
-                        selectedColor: AppColors.primaryBlue,
-                        backgroundColor: AppColors.lightBlueBg,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF48607E),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    );
-                  }).toList(growable: false),
+                  children: RecordsFilter.values
+                      .map((filter) {
+                        final isSelected = _selectedFilter == filter;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ChoiceChip(
+                            label: Text(_labelForFilter(filter)),
+                            selected: isSelected,
+                            onSelected: (_) {
+                              setState(() {
+                                _selectedFilter = filter;
+                              });
+                            },
+                            selectedColor: AppColors.primaryBlue,
+                            backgroundColor: AppColors.lightBlueBg,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF48607E),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        );
+                      })
+                      .toList(growable: false),
                 ),
               ),
               const SizedBox(height: 14),
@@ -259,60 +261,58 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                             'The transaction history is not available right now.',
                       )
                     : expenseState.isLoading && expenses.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
-                        : filteredExpenses.isEmpty
-                            ? const _StateCard(
-                                title: 'No matching transactions',
-                                message:
-                                    'Try another filter or add a new expense.',
-                              )
-                            : ListView(
-                                children: groupedExpenses.entries.map((entry) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 18),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 10,
-                                          ),
-                                          child: Text(
-                                            _groupLabel(entry.key),
-                                            style: const TextStyle(
-                                              color: AppColors.primaryBlue,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
+                    ? const Center(child: CircularProgressIndicator())
+                    : filteredExpenses.isEmpty
+                    ? const _StateCard(
+                        title: 'No matching transactions',
+                        message: 'Try another filter or add a new expense.',
+                      )
+                    : ListView(
+                        children: groupedExpenses.entries
+                            .map((entry) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 18),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 10,
+                                      ),
+                                      child: Text(
+                                        _groupLabel(entry.key),
+                                        style: const TextStyle(
+                                          color: AppColors.primaryBlue,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w900,
                                         ),
-                                        ...entry.value.map((expense) {
-                                          return TransactionCard(
-                                            expense: expense,
-                                            accountLabel: _accountLabelFor(
-                                              expense,
-                                              accounts,
-                                            ),
-                                            maskAmounts: privacyModeEnabled,
-                                            onEdit: () =>
-                                                _openEditExpenseScreen(
-                                              context,
-                                              expense,
-                                            ),
-                                            onDelete: () =>
-                                                _confirmDeleteExpense(
-                                              context,
-                                              ref,
-                                              expense,
-                                            ),
-                                          );
-                                        }),
-                                      ],
+                                      ),
                                     ),
-                                  );
-                                }).toList(growable: false),
-                              ),
+                                    ...entry.value.map((expense) {
+                                      return TransactionCard(
+                                        expense: expense,
+                                        accountLabel: _accountLabelFor(
+                                          expense,
+                                          accounts,
+                                        ),
+                                        maskAmounts: privacyModeEnabled,
+                                        onEdit: () => _openEditExpenseScreen(
+                                          context,
+                                          expense,
+                                        ),
+                                        onDelete: () => _confirmDeleteExpense(
+                                          context,
+                                          ref,
+                                          expense,
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              );
+                            })
+                            .toList(growable: false),
+                      ),
               ),
             ],
           ),
@@ -322,33 +322,53 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
   }
 
   List<ExpenseModel> _filterExpenses(List<ExpenseModel> expenses) {
-    final now = DateTime.now();
-    final today = DateUtils.dateOnly(now);
-    final weekStart = today.subtract(Duration(days: now.weekday - 1));
+    final nowLocal = DateTime.now();
+    final todayLocal = DateUtils.dateOnly(nowLocal);
 
-    return expenses.where((expense) {
-      final localDate = expense.date.toLocal();
-      final dateOnly = DateUtils.dateOnly(localDate);
-      final matchesAccount = _selectedAccountFilter == _allAccountsKey ||
-          expense.accountId == _selectedAccountFilter;
+    DateTime? startBoundLocal;
+    DateTime? endBoundLocal;
 
-      if (!matchesAccount) {
-        return false;
-      }
+    switch (_selectedFilter) {
+      case RecordsFilter.today:
+        startBoundLocal = todayLocal;
+        endBoundLocal = todayLocal.add(const Duration(days: 1));
+      case RecordsFilter.week:
+        startBoundLocal = todayLocal.subtract(
+          Duration(days: nowLocal.weekday - 1),
+        );
+        endBoundLocal = todayLocal.add(const Duration(days: 1));
+      case RecordsFilter.month:
+        startBoundLocal = DateTime(todayLocal.year, todayLocal.month, 1);
+        endBoundLocal = DateTime(todayLocal.year, todayLocal.month + 1, 1);
+      case RecordsFilter.future:
+        startBoundLocal = todayLocal.add(const Duration(days: 1));
+        endBoundLocal = null;
+      case RecordsFilter.all:
+        startBoundLocal = null;
+        endBoundLocal = null;
+    }
 
-      switch (_selectedFilter) {
-        case RecordsFilter.today:
-          return DateUtils.isSameDay(dateOnly, today);
-        case RecordsFilter.week:
-          return !dateOnly.isBefore(weekStart) && !dateOnly.isAfter(today);
-        case RecordsFilter.month:
-          return dateOnly.year == today.year && dateOnly.month == today.month;
-        case RecordsFilter.future:
-          return dateOnly.isAfter(today);
-        case RecordsFilter.all:
+    final startBoundUtc = startBoundLocal?.toUtc();
+    final endBoundUtc = endBoundLocal?.toUtc();
+
+    final filterByAccount = _selectedAccountFilter != _allAccountsKey;
+
+    return expenses
+        .where((expense) {
+          if (filterByAccount && expense.accountId != _selectedAccountFilter) {
+            return false;
+          }
+
+          if (startBoundUtc != null && expense.date.isBefore(startBoundUtc)) {
+            return false;
+          }
+          if (endBoundUtc != null && !expense.date.isBefore(endBoundUtc)) {
+            return false;
+          }
+
           return true;
-      }
-    }).toList(growable: false)
+        })
+        .toList(growable: false)
       ..sort((left, right) => right.date.compareTo(left.date));
   }
 
