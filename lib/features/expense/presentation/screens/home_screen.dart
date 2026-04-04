@@ -551,9 +551,17 @@ class _DateStripCard extends StatelessWidget {
                   ),
                 ),
               ),
-              _DateNavButton(icon: Icons.arrow_back_rounded, onTap: onPrevious),
+              _DateNavButton(
+                icon: Icons.arrow_back_rounded,
+                tooltip: 'Previous week',
+                onTap: onPrevious,
+              ),
               const SizedBox(width: 8),
-              _DateNavButton(icon: Icons.arrow_forward_rounded, onTap: onNext),
+              _DateNavButton(
+                icon: Icons.arrow_forward_rounded,
+                tooltip: 'Next week',
+                onTap: onNext,
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -625,23 +633,35 @@ class _DateStripCard extends StatelessWidget {
 }
 
 class _DateNavButton extends StatelessWidget {
-  const _DateNavButton({required this.icon, required this.onTap});
+  const _DateNavButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
 
   final IconData icon;
+  final String tooltip;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surfaceMuted,
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: SizedBox(
-          width: 36,
-          height: 36,
-          child: Icon(icon, size: 18, color: AppColors.textMuted),
+    return Semantics(
+      button: true,
+      label: tooltip,
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: AppColors.surfaceMuted,
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: SizedBox(
+              width: kMinInteractiveDimension,
+              height: kMinInteractiveDimension,
+              child: Icon(icon, size: 18, color: AppColors.textMuted),
+            ),
+          ),
         ),
       ),
     );
