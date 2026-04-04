@@ -294,6 +294,7 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
                                         expense: expense,
                                         accountLabel: _accountLabelFor(
                                           expense,
+                                          accounts,
                                           accountMap,
                                         ),
                                         maskAmounts: privacyModeEnabled,
@@ -323,6 +324,56 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
   }
 
   List<ExpenseModel> _filterExpenses(List<ExpenseModel> expenses) {
+    final nowLocal = DateTime.now();
+    final todayLocal = DateUtils.dateOnly(nowLocal);
+
+    DateTime? startBoundLocal;
+    DateTime? endBoundLocal;
+
+    switch (_selectedFilter) {
+      case RecordsFilter.today:
+        startBoundLocal = todayLocal;
+        endBoundLocal = todayLocal.add(const Duration(days: 1));
+        break;
+      case RecordsFilter.week:
+        startBoundLocal = todayLocal.subtract(
+          Duration(days: nowLocal.weekday - 1),
+        );
+        endBoundLocal = todayLocal.add(const Duration(days: 1));
+        break;
+      case RecordsFilter.month:
+        startBoundLocal = DateTime(todayLocal.year, todayLocal.month, 1);
+        endBoundLocal = DateTime(todayLocal.year, todayLocal.month + 1, 1);
+        break;
+      case RecordsFilter.future:
+        startBoundLocal = todayLocal.add(const Duration(days: 1));
+        endBoundLocal = null;
+        break;
+      case RecordsFilter.all:
+        startBoundLocal = null;
+        endBoundLocal = null;
+        break;
+    }
+
+    final startBoundUtc = startBoundLocal?.toUtc();
+    final endBoundUtc = endBoundLocal?.toUtc();
+
+    final filterByAccount = _selectedAccountFilter != _allAccountsKey;
+
+    return expenses
+        .where((expense) {
+          if (filterByAccount && expense.accountId != _selectedAccountFilter) {
+            return false;
+          }
+
+          if (startBoundUtc != null && expense.date.isBefore(startBoundUtc)) {
+            return false;
+          }
+          if (endBoundUtc != null && !expense.date.isBefore(endBoundUtc)) {
+            return false;
+          }
+
+          return true;
     final now = DateTime.now();
     final today = DateUtils.dateOnly(now);
     final weekStart = today.subtract(Duration(days: now.weekday - 1));
