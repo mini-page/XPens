@@ -109,6 +109,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final selectedExpenseCat = resolveExpenseCategory(_selectedExpenseCategory);
     final selectedIncomeCat = resolveIncomeCategory(_selectedIncomeCategory);
     final selectedAccount = _resolveSelectedAccount(accounts);
+    final toAccount = _resolveToAccount(accounts);
     final amount = double.tryParse(_amountText) ?? 0;
     final locale = ref.watch(localeProvider);
     final symbol = ref.watch(currencySymbolProvider);
@@ -249,25 +250,63 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              if (_selectedType == TransactionType.transfer)
-                AddExpenseTransferBar(
-                  fromAccount: selectedAccount,
-                  toAccount: _resolveToAccount(accounts),
-                  onTapFrom: () => _pickAccount(accounts),
-                  onTapTo: () => _pickToAccount(accounts),
-                  enabled: accounts.isNotEmpty,
-                )
-              else
-                AddExpenseQuickBar(
-                  selectedAccount: selectedAccount,
-                  expenseCategory: selectedExpenseCat,
-                  incomeCategory: selectedIncomeCat,
-                  selectedType: _selectedType,
-                  onTapAccount: () => _pickAccount(accounts),
-                  onTapExpenseCategory: _tapExpenseCategory,
-                  onTapIncomeCategory: _tapIncomeCategory,
-                  accountEnabled: accounts.isNotEmpty,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  AddExpenseSelectionCapsule(
+                    icon: selectedAccount == null
+                        ? Icons.account_balance_wallet_outlined
+                        : resolveAccountIcon(selectedAccount.iconKey),
+                    iconColor: AppColors.primaryBlue,
+                    background: AppColors.lightBlueBg,
+                    label: selectedAccount?.name ?? 'No account',
+                    onTap: accounts.isNotEmpty
+                        ? () => _pickAccount(accounts)
+                        : null,
+                  ),
+                  if (_selectedType == TransactionType.transfer) ...<Widget>[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Icon(
+                        Icons.sync_alt_rounded,
+                        color: AppColors.primaryBlue,
+                        size: 20,
+                      ),
+                    ),
+                    AddExpenseSelectionCapsule(
+                      icon: toAccount == null
+                          ? Icons.account_balance_wallet_outlined
+                          : resolveAccountIcon(toAccount.iconKey),
+                      iconColor: AppColors.primaryBlue,
+                      background: AppColors.lightBlueBg,
+                      label: toAccount?.name ?? 'No account',
+                      onTap: accounts.isNotEmpty
+                          ? () => _pickToAccount(accounts)
+                          : null,
+                    ),
+                  ] else ...<Widget>[
+                    const SizedBox(width: 8),
+                    if (_selectedType == TransactionType.income)
+                      AddExpenseSelectionCapsule(
+                        icon: selectedIncomeCat.icon,
+                        iconColor: selectedIncomeCat.color,
+                        background:
+                            selectedIncomeCat.color.withValues(alpha: 0.15),
+                        label: selectedIncomeCat.name,
+                        onTap: _tapIncomeCategory,
+                      )
+                    else
+                      AddExpenseSelectionCapsule(
+                        icon: selectedExpenseCat.icon,
+                        iconColor: selectedExpenseCat.color,
+                        background:
+                            selectedExpenseCat.color.withValues(alpha: 0.15),
+                        label: selectedExpenseCat.name,
+                        onTap: _tapExpenseCategory,
+                      ),
+                  ],
+                ],
+              ),
               const Spacer(),
               GridView.count(
                 crossAxisCount: 3,
