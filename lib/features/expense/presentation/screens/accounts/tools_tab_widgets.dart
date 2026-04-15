@@ -13,8 +13,9 @@ import '../../widgets/split_bill_tool_view.dart';
 
 const _maxDisplayedFutureTransactions = 6;
 
-class ToolsTabHeader extends StatelessWidget {
-  const ToolsTabHeader({super.key});
+/// Tab bar for the Tools workspace sections.
+class ToolsTabBar extends StatelessWidget {
+  const ToolsTabBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +45,7 @@ class ToolsTabHeader extends StatelessWidget {
   }
 }
 
+/// Tab content for split, recurring, and future-transaction tools.
 class ToolsTabView extends StatelessWidget {
   const ToolsTabView({super.key});
 
@@ -70,6 +72,7 @@ class _ToolsTabPane extends StatelessWidget {
   }
 }
 
+/// Upcoming transactions that are dated after today.
 class FutureTransactionsToolView extends ConsumerWidget {
   const FutureTransactionsToolView({super.key});
 

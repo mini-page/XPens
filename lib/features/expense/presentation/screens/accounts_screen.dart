@@ -15,7 +15,7 @@ class AccountsScreen extends ConsumerWidget {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: ToolsTabHeader(),
+              child: ToolsTabBar(),
             ),
             Expanded(
               child: Padding(
