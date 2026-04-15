@@ -13,10 +13,10 @@ import '../../widgets/split_bill_tool_view.dart';
 
 const _maxDisplayedFutureTransactions = 6;
 
-/// Renders the Tools workspace tab bar with Split Expenses,
-/// Recurring Subscriptions, and Future Transactions tabs.
+/// Renders the Tools workspace tab bar with Split, Recurring, and Future tabs.
 ///
-/// This widget is immutable and exposes a `const` constructor.
+/// Tabs are non-scrollable and fill the full width so all three are always
+/// visible at a glance.
 class ToolsTabBar extends StatelessWidget {
   const ToolsTabBar({super.key});
 
@@ -28,7 +28,6 @@ class ToolsTabBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: TabBar(
-        isScrollable: true,
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
         indicator: BoxDecoration(
@@ -39,9 +38,9 @@ class ToolsTabBar extends StatelessWidget {
         unselectedLabelColor: AppColors.textMuted,
         labelStyle: const TextStyle(fontWeight: FontWeight.w800),
         tabs: const <Tab>[
-          Tab(text: 'Split Expenses'),
-          Tab(text: 'Recurring Subscriptions'),
-          Tab(text: 'Future Transactions'),
+          Tab(text: 'Split'),
+          Tab(text: 'Recurring'),
+          Tab(text: 'Future'),
         ],
       ),
     );
@@ -95,35 +94,86 @@ class FutureTransactionsToolView extends ConsumerWidget {
         .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
 
+    final hasMore = futureTransactions.length > _maxDisplayedFutureTransactions;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text(
-          'Future Transactions',
-          style: AppTextStyles.sectionHeading,
-        ),
-        const Text(
-          'Review and plan upcoming entries',
-          style: AppTextStyles.sectionSubtitle,
+        // Header row — title + add button (mirrors RecurringToolView pattern)
+        Row(
+          children: <Widget>[
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Future Transactions',
+                    style: AppTextStyles.sectionHeading,
+                  ),
+                  Text(
+                    'Review and plan upcoming entries',
+                    style: AppTextStyles.sectionSubtitle,
+                  ),
+                ],
+              ),
+            ),
+            IconButton.filled(
+              onPressed: () => AppRoutes.pushAddExpense(
+                context,
+                initialDate: today.add(const Duration(days: 1)),
+              ),
+              icon: const Icon(Icons.add_rounded),
+              tooltip: 'Add future transaction',
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
+
+        // Empty state — icon + message (no separate floating CTA)
         if (futureTransactions.isEmpty)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xl,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(AppRadii.xl),
             ),
-            child: const Text(
-              'No future transactions yet. Add a transaction with a future date to plan ahead.',
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              children: <Widget>[
+                const Icon(
+                  Icons.event_note_rounded,
+                  size: 48,
+                  color: AppColors.textMuted,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                const Text(
+                  'No upcoming transactions',
+                  style: TextStyle(
+                    color: AppColors.textDark,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                const Text(
+                  'Add a transaction with a future date to plan ahead.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           )
-        else
+        else ...<Widget>[
           ...futureTransactions.take(_maxDisplayedFutureTransactions).map((expense) {
             final signedAmount =
                 expense.isIncome ? expense.amount : -expense.amount;
@@ -177,22 +227,23 @@ class FutureTransactionsToolView extends ConsumerWidget {
               ),
             );
           }),
-        const SizedBox(height: AppSpacing.md),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: () => AppRoutes.pushAddExpense(
-              context,
-              initialDate: today.add(const Duration(days: 1)),
+
+          // "View all (N)" escape when the list is capped
+          if (hasMore)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => AppRoutes.pushRecordsHistory(context),
+                child: Text(
+                  'View all (${futureTransactions.length})',
+                  style: const TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
             ),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: Colors.white,
-            ),
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Add future transaction'),
-          ),
-        ),
+        ],
       ],
     );
   }
