@@ -29,7 +29,6 @@ class SettingsScreen extends ConsumerWidget {
     final smartReminders = ref.watch(smartRemindersEnabledProvider);
     final privacyMode = ref.watch(privacyModeEnabledProvider);
     final isPinEnabled = ref.watch(isPinEnabledProvider);
-    final biometricEnabled = ref.watch(biometricLockEnabledProvider);
     final displayName = ref.watch(displayNameProvider);
     final themeMode = ref.watch(appThemeModeProvider);
     final locale = ref.watch(localeProvider);

@@ -65,7 +65,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Locale-aware quick amounts (H4)
     final locale = ref.watch(localeProvider);
-    final currencySymbol = ref.watch(currencySymbolProvider);
     final quickAmounts = _localeQuickAmounts(locale);
 
     return SingleChildScrollView(

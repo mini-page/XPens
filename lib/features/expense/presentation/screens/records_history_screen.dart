@@ -447,11 +447,9 @@ class _RecordsHistoryScreenState extends ConsumerState<RecordsHistoryScreen> {
       buffer.writeln('$date,$type,$category,$note,$amount,$tags');
     }
 
-    await SharePlus.instance.share(
-      ShareParams(
-        text: buffer.toString(),
-        subject: 'XPensa Transactions Export',
-      ),
+    await Share.share(
+      buffer.toString(),
+      subject: 'XPensa Transactions Export',
     );
   }
 
