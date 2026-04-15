@@ -16,6 +16,7 @@ Future<BudgetFormResult?> showBudgetEditorSheet(
   required List<ExpenseCategory> categories,
   required String initialCategory,
   required double initialAmount,
+  required String currencySymbol,
 }) {
   return showModalBottomSheet<BudgetFormResult>(
     context: context,
@@ -26,6 +27,7 @@ Future<BudgetFormResult?> showBudgetEditorSheet(
         categories: categories,
         initialCategory: initialCategory,
         initialAmount: initialAmount,
+        currencySymbol: currencySymbol,
       );
     },
   );
@@ -36,11 +38,13 @@ class _BudgetEditorSheet extends StatefulWidget {
     required this.categories,
     required this.initialCategory,
     required this.initialAmount,
+    required this.currencySymbol,
   });
 
   final List<ExpenseCategory> categories;
   final String initialCategory;
   final double initialAmount;
+  final String currencySymbol;
 
   @override
   State<_BudgetEditorSheet> createState() => _BudgetEditorSheetState();
@@ -132,7 +136,7 @@ class _BudgetEditorSheetState extends State<_BudgetEditorSheet> {
               ),
               decoration: _inputDecoration(
                 'Monthly limit',
-              ).copyWith(prefixText: '₹ '),
+              ).copyWith(prefixText: '${widget.currencySymbol} '),
             ),
             const SizedBox(height: 20),
             SizedBox(

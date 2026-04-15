@@ -2,6 +2,7 @@
 ///
 /// Import this barrel to access all settings-related screens, widgets, and
 /// providers.
+library;
 
 // Presentation – screens
 export '../expense/presentation/screens/settings_screen.dart';

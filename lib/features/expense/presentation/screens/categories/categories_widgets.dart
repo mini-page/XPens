@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../shared/widgets/app_pill_switch.dart';
+import '../../../../../core/theme/app_tokens.dart';
 
-/// Two-option pill toggle for switching between expense/income categories.
-///
-/// Thin wrapper around the shared [AppPillSwitch] that preserves the
-/// existing call-site API.
-typedef CategoriesPillSwitch = AppPillSwitch;
-
-/// A single category grid cell showing spend amount and optional budget detail.
 class CategoryGridCard extends StatelessWidget {
   const CategoryGridCard({
     super.key,
@@ -17,109 +10,173 @@ class CategoryGridCard extends StatelessWidget {
     required this.icon,
     required this.tone,
     required this.amount,
-    required this.actionLabel,
-    required this.onTap,
-    this.detail,
+    required this.progress,
+    required this.isEnabled,
+    required this.onToggle,
+    this.onTap,
+    this.progressLabel,
+    this.amountColor,
   });
 
   final String title;
   final IconData icon;
   final Color tone;
   final String amount;
-  final String? detail;
-  final String actionLabel;
+  final String? progressLabel;
+  final double progress;
+  final bool isEnabled;
+  final VoidCallback? onTap;
+  final ValueChanged<bool> onToggle;
+  final Color? amountColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedAmountColor = amountColor ?? AppColors.textDark;
+    final resolvedProgressColor = isEnabled ? tone : AppColors.disabledContent;
+    final radius = BorderRadius.circular(AppRadii.lg);
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: isEnabled ? 1 : 0.6,
+      child: Material(
+        color: Colors.white,
+        borderRadius: radius,
+        shadowColor: AppColors.cardShadow,
+        elevation: 2,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    _IconBadge(icon: icon, tone: tone, enabled: isEnabled),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    _MiniToggle(
+                      value: isEnabled,
+                      activeColor: AppColors.primaryBlue,
+                      onChanged: onToggle,
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  amount,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: resolvedAmountColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
+                  ),
+                ),
+                if (progressLabel != null) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    progressLabel!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.xs),
+                _ProgressBar(value: progress, color: resolvedProgressColor),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AddCategoryCard extends StatelessWidget {
+  const AddCategoryCard({
+    super.key,
+    required this.onTap,
+    required this.title,
+    required this.detail,
+  });
+
   final VoidCallback onTap;
+  final String title;
+  final String detail;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: tone.withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(22),
-      child: Semantics(
-        button: true,
-        label: 'Category details for $title',
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
-          child: Stack(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(AppRadii.lg),
+      shadowColor: AppColors.cardShadow,
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: tone.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(icon, color: Colors.white, size: 22),
-                    ),
-                    const Spacer(),
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF16233C),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        amount,
-                        style: const TextStyle(
-                          color: Color(0xFF0A6BE8),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                    if (detail != null) ...<Widget>[
-                      const SizedBox(height: 2),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          detail!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Color(0xFF6C7D99),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.lightBlueBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: AppColors.primaryBlue,
+                  size: 22,
                 ),
               ),
-              Positioned(
-                top: 6,
-                right: 2,
-                child: PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert_rounded,
-                    color: tone.withValues(alpha: 0.7),
-                    size: 20,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  color: Colors.white,
-                  onSelected: (_) => onTap(),
-                  itemBuilder: (context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'primary',
-                      child: Text(actionLabel),
-                    ),
-                  ],
+              const Spacer(),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textDark,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                detail,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  height: 1.3,
                 ),
               ),
             ],
@@ -130,43 +187,142 @@ class CategoryGridCard extends StatelessWidget {
   }
 }
 
-/// "Add category" placeholder cell in the grid.
-class AddCategoryCard extends StatelessWidget {
-  const AddCategoryCard({super.key, required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xFFD8DFE9),
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: const Center(
-          child: Icon(Icons.add_rounded, color: AppColors.textMuted, size: 40),
-        ),
-      ),
-    );
-  }
-}
-
-/// Data object for a single category grid cell.
 class CategoryGridData {
   const CategoryGridData({
     required this.title,
     required this.icon,
     required this.tone,
     required this.amount,
-    required this.onTap,
-    this.budget = 0,
+    required this.progress,
+    required this.isEnabled,
+    required this.onToggle,
+    this.onTap,
+    this.progressLabel,
+    this.amountColor,
   });
 
   final String title;
   final IconData icon;
   final Color tone;
   final double amount;
-  final double budget;
-  final VoidCallback onTap;
+  final double progress;
+  final bool isEnabled;
+  final String? progressLabel;
+  final VoidCallback? onTap;
+  final ValueChanged<bool> onToggle;
+  final Color? amountColor;
+}
+
+class _IconBadge extends StatelessWidget {
+  const _IconBadge({
+    required this.icon,
+    required this.tone,
+    required this.enabled,
+  });
+
+  final IconData icon;
+  final Color tone;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: (enabled ? tone : AppColors.textMuted).withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(
+        icon,
+        color: enabled ? tone : AppColors.textMuted,
+        size: 20,
+      ),
+    );
+  }
+}
+
+class _ProgressBar extends StatelessWidget {
+  const _ProgressBar({
+    required this.value,
+    required this.color,
+  });
+
+  final double value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final clamped = value.clamp(0.0, 1.0);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: SizedBox(
+        height: 7,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            Container(color: AppColors.backgroundLight),
+            FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: clamped,
+              child: Container(color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniToggle extends StatelessWidget {
+  const _MiniToggle({
+    required this.value,
+    required this.activeColor,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final Color activeColor;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      toggled: value,
+      child: GestureDetector(
+        onTap: () => onChanged(!value),
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          width: 42,
+          height: 24,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: value ? activeColor : AppColors.backgroundLight,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 160),
+            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: const <BoxShadow>[
+                  BoxShadow(
+                    color: AppColors.cardShadow,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

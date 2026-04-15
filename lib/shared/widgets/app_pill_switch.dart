@@ -64,7 +64,7 @@ class _PillOption extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 13),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primaryBlue : Colors.transparent,
             borderRadius: BorderRadius.circular(18),
@@ -75,7 +75,7 @@ class _PillOption extends StatelessWidget {
             style: TextStyle(
               color: isSelected ? Colors.white : AppColors.textMuted,
               fontWeight: FontWeight.w800,
-              fontSize: 16,
+              fontSize: 15,
             ),
           ),
         ),

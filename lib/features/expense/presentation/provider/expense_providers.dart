@@ -9,6 +9,7 @@ import '../../data/models/expense_model.dart';
 import '../../data/repositories/hive_expense_repository.dart';
 import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/expense_repository.dart';
+import '../../presentation/screens/stats/stats_widgets.dart';
 import 'account_providers.dart';
 
 final expenseLocalDatasourceProvider = Provider<ExpenseLocalDatasource>((ref) {
@@ -59,6 +60,12 @@ final statsProvider = Provider<ExpenseStats>((ref) {
   final expenses =
       ref.watch(expenseListProvider).value ?? const <ExpenseModel>[];
   return ExpenseStats.fromExpenses(expenses);
+});
+
+final analyticsSnapshotProvider = Provider<AnalyticsSnapshot>((ref) {
+  final expenses =
+      ref.watch(expenseListProvider).value ?? const <ExpenseModel>[];
+  return AnalyticsSnapshot.fromExpenses(expenses);
 });
 
 class ExpenseListNotifier extends AsyncNotifier<List<ExpenseModel>> {

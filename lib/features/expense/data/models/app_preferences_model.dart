@@ -12,6 +12,9 @@ class AppPreferencesModel {
     this.backupFrequency = 'daily',
     this.backupDirectoryPath,
     this.lastBackupDateTime,
+    this.disabledExpenseCategories = const <String>[],
+    this.disabledIncomeCategories = const <String>[],
+    this.disabledAccountIds = const <String>[],
   });
 
   static const AppPreferencesModel defaults = AppPreferencesModel(
@@ -23,6 +26,9 @@ class AppPreferencesModel {
     isOnboardingCompleted: false,
     autoBackupEnabled: false,
     backupFrequency: 'daily',
+    disabledExpenseCategories: <String>[],
+    disabledIncomeCategories: <String>[],
+    disabledAccountIds: <String>[],
   );
 
   final String themeModeKey;
@@ -35,6 +41,9 @@ class AppPreferencesModel {
   final String backupFrequency;
   final String? backupDirectoryPath;
   final DateTime? lastBackupDateTime;
+  final List<String> disabledExpenseCategories;
+  final List<String> disabledIncomeCategories;
+  final List<String> disabledAccountIds;
 
   AppPreferencesModel copyWith({
     String? themeModeKey,
@@ -47,6 +56,9 @@ class AppPreferencesModel {
     String? backupFrequency,
     String? backupDirectoryPath,
     DateTime? lastBackupDateTime,
+    List<String>? disabledExpenseCategories,
+    List<String>? disabledIncomeCategories,
+    List<String>? disabledAccountIds,
     bool clearBackupDirectory = false,
   }) {
     return AppPreferencesModel(
@@ -60,8 +72,15 @@ class AppPreferencesModel {
           isOnboardingCompleted ?? this.isOnboardingCompleted,
       autoBackupEnabled: autoBackupEnabled ?? this.autoBackupEnabled,
       backupFrequency: backupFrequency ?? this.backupFrequency,
-      backupDirectoryPath: clearBackupDirectory ? null : (backupDirectoryPath ?? this.backupDirectoryPath),
+      backupDirectoryPath: clearBackupDirectory
+          ? null
+          : (backupDirectoryPath ?? this.backupDirectoryPath),
       lastBackupDateTime: lastBackupDateTime ?? this.lastBackupDateTime,
+      disabledExpenseCategories:
+          disabledExpenseCategories ?? this.disabledExpenseCategories,
+      disabledIncomeCategories:
+          disabledIncomeCategories ?? this.disabledIncomeCategories,
+      disabledAccountIds: disabledAccountIds ?? this.disabledAccountIds,
     );
   }
 }
@@ -81,11 +100,18 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
     // Defaults for existing fields
     String locale = AppPreferencesModel.defaults.locale;
     String currencySymbol = AppPreferencesModel.defaults.currencySymbol;
-    bool isOnboardingCompleted = AppPreferencesModel.defaults.isOnboardingCompleted;
+    bool isOnboardingCompleted =
+        AppPreferencesModel.defaults.isOnboardingCompleted;
     bool autoBackupEnabled = AppPreferencesModel.defaults.autoBackupEnabled;
     String backupFrequency = AppPreferencesModel.defaults.backupFrequency;
     String? backupDirectoryPath;
     DateTime? lastBackupDateTime;
+    List<String> disabledExpenseCategories =
+        AppPreferencesModel.defaults.disabledExpenseCategories;
+    List<String> disabledIncomeCategories =
+        AppPreferencesModel.defaults.disabledIncomeCategories;
+    List<String> disabledAccountIds =
+        AppPreferencesModel.defaults.disabledAccountIds;
 
     try {
       if (reader.availableBytes > 0) locale = reader.readString();
@@ -99,7 +125,17 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       }
       if (reader.availableBytes > 0) {
         final millis = reader.readInt();
-        lastBackupDateTime = millis == 0 ? null : DateTime.fromMillisecondsSinceEpoch(millis);
+        lastBackupDateTime =
+            millis == 0 ? null : DateTime.fromMillisecondsSinceEpoch(millis);
+      }
+      if (reader.availableBytes > 0) {
+        disabledExpenseCategories = _readStringList(reader);
+      }
+      if (reader.availableBytes > 0) {
+        disabledIncomeCategories = _readStringList(reader);
+      }
+      if (reader.availableBytes > 0) {
+        disabledAccountIds = _readStringList(reader);
       }
     } catch (_) {
       // Fallback if reading fails
@@ -116,6 +152,9 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       backupFrequency: backupFrequency,
       backupDirectoryPath: backupDirectoryPath,
       lastBackupDateTime: lastBackupDateTime,
+      disabledExpenseCategories: disabledExpenseCategories,
+      disabledIncomeCategories: disabledIncomeCategories,
+      disabledAccountIds: disabledAccountIds,
     );
   }
 
@@ -132,5 +171,21 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       ..writeString(obj.backupFrequency)
       ..writeString(obj.backupDirectoryPath ?? '')
       ..writeInt(obj.lastBackupDateTime?.millisecondsSinceEpoch ?? 0);
+
+    _writeStringList(writer, obj.disabledExpenseCategories);
+    _writeStringList(writer, obj.disabledIncomeCategories);
+    _writeStringList(writer, obj.disabledAccountIds);
+  }
+
+  List<String> _readStringList(BinaryReader reader) {
+    final length = reader.readInt();
+    return List<String>.generate(length, (_) => reader.readString());
+  }
+
+  void _writeStringList(BinaryWriter writer, List<String> values) {
+    writer.writeInt(values.length);
+    for (final value in values) {
+      writer.writeString(value);
+    }
   }
 }

@@ -6,6 +6,7 @@
 /// The expense data model and its providers are the core of this feature.
 /// They live in `lib/features/expense/` because they predate the feature
 /// split; migrate when the data layer is decoupled.
+library;
 
 // Presentation – screens
 export '../expense/presentation/screens/add_expense_screen.dart';

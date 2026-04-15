@@ -27,8 +27,8 @@ final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
 
 final appPreferencesProvider =
     AsyncNotifierProvider<AppPreferencesNotifier, AppPreferencesModel>(
-      AppPreferencesNotifier.new,
-    );
+  AppPreferencesNotifier.new,
+);
 
 final appPreferencesControllerProvider = Provider<AppPreferencesController>((
   ref,
@@ -49,6 +49,29 @@ final localeProvider = Provider<String>((ref) {
 final currencySymbolProvider = Provider<String>((ref) {
   return ref.watch(appPreferencesProvider).value?.currencySymbol ??
       AppPreferencesModel.defaults.currencySymbol;
+});
+
+final disabledExpenseCategoriesProvider = Provider<Set<String>>((ref) {
+  return ref
+          .watch(appPreferencesProvider)
+          .value
+          ?.disabledExpenseCategories
+          .toSet() ??
+      AppPreferencesModel.defaults.disabledExpenseCategories.toSet();
+});
+
+final disabledIncomeCategoriesProvider = Provider<Set<String>>((ref) {
+  return ref
+          .watch(appPreferencesProvider)
+          .value
+          ?.disabledIncomeCategories
+          .toSet() ??
+      AppPreferencesModel.defaults.disabledIncomeCategories.toSet();
+});
+
+final disabledAccountIdsProvider = Provider<Set<String>>((ref) {
+  return ref.watch(appPreferencesProvider).value?.disabledAccountIds.toSet() ??
+      AppPreferencesModel.defaults.disabledAccountIds.toSet();
 });
 
 /// A [NumberFormat] pre-configured with the user's locale and currency symbol,
@@ -90,8 +113,7 @@ final lastBackupDateTimeProvider = Provider<DateTime?>((ref) {
 });
 
 final appThemeModeProvider = Provider<ThemeMode>((ref) {
-  final key =
-      ref.watch(appPreferencesProvider).value?.themeModeKey ??
+  final key = ref.watch(appPreferencesProvider).value?.themeModeKey ??
       AppPreferencesModel.defaults.themeModeKey;
   switch (key) {
     case 'dark':
@@ -224,9 +246,7 @@ class AppPreferencesController {
   }
 
   Future<void> setBackupDirectory(String? path) async {
-    await _ref
-        .read(appPreferencesProvider.notifier)
-        .save(
+    await _ref.read(appPreferencesProvider.notifier).save(
           _current.copyWith(
             backupDirectoryPath: path,
             clearBackupDirectory: path == null,
@@ -240,6 +260,48 @@ class AppPreferencesController {
         .save(_current.copyWith(lastBackupDateTime: dateTime));
   }
 
+  Future<void> setExpenseCategoryEnabled(
+    String categoryName,
+    bool enabled,
+  ) async {
+    await _saveAndEnsure(
+      _current.copyWith(
+        disabledExpenseCategories: _toggleDisabledValue(
+          _current.disabledExpenseCategories,
+          categoryName,
+          enabled,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setIncomeCategoryEnabled(
+    String categoryName,
+    bool enabled,
+  ) async {
+    await _saveAndEnsure(
+      _current.copyWith(
+        disabledIncomeCategories: _toggleDisabledValue(
+          _current.disabledIncomeCategories,
+          categoryName,
+          enabled,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setAccountEnabled(String accountId, bool enabled) async {
+    await _saveAndEnsure(
+      _current.copyWith(
+        disabledAccountIds: _toggleDisabledValue(
+          _current.disabledAccountIds,
+          accountId,
+          enabled,
+        ),
+      ),
+    );
+  }
+
   Future<void> updateAll({
     required String themeModeKey,
     required String locale,
@@ -247,9 +309,7 @@ class AppPreferencesController {
     required bool smartRemindersEnabled,
     required bool isOnboardingCompleted,
   }) async {
-    await _ref
-        .read(appPreferencesProvider.notifier)
-        .save(
+    await _ref.read(appPreferencesProvider.notifier).save(
           _current.copyWith(
             themeModeKey: themeModeKey,
             locale: locale,
@@ -258,5 +318,27 @@ class AppPreferencesController {
             isOnboardingCompleted: isOnboardingCompleted,
           ),
         );
+  }
+
+  List<String> _toggleDisabledValue(
+    List<String> currentValues,
+    String value,
+    bool enabled,
+  ) {
+    final next = currentValues.toSet();
+    if (enabled) {
+      next.remove(value);
+    } else {
+      next.add(value);
+    }
+    return next.toList()..sort();
+  }
+
+  Future<void> _saveAndEnsure(AppPreferencesModel next) async {
+    await _ref.read(appPreferencesProvider.notifier).save(next);
+    final state = _ref.read(appPreferencesProvider);
+    if (state case AsyncError<AppPreferencesModel>(:final error)) {
+      throw error;
+    }
   }
 }

@@ -104,12 +104,35 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   Widget build(BuildContext context) {
     final accounts =
         ref.watch(accountListProvider).value ?? const <AccountModel>[];
-    _queueDefaultSelections(accounts);
+    final disabledExpenseCategories =
+        ref.watch(disabledExpenseCategoriesProvider);
+    final disabledIncomeCategories =
+        ref.watch(disabledIncomeCategoriesProvider);
+    final disabledAccountIds = ref.watch(disabledAccountIdsProvider);
+    final availableExpenseCategories = expenseCategories
+        .where((category) => !disabledExpenseCategories.contains(category.name))
+        .toList(growable: false);
+    final availableIncomeCategories = incomeCategories
+        .where((category) => !disabledIncomeCategories.contains(category.name))
+        .toList(growable: false);
+    final availableAccounts = accounts
+        .where((account) => !disabledAccountIds.contains(account.id))
+        .toList(growable: false);
+    _queueDefaultSelections(
+      availableAccounts,
+      availableExpenseCategories,
+      availableIncomeCategories,
+    );
 
-    final selectedExpenseCat = resolveExpenseCategory(_selectedExpenseCategory);
-    final selectedIncomeCat = resolveIncomeCategory(_selectedIncomeCategory);
-    final selectedAccount = _resolveSelectedAccount(accounts);
-    final toAccount = _resolveToAccount(accounts);
+    final selectedExpenseCat = _selectedExpenseCategory.isEmpty
+        ? null
+        : resolveExpenseCategory(_selectedExpenseCategory);
+    final selectedIncomeCat = _selectedIncomeCategory.isEmpty
+        ? null
+        : resolveIncomeCategory(_selectedIncomeCategory);
+    final selectionAccounts = widget.isEditing ? accounts : availableAccounts;
+    final selectedAccount = _resolveSelectedAccount(selectionAccounts);
+    final toAccount = _resolveToAccount(selectionAccounts);
     final amountState = evaluateAmountExpression(_amountExpression);
     final locale = ref.watch(localeProvider);
     final symbol = ref.watch(currencySymbolProvider);
@@ -320,8 +343,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                               iconColor: AppColors.primaryBlue,
                               background: AppColors.lightBlueBg,
                               label: _sourceAccountLabel(selectedAccount),
-                              onTap: accounts.isNotEmpty
-                                  ? () => _pickAccount(accounts)
+                              onTap: availableAccounts.isNotEmpty
+                                  ? () => _pickAccount(availableAccounts)
                                   : null,
                             ),
                           ),
@@ -337,32 +360,45 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                     iconColor: AppColors.primaryBlue,
                                     background: AppColors.lightBlueBg,
                                     label: _destinationAccountLabel(toAccount),
-                                    onTap: accounts.isNotEmpty
-                                        ? () => _pickToAccount(accounts)
+                                    onTap: availableAccounts.isNotEmpty
+                                        ? () =>
+                                            _pickToAccount(availableAccounts)
                                         : null,
                                   )
                                 : AddExpenseSelectionCapsule(
                                     icon:
                                         _selectedType == TransactionType.income
-                                            ? selectedIncomeCat.icon
-                                            : selectedExpenseCat.icon,
+                                            ? (selectedIncomeCat?.icon ??
+                                                Icons.category_outlined)
+                                            : (selectedExpenseCat?.icon ??
+                                                Icons.category_outlined),
                                     iconColor:
                                         _selectedType == TransactionType.income
-                                            ? selectedIncomeCat.color
-                                            : selectedExpenseCat.color,
+                                            ? (selectedIncomeCat?.color ??
+                                                AppColors.textMuted)
+                                            : (selectedExpenseCat?.color ??
+                                                AppColors.textMuted),
                                     background:
                                         (_selectedType == TransactionType.income
-                                                ? selectedIncomeCat.color
-                                                : selectedExpenseCat.color)
+                                                ? (selectedIncomeCat?.color ??
+                                                    AppColors.textMuted)
+                                                : (selectedExpenseCat?.color ??
+                                                    AppColors.textMuted))
                                             .withValues(alpha: 0.15),
                                     label:
                                         _selectedType == TransactionType.income
-                                            ? selectedIncomeCat.name
-                                            : selectedExpenseCat.name,
-                                    onTap:
-                                        _selectedType == TransactionType.income
-                                            ? _pickIncomeCategory
-                                            : _pickExpenseCategory,
+                                            ? (selectedIncomeCat?.name ??
+                                                'No income category enabled')
+                                            : (selectedExpenseCat?.name ??
+                                                'No expense category enabled'),
+                                    onTap: _selectedType ==
+                                            TransactionType.income
+                                        ? (availableIncomeCategories.isEmpty
+                                            ? null
+                                            : _pickIncomeCategory)
+                                        : (availableExpenseCategories.isEmpty
+                                            ? null
+                                            : _pickExpenseCategory),
                                   ),
                           ),
                         ],
@@ -482,19 +518,47 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     }
   }
 
-  void _queueDefaultSelections(List<AccountModel> accounts) {
-    if (_hasExplicitAccountChoice || accounts.isEmpty) {
+  void _queueDefaultSelections(
+    List<AccountModel> availableAccounts,
+    List<ExpenseCategory> availableExpenseCategories,
+    List<ExpenseCategory> availableIncomeCategories,
+  ) {
+    if (widget.isEditing) {
       return;
     }
+    final nextExpenseCategory = _resolveEnabledCategoryName(
+      _selectedExpenseCategory,
+      availableExpenseCategories,
+    );
+    final nextIncomeCategory = _resolveEnabledCategoryName(
+      _selectedIncomeCategory,
+      availableIncomeCategories,
+    );
+    final nextAccountId = _resolveEnabledAccountId(
+      _selectedAccountId,
+      availableAccounts,
+    );
+    final needsUpdate = nextExpenseCategory != _selectedExpenseCategory ||
+        nextIncomeCategory != _selectedIncomeCategory ||
+        nextAccountId != _selectedAccountId ||
+        (!_hasExplicitAccountChoice && availableAccounts.isNotEmpty);
+
+    if (!needsUpdate) {
+      return;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _hasExplicitAccountChoice) {
+      if (!mounted || widget.isEditing) {
         return;
       }
       setState(() {
-        _selectedAccountId = accounts.first.id;
-        _hasExplicitAccountChoice = true;
+        _selectedExpenseCategory = nextExpenseCategory;
+        _selectedIncomeCategory = nextIncomeCategory;
+        _selectedAccountId = nextAccountId;
+        _hasExplicitAccountChoice =
+            _hasExplicitAccountChoice || availableAccounts.isNotEmpty;
         if (_selectedType == TransactionType.transfer) {
-          _ensureTransferAccounts(accounts);
+          _ensureTransferAccounts(availableAccounts);
         }
       });
     });
@@ -531,6 +595,36 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     return null;
   }
 
+  String _resolveEnabledCategoryName(
+    String currentValue,
+    List<ExpenseCategory> availableCategories,
+  ) {
+    if (availableCategories.isEmpty) {
+      return '';
+    }
+    for (final category in availableCategories) {
+      if (category.name == currentValue) {
+        return currentValue;
+      }
+    }
+    return availableCategories.first.name;
+  }
+
+  String? _resolveEnabledAccountId(
+    String? currentValue,
+    List<AccountModel> availableAccounts,
+  ) {
+    if (availableAccounts.isEmpty) {
+      return null;
+    }
+    for (final account in availableAccounts) {
+      if (account.id == currentValue) {
+        return currentValue;
+      }
+    }
+    return availableAccounts.first.id;
+  }
+
   String _formatAmount(double amount, String locale, String symbol) {
     return NumberFormat.currency(
       locale: locale,
@@ -560,6 +654,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     }
     if (amountState.errorText case final String error) {
       return error;
+    }
+    if (_selectedType == TransactionType.expense &&
+        _selectedExpenseCategory.isEmpty) {
+      return 'Enable at least one expense category.';
+    }
+    if (_selectedType == TransactionType.income &&
+        _selectedIncomeCategory.isEmpty) {
+      return 'Enable at least one income category.';
     }
     if (_selectedType == TransactionType.transfer) {
       if (selectedAccount == null || toAccount == null) {
@@ -686,17 +788,36 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
     final accounts =
         ref.read(accountListProvider).value ?? const <AccountModel>[];
+    final disabledExpenseCategories =
+        ref.read(disabledExpenseCategoriesProvider);
+    final disabledIncomeCategories = ref.read(disabledIncomeCategoriesProvider);
+    final disabledAccountIds = ref.read(disabledAccountIdsProvider);
+    final availableExpenseCategories = expenseCategories
+        .where((category) => !disabledExpenseCategories.contains(category.name))
+        .toList(growable: false);
+    final availableIncomeCategories = incomeCategories
+        .where((category) => !disabledIncomeCategories.contains(category.name))
+        .toList(growable: false);
+    final availableAccounts = accounts
+        .where((account) => !disabledAccountIds.contains(account.id))
+        .toList(growable: false);
+
     setState(() {
       _selectedType = type;
       if (type == TransactionType.transfer) {
-        _ensureTransferAccounts(accounts);
+        _ensureTransferAccounts(availableAccounts);
       }
-      if (type != TransactionType.transfer &&
-          _selectedExpenseCategory.isEmpty) {
-        _selectedExpenseCategory = expenseCategories.first.name;
+      if (type != TransactionType.transfer) {
+        _selectedExpenseCategory = _resolveEnabledCategoryName(
+          _selectedExpenseCategory,
+          availableExpenseCategories,
+        );
       }
-      if (type == TransactionType.income && _selectedIncomeCategory.isEmpty) {
-        _selectedIncomeCategory = incomeCategories.first.name;
+      if (type == TransactionType.income) {
+        _selectedIncomeCategory = _resolveEnabledCategoryName(
+          _selectedIncomeCategory,
+          availableIncomeCategories,
+        );
       }
     });
   }
@@ -719,9 +840,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Future<void> _pickExpenseCategory() async {
+    final disabledExpenseCategories =
+        ref.read(disabledExpenseCategoriesProvider);
+    final availableExpenseCategories = expenseCategories
+        .where((category) => !disabledExpenseCategories.contains(category.name))
+        .toList(growable: false);
+    if (availableExpenseCategories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enable an expense category first.')),
+      );
+      return;
+    }
     final selected = await _showPickerSheet<ExpenseCategory>(
       title: 'Select expense category',
-      children: expenseCategories.map((category) {
+      children: availableExpenseCategories.map((category) {
         return _SelectionSheetTile(
           icon: category.icon,
           iconColor: category.color,
@@ -739,9 +871,19 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Future<void> _pickIncomeCategory() async {
+    final disabledIncomeCategories = ref.read(disabledIncomeCategoriesProvider);
+    final availableIncomeCategories = incomeCategories
+        .where((category) => !disabledIncomeCategories.contains(category.name))
+        .toList(growable: false);
+    if (availableIncomeCategories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enable an income category first.')),
+      );
+      return;
+    }
     final selected = await _showPickerSheet<ExpenseCategory>(
       title: 'Select income category',
-      children: incomeCategories.map((category) {
+      children: availableIncomeCategories.map((category) {
         return _SelectionSheetTile(
           icon: category.icon,
           iconColor: category.color,
@@ -927,8 +1069,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final amountState = evaluateAmountExpression(_amountExpression);
     final accounts =
         ref.read(accountListProvider).value ?? const <AccountModel>[];
-    final selectedAccount = _resolveSelectedAccount(accounts);
-    final toAccount = _resolveToAccount(accounts);
+    final disabledAccountIds = ref.read(disabledAccountIdsProvider);
+    final selectionAccounts = widget.isEditing
+        ? accounts
+        : accounts
+            .where((account) => !disabledAccountIds.contains(account.id))
+            .toList(growable: false);
+    final selectedAccount = _resolveSelectedAccount(selectionAccounts);
+    final toAccount = _resolveToAccount(selectionAccounts);
     final validationMessage = _validationMessage(
       amountState: amountState,
       selectedAccount: selectedAccount,
