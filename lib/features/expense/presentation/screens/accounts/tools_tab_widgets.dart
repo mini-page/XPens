@@ -15,6 +15,8 @@ const _maxDisplayedFutureTransactions = 6;
 
 /// Renders the Tools workspace tab bar with Split Expenses,
 /// Recurring Subscriptions, and Future Transactions tabs.
+///
+/// This widget is immutable and exposes a `const` constructor.
 class ToolsTabBar extends StatelessWidget {
   const ToolsTabBar({super.key});
 
@@ -48,6 +50,7 @@ class ToolsTabBar extends StatelessWidget {
 
 /// Renders the tab views that correspond to [ToolsTabBar].
 /// Each tab hosts one tool section.
+/// Must be used under a [DefaultTabController] with length 3.
 class ToolsTabView extends StatelessWidget {
   const ToolsTabView({super.key});
 
