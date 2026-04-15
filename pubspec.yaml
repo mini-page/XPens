@@ -1,5 +1,6 @@
 name: xpensa
 description: Expense tracking app
+version: 2.0.0+20
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
