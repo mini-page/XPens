@@ -483,21 +483,21 @@ class _PreferencesPage extends StatelessWidget {
             children: [
               _ThemeOption(
                   label: 'Light',
-                  key: 'light',
+                  themeKey: 'light',
                   icon: Icons.light_mode_outlined,
                   selected: themeKey,
                   onTap: onThemeChanged),
               const SizedBox(width: 10),
               _ThemeOption(
                   label: 'Dark',
-                  key: 'dark',
+                  themeKey: 'dark',
                   icon: Icons.dark_mode_outlined,
                   selected: themeKey,
                   onTap: onThemeChanged),
               const SizedBox(width: 10),
               _ThemeOption(
                   label: 'System',
-                  key: 'system',
+                  themeKey: 'system',
                   icon: Icons.brightness_auto_outlined,
                   selected: themeKey,
                   onTap: onThemeChanged),
@@ -527,7 +527,7 @@ class _PreferencesPage extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
               value: smartReminders,
-              activeColor: AppColors.primaryBlue,
+              activeThumbColor: AppColors.primaryBlue,
               onChanged: onRemindersChanged,
             ),
           ),
@@ -673,24 +673,24 @@ class _OptionGrid<T> extends StatelessWidget {
 class _ThemeOption extends StatelessWidget {
   const _ThemeOption({
     required this.label,
-    required this.key,
+    required this.themeKey,
     required this.icon,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
-  final String key;
+  final String themeKey;
   final IconData icon;
   final String selected;
   final ValueChanged<String> onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = selected == key;
+    final isSelected = selected == themeKey;
     return Expanded(
       child: GestureDetector(
-        onTap: () => onTap(key),
+        onTap: () => onTap(themeKey),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
