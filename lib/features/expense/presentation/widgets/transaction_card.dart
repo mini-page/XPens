@@ -45,7 +45,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard> {
               ? 0
               : 2,
     );
-    final timeFormat = DateFormat('HH:mm');
+    final timeFormat = DateFormat('h:mm a');
     final dateFormat = DateFormat('EEE, d MMM yyyy');
 
     final category = resolveCategory(

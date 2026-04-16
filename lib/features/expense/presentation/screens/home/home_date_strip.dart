@@ -32,7 +32,7 @@ class HomeDateStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final monthFormat = DateFormat('MMMM yyyy');
+    final monthFormat = DateFormat('MMM yyyy');
     final weekdayFormat = DateFormat('E');
 
     return Container(
