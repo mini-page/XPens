@@ -314,11 +314,10 @@ class AnalyticsPillTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(AppRadii.pill),
+        color: const Color(0xFFF4F6FA),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
         children: List.generate(tabs.length, (index) {
@@ -327,25 +326,19 @@ class AnalyticsPillTabs extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onChanged(index),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
+                duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
                 alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                  gradient: active
-                      ? const LinearGradient(
-                          colors: <Color>[
-                            AppColors.primaryBlueSoft,
-                            AppColors.primaryBlue,
-                          ],
-                        )
-                      : null,
+                  color: active ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: active
                       ? <BoxShadow>[
                           BoxShadow(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                            color: Colors.black.withValues(alpha: 0.07),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
                         ]
                       : null,
@@ -353,9 +346,11 @@ class AnalyticsPillTabs extends StatelessWidget {
                 child: Text(
                   tabs[index],
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                    color: active ? Colors.white : AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                    color: active
+                        ? AppColors.textDark
+                        : AppColors.textSecondary,
                   ),
                 ),
               ),
