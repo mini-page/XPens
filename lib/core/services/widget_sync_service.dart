@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Holds the pre-computed payload that is written to Android SharedPreferences

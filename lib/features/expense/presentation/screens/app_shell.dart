@@ -38,6 +38,8 @@ class _AppShellState extends ConsumerState<AppShell>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkWhatsNew();
       _handlePendingWidgetAction();
+      // Perform an initial widget sync now that providers are available.
+      _syncWidgetDataNow();
     });
   }
 
@@ -206,7 +208,6 @@ class _AppShellState extends ConsumerState<AppShell>
           WidgetSyncService.syncData(payload);
         }
       },
-      fireImmediately: true,
     );
 
     return Scaffold(
@@ -275,6 +276,15 @@ class _AppShellState extends ConsumerState<AppShell>
 
   Future<void> _openAddExpenseScreen() async {
     await AppRoutes.pushAddExpense(context);
+  }
+
+  /// Push the current widget payload (if available) once on startup so the
+  /// widget shows data immediately without waiting for a state change.
+  void _syncWidgetDataNow() {
+    final payload = ref.read(widgetDataPayloadProvider);
+    if (payload != null) {
+      WidgetSyncService.syncData(payload);
+    }
   }
 
   // ── Widget action routing ────────────────────────────────────────────

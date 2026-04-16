@@ -262,7 +262,7 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen> {
       return;
     }
 
-    final parsed = VoiceCommandParser.parse(text);
+    final parsed = _VoiceCommandParser.parse(text);
     setState(() {
       _state = _VoiceState.result;
       _recognisedText = text;
@@ -281,7 +281,6 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen> {
       initialAmount: cmd.amount,
       initialType: cmd.type,
       initialCategory: cmd.category,
-      initialNote: cmd.note,
     );
   }
 }
@@ -367,27 +366,13 @@ class _ParsedPreview extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  command.category,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textDark,
-                    fontSize: 15,
-                  ),
-                ),
-                if (command.note != null)
-                  Text(
-                    command.note!,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-              ],
+            child: Text(
+              command.category,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                color: AppColors.textDark,
+                fontSize: 15,
+              ),
             ),
           ),
           Text(
@@ -415,19 +400,17 @@ class _ParsedCommand {
     required this.amount,
     required this.type,
     required this.category,
-    this.note,
   });
 
   final double amount;
   final TransactionType type;
   final String category;
-  final String? note;
 }
 
 /// Heuristic NLP parser that extracts transaction data from free-form voice
 /// input strings.  It is intentionally permissive and prioritises recall over
 /// precision.
-abstract final class VoiceCommandParser {
+abstract final class _VoiceCommandParser {
   static _ParsedCommand? parse(String rawText) {
     final text = rawText.toLowerCase().trim();
 
