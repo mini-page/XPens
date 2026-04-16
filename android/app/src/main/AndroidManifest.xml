@@ -2,8 +2,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Required to query the system speech recogniser activity -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <application
         android:label="XPensa"

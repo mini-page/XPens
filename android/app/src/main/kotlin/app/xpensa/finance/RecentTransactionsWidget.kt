@@ -366,7 +366,14 @@ class RecentTransactionsWidget : AppWidgetProvider() {
                 putExtra(WidgetConstants.EXTRA_WIDGET_ID, widgetId)
                 putExtra(WidgetConstants.EXTRA_FILTER_VALUE, filterValue)
             }
-            val requestCode = (widgetId * 1000 + filterValue.hashCode()) and 0xFFFF
+            // Assign a unique request code: widgetId * 3 + filter index (0/1/2).
+            // This is collision-free for realistic widget counts.
+            val filterIndex = when (filterValue) {
+                WidgetConstants.FILTER_TODAY -> 0
+                WidgetConstants.FILTER_WEEK -> 1
+                else -> 2
+            }
+            val requestCode = widgetId * 3 + filterIndex
             return PendingIntent.getBroadcast(
                 context,
                 requestCode,

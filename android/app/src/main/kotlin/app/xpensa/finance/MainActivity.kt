@@ -21,8 +21,6 @@ class MainActivity : FlutterActivity() {
     // ── Widget action routing ──────────────────────────────────────────
     // Stores the most-recent widget action string until Flutter reads it.
     private var pendingWidgetAction: String? = null
-    // Tracks which Intent instance we've already extracted to avoid re-processing.
-    private var processedIntentIdentity: Int = -1
 
     // ── MethodChannel ─────────────────────────────────────────────────
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -135,14 +133,20 @@ class MainActivity : FlutterActivity() {
      * [pendingWidgetAction] so Flutter can poll it via `getPendingAction`.
      * Each distinct Intent object is processed at most once.
      */
+    /**
+     * Read a `widget_action` extra from [incomingIntent] and store it in
+     * [pendingWidgetAction] so Flutter can poll it via `getPendingAction`.
+     *
+     * The extra is removed from the Intent immediately after reading so that
+     * re-entrant calls (e.g. multiple onResume cycles with the same Intent
+     * object) do not produce duplicate actions.
+     */
     private fun extractWidgetAction(incomingIntent: Intent?) {
         val action = incomingIntent?.getStringExtra(WidgetConstants.EXTRA_WIDGET_ACTION)
             ?: return
-        val id = System.identityHashCode(incomingIntent)
-        if (id != processedIntentIdentity) {
-            processedIntentIdentity = id
-            pendingWidgetAction = action
-        }
+        // Consume the extra to prevent double-processing on subsequent onResume calls.
+        incomingIntent.removeExtra(WidgetConstants.EXTRA_WIDGET_ACTION)
+        pendingWidgetAction = action
     }
 
     /** Push fresh RemoteViews to every placed instance of both widget types. */

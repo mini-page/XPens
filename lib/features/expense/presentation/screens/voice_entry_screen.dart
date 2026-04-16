@@ -446,10 +446,8 @@ abstract final class VoiceCommandParser {
     // ── 3. Determine category ────────────────────────────────────────
     final category = _detectCategory(text, type);
 
-    // ── 4. Build note from the original (un-lowercased) text ─────────
-    final note = rawText.length > 4 ? rawText : null;
-
-    return _ParsedCommand(amount: amount, type: type, category: category, note: note);
+    // ── 4. Note is always left empty here so the user can add it in AddExpenseScreen
+    return _ParsedCommand(amount: amount, type: type, category: category);
   }
 
   static TransactionType _detectType(String text) {
@@ -503,10 +501,10 @@ abstract final class VoiceCommandParser {
       return 'Shopping';
     }
     if (_any(text, ['bill', 'electricity', 'water', 'gas', 'internet', 'recharge', 'mobile', 'subscription', 'wifi', 'broadband', 'phone', 'utility'])) {
-      return 'Shopping'; // closest to bills
+      return 'Other'; // no dedicated Bills category; use Other
     }
     if (_any(text, ['doctor', 'hospital', 'medicine', 'medical', 'health', 'pharma', 'clinic', 'surgery', 'lab'])) {
-      return 'Shopping'; // maps to Other until Medical exists
+      return 'Other'; // no Medical category yet; use Other
     }
     if (_any(text, ['beauty', 'salon', 'spa', 'haircut', 'makeup', 'skincare', 'grooming'])) {
       return 'Beauty & Care';
