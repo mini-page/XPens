@@ -69,6 +69,7 @@ class RecentTransactionsWidget : AppWidgetProvider() {
     companion object {
 
         private const val MAX_ROWS = 5
+        private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000
 
         /** Called both from [onUpdate] and from [MainActivity.refreshAllWidgets]. */
         fun updateWidget(
@@ -245,7 +246,7 @@ class RecentTransactionsWidget : AppWidgetProvider() {
                     val obj: JSONObject = arr.getJSONObject(i)
                     Transaction(
                         amount = obj.getDouble("amount"),
-                        category = obj.optString("category", "Others"),
+                        category = obj.optString("category", "Other"),
                         type = obj.optString("type", "expense"),
                         dateMs = obj.getLong("dateMs"),
                         note = obj.optString("note", ""),
@@ -321,7 +322,7 @@ class RecentTransactionsWidget : AppWidgetProvider() {
 
                 else -> {
                     val diffDays = ((todayCal.timeInMillis - itemCal.timeInMillis) /
-                            (24L * 60 * 60 * 1000)).toInt()
+                            MILLIS_PER_DAY).toInt()
                     if (diffDays < 7) {
                         SimpleDateFormat("EEE", Locale.getDefault()).format(itemCal.time)
                     } else {

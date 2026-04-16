@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Holds the pre-computed payload that is written to Android SharedPreferences
@@ -40,8 +42,12 @@ class WidgetSyncService {
         'transactions': jsonEncode(payload.transactions),
         'lastSynced': DateTime.now().millisecondsSinceEpoch,
       });
-    } catch (_) {
-      // Widget sync is best-effort; never let a failure bubble up.
+    } catch (e, st) {
+      // Widget sync is best-effort; never let a failure crash the app.
+      assert(() {
+        dev.log('WidgetSyncService.syncData failed: $e', stackTrace: st);
+        return true;
+      }());
     }
   }
 
@@ -54,7 +60,11 @@ class WidgetSyncService {
   static Future<String?> getPendingAction() async {
     try {
       return await _channel.invokeMethod<String>('getPendingAction');
-    } catch (_) {
+    } catch (e, st) {
+      assert(() {
+        dev.log('WidgetSyncService.getPendingAction failed: $e', stackTrace: st);
+        return true;
+      }());
       return null;
     }
   }
@@ -66,7 +76,11 @@ class WidgetSyncService {
   static Future<String?> startVoiceInput() async {
     try {
       return await _channel.invokeMethod<String>('startVoiceInput');
-    } catch (_) {
+    } catch (e, st) {
+      assert(() {
+        dev.log('WidgetSyncService.startVoiceInput failed: $e', stackTrace: st);
+        return true;
+      }());
       return null;
     }
   }

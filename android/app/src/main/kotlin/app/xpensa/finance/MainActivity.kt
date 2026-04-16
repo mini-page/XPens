@@ -129,11 +129,6 @@ class MainActivity : FlutterActivity() {
     // ── Helpers ────────────────────────────────────────────────────────
 
     /**
-     * Read a `widget_action` extra from [intent] and store it in
-     * [pendingWidgetAction] so Flutter can poll it via `getPendingAction`.
-     * Each distinct Intent object is processed at most once.
-     */
-    /**
      * Read a `widget_action` extra from [incomingIntent] and store it in
      * [pendingWidgetAction] so Flutter can poll it via `getPendingAction`.
      *
