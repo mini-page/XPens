@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.widget.RemoteViews
 import kotlin.math.abs
@@ -42,54 +41,66 @@ class QuickActionWidget : AppWidgetProvider() {
             appWidgetManager: AppWidgetManager,
             widgetId: Int,
         ) {
-            val prefs = context.getSharedPreferences(
-                WidgetConstants.PREFS_NAME,
-                Context.MODE_PRIVATE,
-            )
+            try {
+                val prefs = context.getSharedPreferences(
+                    WidgetConstants.PREFS_NAME,
+                    Context.MODE_PRIVATE,
+                )
 
-            val hasData = prefs.contains(WidgetConstants.KEY_LAST_SYNCED)
-            val rawBalance = prefs.getFloat(WidgetConstants.KEY_TOTAL_BALANCE, 0f).toDouble()
-            val symbol = prefs.getString(WidgetConstants.KEY_CURRENCY_SYMBOL, "₹") ?: "₹"
+                val hasData = prefs.contains(WidgetConstants.KEY_LAST_SYNCED)
+                val rawBalance = prefs.getFloat(WidgetConstants.KEY_TOTAL_BALANCE, 0f).toDouble()
+                val symbol = prefs.getString(WidgetConstants.KEY_CURRENCY_SYMBOL, "₹") ?: "₹"
 
-            val balanceText = if (hasData) {
-                formatBalance(symbol, rawBalance)
-            } else {
-                "Open XPensa"
+                val balanceText = if (hasData) {
+                    formatBalance(symbol, rawBalance)
+                } else {
+                    "Open XPensa"
+                }
+
+                val views = RemoteViews(context.packageName, R.layout.widget_quick_action)
+
+                views.setTextViewText(R.id.widget_qa_balance, balanceText)
+
+                // Balance area taps → open app home
+                views.setOnClickPendingIntent(
+                    R.id.widget_qa_header,
+                    buildActionIntent(context, "open_app", widgetId * 10),
+                )
+
+                // Individual action buttons
+                views.setOnClickPendingIntent(
+                    R.id.widget_qa_add_expense,
+                    buildActionIntent(context, "add_expense", widgetId * 10 + 1),
+                )
+                views.setOnClickPendingIntent(
+                    R.id.widget_qa_add_income,
+                    buildActionIntent(context, "add_income", widgetId * 10 + 2),
+                )
+                views.setOnClickPendingIntent(
+                    R.id.widget_qa_add_transfer,
+                    buildActionIntent(context, "add_transfer", widgetId * 10 + 3),
+                )
+                views.setOnClickPendingIntent(
+                    R.id.widget_qa_scanner,
+                    buildActionIntent(context, "scanner", widgetId * 10 + 4),
+                )
+                views.setOnClickPendingIntent(
+                    R.id.widget_qa_voice,
+                    buildActionIntent(context, "voice", widgetId * 10 + 5),
+                )
+
+                appWidgetManager.updateAppWidget(widgetId, views)
+            } catch (_: Exception) {
+                // Fallback: push a minimal RemoteViews so the launcher never shows
+                // "Can't load widget" due to an unexpected runtime exception.
+                try {
+                    val fallback = RemoteViews(context.packageName, R.layout.widget_quick_action)
+                    fallback.setTextViewText(R.id.widget_qa_balance, "Open XPensa")
+                    appWidgetManager.updateAppWidget(widgetId, fallback)
+                } catch (_: Exception) {
+                    // Nothing further we can do.
+                }
             }
-
-            val views = RemoteViews(context.packageName, R.layout.widget_quick_action)
-
-            views.setTextViewText(R.id.widget_qa_balance, balanceText)
-
-            // Balance area taps → open app home
-            views.setOnClickPendingIntent(
-                R.id.widget_qa_header,
-                buildActionIntent(context, "open_app", widgetId * 10),
-            )
-
-            // Individual action buttons
-            views.setOnClickPendingIntent(
-                R.id.widget_qa_add_expense,
-                buildActionIntent(context, "add_expense", widgetId * 10 + 1),
-            )
-            views.setOnClickPendingIntent(
-                R.id.widget_qa_add_income,
-                buildActionIntent(context, "add_income", widgetId * 10 + 2),
-            )
-            views.setOnClickPendingIntent(
-                R.id.widget_qa_add_transfer,
-                buildActionIntent(context, "add_transfer", widgetId * 10 + 3),
-            )
-            views.setOnClickPendingIntent(
-                R.id.widget_qa_scanner,
-                buildActionIntent(context, "scanner", widgetId * 10 + 4),
-            )
-            views.setOnClickPendingIntent(
-                R.id.widget_qa_voice,
-                buildActionIntent(context, "voice", widgetId * 10 + 5),
-            )
-
-            appWidgetManager.updateAppWidget(widgetId, views)
         }
 
         /** Build a PendingIntent that starts [MainActivity] with [widgetAction] stored as an extra. */

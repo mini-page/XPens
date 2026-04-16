@@ -77,127 +77,139 @@ class RecentTransactionsWidget : AppWidgetProvider() {
             appWidgetManager: AppWidgetManager,
             widgetId: Int,
         ) {
-            val prefs = context.getSharedPreferences(
-                WidgetConstants.PREFS_NAME,
-                Context.MODE_PRIVATE,
-            )
+            try {
+                val prefs = context.getSharedPreferences(
+                    WidgetConstants.PREFS_NAME,
+                    Context.MODE_PRIVATE,
+                )
 
-            val currentFilter = prefs.getString(
-                "${WidgetConstants.KEY_TXN_FILTER_PREFIX}$widgetId",
-                WidgetConstants.FILTER_TODAY,
-            ) ?: WidgetConstants.FILTER_TODAY
+                val currentFilter = prefs.getString(
+                    "${WidgetConstants.KEY_TXN_FILTER_PREFIX}$widgetId",
+                    WidgetConstants.FILTER_TODAY,
+                ) ?: WidgetConstants.FILTER_TODAY
 
-            val symbol = prefs.getString(WidgetConstants.KEY_CURRENCY_SYMBOL, "₹") ?: "₹"
-            val txnJson = prefs.getString(WidgetConstants.KEY_TRANSACTIONS, "[]") ?: "[]"
-            val hasData = prefs.contains(WidgetConstants.KEY_LAST_SYNCED)
+                val symbol = prefs.getString(WidgetConstants.KEY_CURRENCY_SYMBOL, "₹") ?: "₹"
+                val txnJson = prefs.getString(WidgetConstants.KEY_TRANSACTIONS, "[]") ?: "[]"
+                val hasData = prefs.contains(WidgetConstants.KEY_LAST_SYNCED)
 
-            val allTxns = parseTransactions(txnJson)
-            val filtered = filterTransactions(allTxns, currentFilter)
+                val allTxns = parseTransactions(txnJson)
+                val filtered = filterTransactions(allTxns, currentFilter)
 
-            val views = RemoteViews(context.packageName, R.layout.widget_recent_transactions)
+                val views = RemoteViews(context.packageName, R.layout.widget_recent_transactions)
 
-            // ── Filter chip appearance ────────────────────────────────
-            applyFilterChipStates(views, currentFilter)
+                // ── Filter chip appearance ────────────────────────────────
+                applyFilterChipStates(views, currentFilter)
 
-            // ── Filter chip click intents (broadcast back to this receiver) ──
-            views.setOnClickPendingIntent(
-                R.id.widget_rt_filter_today,
-                buildFilterIntent(context, widgetId, WidgetConstants.FILTER_TODAY),
-            )
-            views.setOnClickPendingIntent(
-                R.id.widget_rt_filter_week,
-                buildFilterIntent(context, widgetId, WidgetConstants.FILTER_WEEK),
-            )
-            views.setOnClickPendingIntent(
-                R.id.widget_rt_filter_month,
-                buildFilterIntent(context, widgetId, WidgetConstants.FILTER_MONTH),
-            )
+                // ── Filter chip click intents (broadcast back to this receiver) ──
+                views.setOnClickPendingIntent(
+                    R.id.widget_rt_filter_today,
+                    buildFilterIntent(context, widgetId, WidgetConstants.FILTER_TODAY),
+                )
+                views.setOnClickPendingIntent(
+                    R.id.widget_rt_filter_week,
+                    buildFilterIntent(context, widgetId, WidgetConstants.FILTER_WEEK),
+                )
+                views.setOnClickPendingIntent(
+                    R.id.widget_rt_filter_month,
+                    buildFilterIntent(context, widgetId, WidgetConstants.FILTER_MONTH),
+                )
 
-            // ── "Open" button taps the app home ──────────────────────
-            views.setOnClickPendingIntent(
-                R.id.widget_rt_open_app,
-                buildAppActionIntent(context, "open_app", widgetId * 100),
-            )
+                // ── "Open" button taps the app home ──────────────────────
+                views.setOnClickPendingIntent(
+                    R.id.widget_rt_open_app,
+                    buildAppActionIntent(context, "open_app", widgetId * 100),
+                )
 
-            // ── Populate rows ─────────────────────────────────────────
-            val rowIds = listOf(
-                RowViews(
-                    R.id.widget_rt_row_0,
-                    R.id.widget_rt_row_0_icon,
-                    R.id.widget_rt_row_0_title,
-                    R.id.widget_rt_row_0_date,
-                    R.id.widget_rt_row_0_amount,
-                ),
-                RowViews(
-                    R.id.widget_rt_row_1,
-                    R.id.widget_rt_row_1_icon,
-                    R.id.widget_rt_row_1_title,
-                    R.id.widget_rt_row_1_date,
-                    R.id.widget_rt_row_1_amount,
-                ),
-                RowViews(
-                    R.id.widget_rt_row_2,
-                    R.id.widget_rt_row_2_icon,
-                    R.id.widget_rt_row_2_title,
-                    R.id.widget_rt_row_2_date,
-                    R.id.widget_rt_row_2_amount,
-                ),
-                RowViews(
-                    R.id.widget_rt_row_3,
-                    R.id.widget_rt_row_3_icon,
-                    R.id.widget_rt_row_3_title,
-                    R.id.widget_rt_row_3_date,
-                    R.id.widget_rt_row_3_amount,
-                ),
-                RowViews(
-                    R.id.widget_rt_row_4,
-                    R.id.widget_rt_row_4_icon,
-                    R.id.widget_rt_row_4_title,
-                    R.id.widget_rt_row_4_date,
-                    R.id.widget_rt_row_4_amount,
-                ),
-            )
+                // ── Populate rows ─────────────────────────────────────────
+                val rowIds = listOf(
+                    RowViews(
+                        R.id.widget_rt_row_0,
+                        R.id.widget_rt_row_0_icon,
+                        R.id.widget_rt_row_0_title,
+                        R.id.widget_rt_row_0_date,
+                        R.id.widget_rt_row_0_amount,
+                    ),
+                    RowViews(
+                        R.id.widget_rt_row_1,
+                        R.id.widget_rt_row_1_icon,
+                        R.id.widget_rt_row_1_title,
+                        R.id.widget_rt_row_1_date,
+                        R.id.widget_rt_row_1_amount,
+                    ),
+                    RowViews(
+                        R.id.widget_rt_row_2,
+                        R.id.widget_rt_row_2_icon,
+                        R.id.widget_rt_row_2_title,
+                        R.id.widget_rt_row_2_date,
+                        R.id.widget_rt_row_2_amount,
+                    ),
+                    RowViews(
+                        R.id.widget_rt_row_3,
+                        R.id.widget_rt_row_3_icon,
+                        R.id.widget_rt_row_3_title,
+                        R.id.widget_rt_row_3_date,
+                        R.id.widget_rt_row_3_amount,
+                    ),
+                    RowViews(
+                        R.id.widget_rt_row_4,
+                        R.id.widget_rt_row_4_icon,
+                        R.id.widget_rt_row_4_title,
+                        R.id.widget_rt_row_4_date,
+                        R.id.widget_rt_row_4_amount,
+                    ),
+                )
 
-            val showEmpty = !hasData || filtered.isEmpty()
-            views.setViewVisibility(
-                R.id.widget_rt_empty,
-                if (showEmpty) View.VISIBLE else View.GONE,
-            )
+                val showEmpty = !hasData || filtered.isEmpty()
+                views.setViewVisibility(
+                    R.id.widget_rt_empty,
+                    if (showEmpty) View.VISIBLE else View.GONE,
+                )
 
-            val displayCount = minOf(filtered.size, MAX_ROWS)
+                val displayCount = minOf(filtered.size, MAX_ROWS)
 
-            for (i in 0 until MAX_ROWS) {
-                val row = rowIds[i]
-                if (i < displayCount) {
-                    val txn = filtered[i]
-                    views.setViewVisibility(row.container, View.VISIBLE)
-                    views.setTextViewText(row.icon, categoryEmoji(txn.category))
-                    val title = if (txn.note.isNotBlank()) txn.note else txn.category
-                    views.setTextViewText(row.title, title)
-                    views.setTextViewText(row.date, formatDate(txn.dateMs))
-                    val (amtText, amtColor) = formatAmount(symbol, txn.amount, txn.type)
-                    views.setTextViewText(row.amount, amtText)
-                    views.setTextColor(row.amount, amtColor)
-                    // Row tap opens app
-                    views.setOnClickPendingIntent(
-                        row.container,
-                        buildAppActionIntent(context, "open_app", widgetId * 100 + i + 1),
-                    )
+                for (i in 0 until MAX_ROWS) {
+                    val row = rowIds[i]
+                    if (i < displayCount) {
+                        val txn = filtered[i]
+                        views.setViewVisibility(row.container, View.VISIBLE)
+                        views.setTextViewText(row.icon, categoryEmoji(txn.category))
+                        val title = if (txn.note.isNotBlank()) txn.note else txn.category
+                        views.setTextViewText(row.title, title)
+                        views.setTextViewText(row.date, formatDate(txn.dateMs))
+                        val (amtText, amtColor) = formatAmount(symbol, txn.amount, txn.type)
+                        views.setTextViewText(row.amount, amtText)
+                        views.setTextColor(row.amount, amtColor)
+                        // Row tap opens app
+                        views.setOnClickPendingIntent(
+                            row.container,
+                            buildAppActionIntent(context, "open_app", widgetId * 100 + i + 1),
+                        )
+                    } else {
+                        views.setViewVisibility(row.container, View.GONE)
+                    }
+                }
+
+                // "and N more" footer
+                val extra = filtered.size - MAX_ROWS
+                if (extra > 0) {
+                    views.setViewVisibility(R.id.widget_rt_more, View.VISIBLE)
+                    views.setTextViewText(R.id.widget_rt_more, "+$extra more")
                 } else {
-                    views.setViewVisibility(row.container, View.GONE)
+                    views.setViewVisibility(R.id.widget_rt_more, View.GONE)
+                }
+
+                appWidgetManager.updateAppWidget(widgetId, views)
+            } catch (_: Exception) {
+                // Fallback: push a minimal RemoteViews so the launcher never shows
+                // "Can't load widget" due to an unexpected runtime exception.
+                try {
+                    val fallback = RemoteViews(context.packageName, R.layout.widget_recent_transactions)
+                    fallback.setViewVisibility(R.id.widget_rt_empty, View.VISIBLE)
+                    appWidgetManager.updateAppWidget(widgetId, fallback)
+                } catch (_: Exception) {
+                    // Nothing further we can do.
                 }
             }
-
-            // "and N more" footer
-            val extra = filtered.size - MAX_ROWS
-            if (extra > 0) {
-                views.setViewVisibility(R.id.widget_rt_more, View.VISIBLE)
-                views.setTextViewText(R.id.widget_rt_more, "+$extra more")
-            } else {
-                views.setViewVisibility(R.id.widget_rt_more, View.GONE)
-            }
-
-            appWidgetManager.updateAppWidget(widgetId, views)
         }
 
         // ── Helpers ────────────────────────────────────────────────────

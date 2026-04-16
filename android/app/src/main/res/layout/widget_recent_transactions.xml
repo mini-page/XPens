@@ -95,7 +95,7 @@
         android:textColor="@color/widget_text_muted"
         android:textSize="11sp"
         android:gravity="center"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <!-- ── Transaction rows (0–4) ─────────────────────────────── -->
 
