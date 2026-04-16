@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🧠 Project Memory (Read First)
+
+Before writing any code, open **`memory.md`** (repo root) and read it fully. It contains the authoritative layout, screen index, change log, and open issues. After every change you make, append a row to the §8 Change Log in `memory.md` so future agents stay in sync. Failing to update `memory.md` breaks the shared context for all AI agents.
+
 ## 🛠 Build & Development Commands
 
 - **Get dependencies**: `flutter pub get`

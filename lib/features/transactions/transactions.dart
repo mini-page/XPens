@@ -16,7 +16,7 @@ export '../expense/presentation/screens/records_history/records_cards.dart';
 export '../expense/presentation/screens/records_history/records_expense_list.dart';
 export '../expense/presentation/screens/records_history/records_filter.dart';
 export '../expense/presentation/screens/records_history/records_filter_bar.dart';
-export '../expense/presentation/screens/transaction_search_screen.dart';
+export '../expense/presentation/screens/records_history/records_search_logic.dart';
 
 // Presentation – widgets
 export '../expense/presentation/widgets/transaction_card.dart';

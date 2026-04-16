@@ -7,8 +7,8 @@ import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/account_providers.dart';
 import '../provider/expense_providers.dart';
+import '../provider/notifications_provider.dart';
 import '../provider/preferences_providers.dart';
-import '../widgets/quick_action_bar.dart';
 import '../widgets/transaction_card.dart';
 import '../widgets/ui_feedback.dart';
 import 'home/home_date_strip.dart';
@@ -42,9 +42,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(accountListProvider).value ?? const <AccountModel>[];
     final accountsMap = {for (final a in accounts) a.id: a};
     final stats = ref.watch(statsProvider);
+    final accountSummary = ref.watch(accountSummaryProvider);
     final privacyModeEnabled = ref.watch(privacyModeEnabledProvider);
 
     final currencyFormat = ref.watch(currencyFormatProvider);
+    final today = DateUtils.dateOnly(DateTime.now());
+    final isOnToday = DateUtils.isSameDay(_selectedDate, today);
     final visibleDates = List<DateTime>.generate(
       7,
       (index) => _windowStart.add(Duration(days: index)),
@@ -58,113 +61,109 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       (sum, expense) => sum + expense.signedAmount,
     );
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          HomeHeader(
-            stats: stats,
-            currencyFormat: currencyFormat,
-            privacyModeEnabled: privacyModeEnabled,
-            onMenuPressed: () => Scaffold.of(context).openDrawer(),
-            onSearchPressed: () => AppRoutes.pushTransactionSearch(context),
-            onTogglePrivacy: () {
-              ref
-                  .read(appPreferencesControllerProvider)
-                  .setPrivacyMode(!privacyModeEnabled);
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+    // Locale-aware quick amounts (H4) merged with user-defined custom amounts
+    final locale = ref.watch(localeProvider);
+    final localeAmounts = _localeQuickAmounts(locale);
+    final customAmounts = ref.watch(customQuickAmountsProvider);
+    final hiddenDefaults = ref.watch(hiddenDefaultAmountsProvider);
+    // Merge: locale defaults (minus hidden and minus any already-custom) first,
+    // then ALL custom amounts — sorted ascending so newly-added amounts slot
+    // into the right position.  Custom amounts are always shown even if their
+    // value coincidentally matches a locale default.
+    final quickAmounts = [
+      ...localeAmounts.where(
+        (a) => !hiddenDefaults.contains(a) && !customAmounts.contains(a),
+      ),
+      ...customAmounts,
+    ]..sort();
+
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        // ── Sticky top bar (menu · logo · search · bell) ─────────────────
+        HomeTopBar(
+          onMenuPressed: () => Scaffold.of(context).openDrawer(),
+          onSearchPressed: () => AppRoutes.pushTransactionSearch(context),
+          onNotificationPressed: () => AppRoutes.pushNotifications(context),
+          unreadCount: unreadCount,
+        ),
+
+        // ── Everything below scrolls ──────────────────────────────────────
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 160),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const SizedBox(height: 8),
-                QuickActionBar(
-                  actions: const <QuickActionItem>[
-                    QuickActionItem(
-                      label: 'SMS',
-                      icon: Icons.sms_outlined,
-                      isEnabled: false,
-                      badgeLabel: 'Soon',
-                    ),
-                    QuickActionItem(
-                      label: 'VOICE',
-                      icon: Icons.mic_none_rounded,
-                      isEnabled: false,
-                      badgeLabel: 'Soon',
-                    ),
-                    QuickActionItem(
-                      label: 'SMART',
-                      icon: Icons.bolt_outlined,
-                      isEnabled: false,
-                      badgeLabel: 'Soon',
-                    ),
-                    QuickActionItem(
-                      label: 'SCANNER',
-                      icon: Icons.qr_code_scanner_rounded,
-                      isEnabled: false,
-                      badgeLabel: 'Soon',
-                    ),
-                    QuickActionItem(
-                      label: 'MANUAL',
-                      icon: Icons.add_rounded,
-                      isHighlighted: true,
-                    ),
-                  ],
-                  onTap: (action) {
-                    if (action.label == 'MANUAL') {
-                      _openAddExpenseScreen(
-                        context,
-                        initialDate: _selectedDate,
-                      );
-                    }
+                // Blue hero card (balance, metrics)
+                HomeHeader(
+                  stats: stats,
+                  accountSummary: accountSummary,
+                  currencyFormat: currencyFormat,
+                  privacyModeEnabled: privacyModeEnabled,
+                  onTogglePrivacy: () {
+                    ref
+                        .read(appPreferencesControllerProvider)
+                        .setPrivacyMode(!privacyModeEnabled);
                   },
                 ),
-                const SizedBox(height: 22),
+
+                // ── Scrollable content ────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                const SizedBox(height: 8),
                 SizedBox(
-                  height: 72,
+                  height: 44,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    children: <double>[50, 100, 200, 500, 1000].map((amount) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: HomeAmountChip(
-                          label: currencyFormat.format(amount),
-                          onTap: () => _openAddExpenseScreen(
-                            context,
-                            initialAmount: amount,
-                            initialDate: _selectedDate,
+                    children: <Widget>[
+                      ...quickAmounts.map((amount) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: HomeAmountChip(
+                            label: currencyFormat.format(amount),
+                            onTap: () => _openAddExpenseScreen(
+                              context,
+                              initialAmount: amount,
+                              initialDate: _selectedDate,
+                            ),
+                            onLongPress: () => _showChipOptions(
+                              context,
+                              amount: amount,
+                              // A value that was re-added as custom after
+                              // hiding its locale default lives in customAmounts
+                              // even though localeAmounts also contains it.
+                              // Treat it as custom so the right storage path
+                              // (setCustomQuickAmounts) is used on delete/edit.
+                              isLocaleDefault: localeAmounts.contains(amount) &&
+                                  !customAmounts.contains(amount),
+                              customAmounts: customAmounts,
+                              hiddenDefaults: hiddenDefaults,
+                              quickAmounts: quickAmounts,
+                            ),
                           ),
+                        );
+                      }),
+                      HomeAddAmountChip(
+                        onTap: () => _showAddCustomAmountDialog(
+                          context,
+                          customAmounts: customAmounts,
+                          quickAmounts: quickAmounts,
                         ),
-                      );
-                    }).toList(growable: false),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 30),
-                Row(
-                  children: <Widget>[
-                    const Text(
-                      'RECENT TRANSACTIONS',
-                      style: TextStyle(
-                        color: AppColors.primaryBlue,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.4,
-                      ),
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => _openRecordsHistoryScreen(context),
-                      child: const Text('View All'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
                 HomeDateStrip(
                   visibleDates: visibleDates,
                   selectedDate: _selectedDate,
+                  isOnToday: isOnToday,
                   selectedTotalText: formatSignedCurrencyForHome(
                     selectedTotal,
                     currencyFormat,
@@ -178,8 +177,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                   onPrevious: () => _shiftWindow(-7),
                   onNext: () => _shiftWindow(7),
+                  onJumpToToday: _jumpToToday,
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
+                Row(
+                  children: <Widget>[
+                    const Text(
+                      'RECENT TRANSACTIONS',
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => _openRecordsHistoryScreen(context),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      child: const Text('View All'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
                 if (expenseState.hasError)
                   const HomeEmptyCard(
                     title: 'Storage unavailable',
@@ -213,11 +241,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onDelete: () => _confirmDeleteExpense(expense),
                     );
                   }),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -261,6 +292,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _windowStart = _windowStart.add(Duration(days: days));
       _selectedDate = _selectedDate.add(Duration(days: days));
     });
+  }
+
+  void _jumpToToday() {
+    final today = DateUtils.dateOnly(DateTime.now());
+    setState(() {
+      _selectedDate = today;
+      _windowStart = today.subtract(const Duration(days: 3));
+    });
+  }
+
+  /// Returns locale-appropriate quick-add amounts (H4).
+  List<double> _localeQuickAmounts(String locale) {
+    if (locale.contains('IN') || locale.contains('hi')) {
+      return [50, 100, 250, 500, 1000];
+    }
+    if (locale.contains('JP') || locale.contains('ja')) {
+      return [100, 500, 1000, 5000, 10000];
+    }
+    if (locale.contains('AE') || locale.contains('ar')) {
+      return [5, 10, 25, 50, 100];
+    }
+    // US / EU / default
+    return [5, 10, 20, 50, 100];
   }
 
   bool _isSameLocalDay(DateTime expenseDate, DateTime targetDate) {
@@ -329,5 +383,253 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Transaction removed.')));
+  }
+
+  Future<void> _showAddCustomAmountDialog(
+    BuildContext context, {
+    required List<double> customAmounts,
+    required List<double> quickAmounts,
+  }) async {
+    final controller = TextEditingController();
+
+    final newAmount = await showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          MediaQuery.viewInsetsOf(ctx).bottom + 16,
+        ),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: 'Amount, e.g. 75',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.grey.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.grey.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: () {
+                final parsed = double.tryParse(controller.text.trim());
+                if (parsed != null && parsed > 0) {
+                  Navigator.of(ctx).pop(parsed);
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (newAmount == null || !mounted) return;
+
+    // Duplicate guard — value already visible as a chip.
+    if (quickAmounts.contains(newAmount)) return;
+
+    final updated = [...customAmounts, newAmount]..sort();
+    await ref
+        .read(appPreferencesControllerProvider)
+        .setCustomQuickAmounts(updated);
+  }
+
+  Future<void> _showChipOptions(
+    BuildContext context, {
+    required double amount,
+    required bool isLocaleDefault,
+    required List<double> customAmounts,
+    required List<double> hiddenDefaults,
+    required List<double> quickAmounts,
+  }) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Edit'),
+                onTap: () => Navigator.of(ctx).pop('edit'),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                ),
+                title: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () => Navigator.of(ctx).pop('delete'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (action == 'delete') {
+      if (isLocaleDefault) {
+        final updated = [...hiddenDefaults, amount];
+        await ref
+            .read(appPreferencesControllerProvider)
+            .setHiddenDefaultAmounts(updated);
+      } else {
+        final updated = customAmounts.where((a) => a != amount).toList();
+        await ref
+            .read(appPreferencesControllerProvider)
+            .setCustomQuickAmounts(updated);
+      }
+    } else if (action == 'edit') {
+      if (!mounted) return;
+      await _showEditAmountDialog(
+        context,
+        currentAmount: amount,
+        isLocaleDefault: isLocaleDefault,
+        customAmounts: customAmounts,
+        hiddenDefaults: hiddenDefaults,
+        quickAmounts: quickAmounts,
+      );
+    }
+  }
+
+  Future<void> _showEditAmountDialog(
+    BuildContext context, {
+    required double currentAmount,
+    required bool isLocaleDefault,
+    required List<double> customAmounts,
+    required List<double> hiddenDefaults,
+    required List<double> quickAmounts,
+  }) async {
+    final displayText = currentAmount % 1 == 0
+        ? currentAmount.toInt().toString()
+        : currentAmount.toString();
+    final controller = TextEditingController(text: displayText);
+
+    final newAmount = await showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          MediaQuery.viewInsetsOf(ctx).bottom + 16,
+        ),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: 'New amount',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.grey.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.grey.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: () {
+                final parsed = double.tryParse(controller.text.trim());
+                if (parsed != null && parsed > 0) {
+                  Navigator.of(ctx).pop(parsed);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (newAmount == null || !mounted) return;
+
+    // Duplicate guard — skip if the new value is already visible as another chip.
+    if (newAmount != currentAmount && quickAmounts.contains(newAmount)) return;
+
+    if (isLocaleDefault) {
+      // Hide the old locale default and add the edited value as a custom amount.
+      final updatedHidden = [...hiddenDefaults, currentAmount];
+      final updatedCustom = [...customAmounts, newAmount]..sort();
+      await ref
+          .read(appPreferencesControllerProvider)
+          .setHiddenDefaultAmounts(updatedHidden);
+      if (!mounted) return;
+      await ref
+          .read(appPreferencesControllerProvider)
+          .setCustomQuickAmounts(updatedCustom);
+    } else {
+      final updated = [
+        ...customAmounts.where((a) => a != currentAmount),
+        newAmount,
+      ]..sort();
+      await ref
+          .read(appPreferencesControllerProvider)
+          .setCustomQuickAmounts(updated);
+    }
   }
 }

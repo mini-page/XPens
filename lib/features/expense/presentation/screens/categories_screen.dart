@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../shared/widgets/app_page_header.dart';
+import '../../../../shared/widgets/app_tab_switcher.dart';
 import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
 import '../provider/account_providers.dart';
@@ -15,7 +17,6 @@ import '../widgets/account_icons.dart';
 import '../widgets/amount_visibility.dart';
 import '../widgets/budget_editor_sheet.dart';
 import '../widgets/expense_category.dart';
-import 'add_expense/add_expense_widgets.dart';
 import 'categories/categories_widgets.dart';
 
 enum _BoardMode { expenses, income, accounts }
@@ -27,8 +28,35 @@ class CategoriesScreen extends ConsumerStatefulWidget {
   ConsumerState<CategoriesScreen> createState() => _CategoriesScreenState();
 }
 
-class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
+class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
   _BoardMode _mode = _BoardMode.expenses;
+
+  static const List<AppTabItem> _categoryTabs = <AppTabItem>[
+    AppTabItem(label: 'Expense', icon: Icons.arrow_outward_rounded),
+    AppTabItem(label: 'Income', icon: Icons.arrow_downward_rounded),
+    AppTabItem(label: 'Account', icon: Icons.account_balance_wallet_outlined),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _categoryTabs.length, vsync: this);
+    _tabController.addListener(() {
+      final newIndex = _tabController.index;
+      final newMode = _BoardMode.values[newIndex];
+      if (_mode != newMode) {
+        setState(() => _mode = newMode);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,141 +82,113 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
       masked: privacyModeEnabled,
     );
     final summaryLabel = _summaryLabel(_mode);
-    final cards = _buildCards(
-      mode: _mode,
-      stats: stats,
-      budgets: budgets,
-      accounts: accounts,
-      disabledExpenseCategories: disabledExpenseCategories,
-      disabledIncomeCategories: disabledIncomeCategories,
-      disabledAccountIds: disabledAccountIds,
-    );
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 124),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: const <BoxShadow>[
-                      BoxShadow(
-                        color: AppColors.cardShadow,
-                        blurRadius: 14,
-                        offset: Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child:
-                      Icon(_summaryIcon(_mode), color: AppColors.primaryBlue),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        summaryAmount,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textDark,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          height: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        summaryLabel,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _ModeTabs(
-              mode: _mode,
-              onChanged: (mode) {
-                setState(() {
-                  _mode = mode;
-                });
-              },
-            ),
-            if ((_mode == _BoardMode.expenses && budgetState.isLoading) ||
-                (_mode == _BoardMode.accounts && accountState.isLoading))
-              const Padding(
-                padding: EdgeInsets.only(top: 12),
-                child: LinearProgressIndicator(minHeight: 3),
-              ),
-            const SizedBox(height: 16),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final crossAxisCount = width >= 900
-                    ? 4
-                    : width >= 640
-                        ? 3
-                        : 2;
-                final ratio = width >= 900
-                    ? 1.35
-                    : width >= 640
-                        ? 1.28
-                        : 1.22;
-
-                return GridView.builder(
-                  itemCount: cards.length + 1,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: ratio,
-                  ),
-                  itemBuilder: (context, index) {
-                    if (index == cards.length) {
-                      return AddCategoryCard(
-                        onTap: _handlePrimaryActionTap,
-                        title: _actionTitle(_mode),
-                        detail: _actionDetail(_mode),
-                      );
-                    }
-
-                    final entry = cards[index];
-                    return CategoryGridCard(
-                      title: entry.title,
-                      icon: entry.icon,
-                      tone: entry.tone,
-                      amount: _displayAmount(
-                          entry.amount, entry.amountColor, currency,
-                          masked: privacyModeEnabled),
-                      progressLabel: entry.progressLabel,
-                      progress: entry.progress,
-                      isEnabled: entry.isEnabled,
-                      onTap: entry.onTap,
-                      onToggle: entry.onToggle,
-                      amountColor: entry.amountColor,
-                    );
-                  },
-                );
-              },
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        AppPageHeader(
+          eyebrow: 'Categories',
+          title: summaryAmount,
+          subtitle: summaryLabel,
+          bottom: AppTabSwitcher(
+            tabs: _categoryTabs,
+            selected: _mode.index,
+            onChanged: (index) {
+              setState(() {
+                _mode = _BoardMode.values[index];
+              });
+              _tabController.animateTo(index);
+            },
+          ),
         ),
+        if ((_mode == _BoardMode.expenses && budgetState.isLoading) ||
+            (_mode == _BoardMode.accounts && accountState.isLoading))
+          const LinearProgressIndicator(minHeight: 3),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: _BoardMode.values.map((mode) {
+              final modeCards = _buildCards(
+                mode: mode,
+                stats: stats,
+                budgets: budgets,
+                accounts: accounts,
+                disabledExpenseCategories: disabledExpenseCategories,
+                disabledIncomeCategories: disabledIncomeCategories,
+                disabledAccountIds: disabledAccountIds,
+              );
+              return _buildModeScrollPane(
+                mode: mode,
+                cards: modeCards,
+                currency: currency,
+                privacyModeEnabled: privacyModeEnabled,
+              );
+            }).toList(growable: false),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModeScrollPane({
+    required _BoardMode mode,
+    required List<CategoryGridData> cards,
+    required NumberFormat currency,
+    required bool privacyModeEnabled,
+  }) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 124),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final crossAxisCount = width >= 900
+              ? 4
+              : width >= 640
+                  ? 3
+                  : 2;
+          final ratio = width >= 900
+              ? 1.35
+              : width >= 640
+                  ? 1.28
+                  : 1.22;
+
+          return GridView.builder(
+            itemCount: cards.length + 1,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: ratio,
+            ),
+            itemBuilder: (context, index) {
+              if (index == cards.length) {
+                return AddCategoryCard(
+                  onTap: () => _handlePrimaryActionTapFor(mode),
+                  title: _actionTitle(mode),
+                  detail: _actionDetail(mode),
+                );
+              }
+
+              final entry = cards[index];
+              return CategoryGridCard(
+                title: entry.title,
+                icon: entry.icon,
+                tone: entry.tone,
+                amount: _displayAmount(
+                    entry.amount, entry.amountColor, currency,
+                    masked: privacyModeEnabled),
+                progressLabel: entry.progressLabel,
+                progress: entry.progress,
+                isEnabled: entry.isEnabled,
+                onTap: entry.onTap,
+                onToggle: entry.onToggle,
+                amountColor: entry.amountColor,
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -348,17 +348,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     }
   }
 
-  IconData _summaryIcon(_BoardMode mode) {
-    switch (mode) {
-      case _BoardMode.expenses:
-        return Icons.grid_view_rounded;
-      case _BoardMode.income:
-        return Icons.arrow_downward_rounded;
-      case _BoardMode.accounts:
-        return Icons.account_balance_wallet_outlined;
-    }
-  }
-
   String _actionTitle(_BoardMode mode) {
     switch (mode) {
       case _BoardMode.expenses:
@@ -381,8 +370,10 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     }
   }
 
-  void _handlePrimaryActionTap() {
-    switch (_mode) {
+  void _handlePrimaryActionTap() => _handlePrimaryActionTapFor(_mode);
+
+  void _handlePrimaryActionTapFor(_BoardMode mode) {
+    switch (mode) {
       case _BoardMode.expenses:
         _openBudgetEditor(
           categoryName: expenseCategories.first.name,
@@ -592,57 +583,3 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   }
 }
 
-class _ModeTabs extends StatelessWidget {
-  const _ModeTabs({
-    required this.mode,
-    required this.onChanged,
-  });
-
-  final _BoardMode mode;
-  final ValueChanged<_BoardMode> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F6FA),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: AddExpenseModeTab(
-              label: 'Expense',
-              icon: Icons.arrow_outward_rounded,
-              activeColor: const Color(0xFFC23358),
-              inactiveColor: const Color(0xFFC23358),
-              isSelected: mode == _BoardMode.expenses,
-              onTap: () => onChanged(_BoardMode.expenses),
-            ),
-          ),
-          Expanded(
-            child: AddExpenseModeTab(
-              label: 'Income',
-              icon: Icons.arrow_downward_rounded,
-              activeColor: AppColors.success,
-              inactiveColor: AppColors.success,
-              isSelected: mode == _BoardMode.income,
-              onTap: () => onChanged(_BoardMode.income),
-            ),
-          ),
-          Expanded(
-            child: AddExpenseModeTab(
-              label: 'Account',
-              icon: Icons.account_balance_wallet_outlined,
-              activeColor: AppColors.primaryBlue,
-              inactiveColor: AppColors.primaryBlue,
-              isSelected: mode == _BoardMode.accounts,
-              onTap: () => onChanged(_BoardMode.accounts),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

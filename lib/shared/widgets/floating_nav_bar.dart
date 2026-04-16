@@ -63,9 +63,9 @@ class FloatingNavBar extends StatelessWidget {
                 onTap: () => onTap(2),
               ),
               NavBarItem(
-                label: 'Account',
-                icon: Icons.account_balance_wallet_outlined,
-                activeIcon: Icons.account_balance_wallet_rounded,
+                label: 'Tools',
+                icon: Icons.tune_outlined,
+                activeIcon: Icons.tune_rounded,
                 isSelected: selectedIndex == 3,
                 onTap: () => onTap(3),
               ),

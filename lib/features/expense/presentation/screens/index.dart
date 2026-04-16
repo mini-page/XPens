@@ -21,4 +21,4 @@ export 'settings_screen.dart';
 export 'settings/settings_widgets.dart';
 export 'stats_screen.dart';
 export 'stats/stats_widgets.dart';
-export 'transaction_search_screen.dart';
+export 'records_history/records_search_logic.dart';

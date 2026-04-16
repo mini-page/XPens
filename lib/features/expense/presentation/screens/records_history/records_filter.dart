@@ -1,2 +1,2 @@
 /// Filter options for the records history screen.
-enum RecordsFilter { all, today, week, month, future }
+enum RecordsFilter { all, today, week, month, future, custom }

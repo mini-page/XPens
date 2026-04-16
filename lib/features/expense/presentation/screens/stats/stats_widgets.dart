@@ -34,15 +34,19 @@ class AnalyticsSnapshot {
     required this.largestIncome,
   });
 
-  factory AnalyticsSnapshot.fromExpenses(List<ExpenseModel> expenses) {
+  factory AnalyticsSnapshot.fromExpenses(
+    List<ExpenseModel> expenses, {
+    String rangeLabel = 'This Month',
+  }) {
     final now = DateTime.now();
-    final currentYear = now.year;
-    final currentMonth = now.month;
-    final monthLabel = DateFormat('MMMM yyyy').format(now);
+    final ({DateTime start, DateTime end, String label}) range =
+        AnalyticsSnapshot._rangeFor(rangeLabel, now);
 
     final monthTransactions = expenses.where((expense) {
       final localDate = expense.date.toLocal();
-      return localDate.year == currentYear && localDate.month == currentMonth;
+      final dateOnly = DateUtils.dateOnly(localDate);
+      return !dateOnly.isBefore(DateUtils.dateOnly(range.start)) &&
+          !dateOnly.isAfter(DateUtils.dateOnly(range.end));
     }).toList(growable: false)
       ..sort((left, right) => left.date.compareTo(right.date));
 
@@ -100,7 +104,7 @@ class AnalyticsSnapshot {
     final sortedMix = expenseMixMap.entries.toList(growable: false)
       ..sort((left, right) => right.value.compareTo(left.value));
 
-    final sixMonthStart = DateTime(currentYear, currentMonth - 5);
+    final sixMonthStart = DateTime(now.year, now.month - 5);
     final monthlyTrendMap = <String, _MutableTrendBucket>{};
     for (int index = 0; index < 6; index++) {
       final month = DateTime(sixMonthStart.year, sixMonthStart.month + index);
@@ -140,11 +144,11 @@ class AnalyticsSnapshot {
     final busiestDayLabel = busiestDay == 0
         ? 'No activity yet'
         : DateFormat('d MMM').format(
-            DateTime(currentYear, currentMonth, busiestDay),
+            DateTime(range.start.year, range.start.month, busiestDay),
           );
 
     return AnalyticsSnapshot(
-      periodLabel: monthLabel,
+      periodLabel: range.label,
       monthExpenseTotal: monthExpenseTotal,
       monthIncomeTotal: monthIncomeTotal,
       monthNetTotal: monthIncomeTotal - monthExpenseTotal,
@@ -185,6 +189,51 @@ class AnalyticsSnapshot {
       largestExpense: largestExpense,
       largestIncome: largestIncome,
     );
+  }
+
+  /// Converts a named range label into an inclusive [start, end] date range.
+  static ({DateTime start, DateTime end, String label}) _rangeFor(
+    String label,
+    DateTime now,
+  ) {
+    switch (label) {
+      case 'This Week':
+        final weekStart = DateUtils.dateOnly(now)
+            .subtract(Duration(days: now.weekday - 1));
+        return (
+          start: weekStart,
+          end: DateUtils.dateOnly(now),
+          label: label,
+        );
+      case 'Last Month':
+        final firstOfLastMonth = DateTime(now.year, now.month - 1);
+        final lastOfLastMonth = DateTime(now.year, now.month, 0);
+        return (
+          start: firstOfLastMonth,
+          end: lastOfLastMonth,
+          label: DateFormat('MMMM yyyy').format(firstOfLastMonth),
+        );
+      case 'Last 3 Months':
+        final start = DateTime(now.year, now.month - 2);
+        return (
+          start: start,
+          end: DateUtils.dateOnly(now),
+          label: label,
+        );
+      case 'This Year':
+        return (
+          start: DateTime(now.year),
+          end: DateUtils.dateOnly(now),
+          label: DateFormat('yyyy').format(now),
+        );
+      case 'This Month':
+      default:
+        return (
+          start: DateTime(now.year, now.month),
+          end: DateUtils.dateOnly(now),
+          label: DateFormat('MMMM yyyy').format(now),
+        );
+    }
   }
 
   final String periodLabel;
@@ -248,75 +297,6 @@ class CategoryMixPoint {
 // ---------------------------------------------------------------------------
 // Shared layout widgets
 // ---------------------------------------------------------------------------
-
-/// N-way pill-shaped tab toggle with animated gradient active state.
-class AnalyticsPillTabs extends StatelessWidget {
-  const AnalyticsPillTabs({
-    super.key,
-    required this.tabs,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  final List<String> tabs;
-  final int selected;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-      ),
-      child: Row(
-        children: List.generate(tabs.length, (index) {
-          final active = selected == index;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onChanged(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                  gradient: active
-                      ? const LinearGradient(
-                          colors: <Color>[
-                            AppColors.primaryBlueSoft,
-                            AppColors.primaryBlue,
-                          ],
-                        )
-                      : null,
-                  boxShadow: active
-                      ? <BoxShadow>[
-                          BoxShadow(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Text(
-                  tabs[index],
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                    color: active ? Colors.white : AppColors.textSecondary,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
 
 /// Premium glass-morphism card with gradient background and layered shadow.
 class AnalyticsGlassCard extends StatelessWidget {

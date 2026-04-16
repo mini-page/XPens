@@ -1,52 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'accounts/accounts_widgets.dart';
-import '../provider/preferences_providers.dart';
+import '../../../../shared/widgets/app_page_header.dart';
+import '../../../../shared/widgets/app_tab_switcher.dart';
+import 'accounts/tools_tab_widgets.dart';
 
-class AccountsScreen extends ConsumerStatefulWidget {
+class AccountsScreen extends StatefulWidget {
   const AccountsScreen({super.key});
 
   @override
-  ConsumerState<AccountsScreen> createState() => _AccountsScreenState();
+  State<AccountsScreen> createState() => _AccountsScreenState();
 }
 
-class _AccountsScreenState extends ConsumerState<AccountsScreen> {
-  bool _showTools = false;
+class _AccountsScreenState extends State<AccountsScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  int _selectedTab = 0;
+
+  static const List<AppTabItem> _toolsTabs = <AppTabItem>[
+    AppTabItem(label: 'Budget', icon: Icons.account_balance_outlined),
+    AppTabItem(label: 'Goals', icon: Icons.flag_outlined),
+    AppTabItem(label: 'Split', icon: Icons.call_split_rounded),
+    AppTabItem(label: 'Recurring', icon: Icons.repeat_rounded),
+    AppTabItem(label: 'Future', icon: Icons.schedule_rounded),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _toolsTabs.length, vsync: this);
+    _tabController.addListener(() {
+      final newIndex = _tabController.index;
+      if (_selectedTab != newIndex) {
+        setState(() => _selectedTab = newIndex);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final currency = ref.watch(currencyFormatProvider);
-
-    return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            sliver: SliverToBoxAdapter(
-              child: AccountsPillSwitch(
-                leftLabel: 'Accounts',
-                rightLabel: 'Tools',
-                isRightSelected: _showTools,
-                onChanged: (value) {
-                  setState(() {
-                    _showTools = value;
-                  });
-                },
-              ),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        AppPageHeader(
+          eyebrow: 'Tools',
+          title: 'Financial Utilities',
+          bottom: AppTabSwitcher(
+            tabs: _toolsTabs,
+            selected: _selectedTab,
+            scrollable: true,
+            onChanged: (index) {
+              setState(() => _selectedTab = index);
+              _tabController.animateTo(index);
+            },
           ),
-          if (!_showTools)
-            SliverAccountsTabView(currency: currency)
-          else
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 24, 20, 120),
-                child: AccountsToolsTabView(),
-              ),
-            ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+            child: ToolsTabView(controller: _tabController),
+          ),
+        ),
+      ],
     );
   }
 }

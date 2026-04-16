@@ -29,43 +29,17 @@ final expenseControllerProvider = Provider<ExpenseController>((ref) {
   return ExpenseController(ref);
 });
 
-final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
-  SearchQueryNotifier.new,
-);
-
-class SearchQueryNotifier extends Notifier<String> {
-  @override
-  String build() => '';
-
-  void updateQuery(String query) => state = query;
-}
-
-final filteredExpensesProvider = Provider<List<ExpenseModel>>((ref) {
-  final query = ref.watch(searchQueryProvider).toLowerCase();
-  final expenses = ref.watch(expenseListProvider).value ?? const [];
-
-  if (query.isEmpty) {
-    return const [];
-  }
-
-  return expenses.where((expense) {
-    final categoryMatch = expense.category.toLowerCase().contains(query);
-    final noteMatch = expense.note.toLowerCase().contains(query);
-    final amountMatch = expense.amount.toString().contains(query);
-    return categoryMatch || noteMatch || amountMatch;
-  }).toList();
-});
-
 final statsProvider = Provider<ExpenseStats>((ref) {
   final expenses =
       ref.watch(expenseListProvider).value ?? const <ExpenseModel>[];
   return ExpenseStats.fromExpenses(expenses);
 });
 
-final analyticsSnapshotProvider = Provider<AnalyticsSnapshot>((ref) {
+final analyticsSnapshotProvider =
+    Provider.family<AnalyticsSnapshot, String>((ref, rangeLabel) {
   final expenses =
       ref.watch(expenseListProvider).value ?? const <ExpenseModel>[];
-  return AnalyticsSnapshot.fromExpenses(expenses);
+  return AnalyticsSnapshot.fromExpenses(expenses, rangeLabel: rangeLabel);
 });
 
 class ExpenseListNotifier extends AsyncNotifier<List<ExpenseModel>> {

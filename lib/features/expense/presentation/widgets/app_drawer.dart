@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../routes/app_routes.dart';
+import '../provider/preferences_providers.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final displayName = ref.watch(displayNameProvider);
     return Drawer(
       backgroundColor: AppColors.backgroundLight,
       child: Column(
         children: [
           // Profile Header
-          _buildHeader(context),
+          _buildHeader(context, displayName),
 
           Expanded(
             child: ListView(
@@ -41,7 +44,7 @@ class AppDrawer extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Version 1.0.0',
+              'Version ${AppConstants.version}',
               style: TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 12,
@@ -54,7 +57,9 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String displayName) {
+    final name = displayName.trim().isEmpty ? 'XPensa User' : displayName;
+    final initial = name[0].toUpperCase();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
@@ -68,31 +73,31 @@ class AppDrawer extends ConsumerWidget {
           bottomRight: Radius.circular(32),
         ),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 35,
             backgroundColor: Colors.white24,
             child: Text(
-              'P',
-              style: TextStyle(
+              initial,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            'XPensa User',
-            style: TextStyle(
+            name,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.w900,
             ),
           ),
-          Text(
+          const Text(
             'Keep spending simple.',
             style: TextStyle(
               color: Colors.white70,
@@ -153,3 +158,4 @@ class _TileIcon extends StatelessWidget {
     );
   }
 }
+

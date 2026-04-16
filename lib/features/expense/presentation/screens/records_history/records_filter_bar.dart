@@ -11,11 +11,15 @@ class RecordsFilterChips extends StatelessWidget {
     required this.selectedFilter,
     required this.onFilterSelected,
     required this.labelForFilter,
+    this.onCustomDateRange,
+    this.customDateRange,
   });
 
   final RecordsFilter selectedFilter;
   final ValueChanged<RecordsFilter> onFilterSelected;
   final String Function(RecordsFilter) labelForFilter;
+  final VoidCallback? onCustomDateRange;
+  final DateTimeRange? customDateRange;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +35,13 @@ class RecordsFilterChips extends StatelessWidget {
                 child: ChoiceChip(
                   label: Text(labelForFilter(filter)),
                   selected: isSelected,
-                  onSelected: (_) => onFilterSelected(filter),
+                  onSelected: (_) {
+                    if (filter == RecordsFilter.custom) {
+                      onCustomDateRange?.call();
+                    } else {
+                      onFilterSelected(filter);
+                    }
+                  },
                   selectedColor: AppColors.primaryBlue,
                   backgroundColor: AppColors.lightBlueBg,
                   labelStyle: TextStyle(

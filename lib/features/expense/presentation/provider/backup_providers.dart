@@ -4,7 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../data/datasource/account_local_datasource.dart';
 import '../../data/datasource/backup_local_datasource.dart';
+import '../../data/datasource/budget_local_datasource.dart';
+import '../../data/datasource/expense_local_datasource.dart';
+import '../../data/datasource/recurring_subscription_local_datasource.dart';
 import '../../../../core/utils/hive_bootstrap.dart';
 
 final backupLocalDatasourceProvider = Provider<BackupLocalDatasource>((ref) {
@@ -72,5 +76,14 @@ class BackupController {
       await HiveBootstrap.initialize();
       rethrow;
     }
+  }
+
+  /// Permanently clears all user data boxes (expenses, accounts, budgets,
+  /// subscriptions). App preferences are intentionally preserved.
+  Future<void> resetAllData() async {
+    await Hive.box(ExpenseLocalDatasource.boxName).clear();
+    await Hive.box(AccountLocalDatasource.boxName).clear();
+    await Hive.box(BudgetLocalDatasource.boxName).clear();
+    await Hive.box(RecurringSubscriptionLocalDatasource.boxName).clear();
   }
 }

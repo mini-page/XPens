@@ -16,19 +16,23 @@ class HomeDateStrip extends StatelessWidget {
     required this.onDateSelected,
     required this.onPrevious,
     required this.onNext,
+    required this.isOnToday,
+    required this.onJumpToToday,
   });
 
   final List<DateTime> visibleDates;
   final DateTime selectedDate;
   final String selectedTotalText;
   final int transactionCount;
+  final bool isOnToday;
   final ValueChanged<DateTime> onDateSelected;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final VoidCallback onJumpToToday;
 
   @override
   Widget build(BuildContext context) {
-    final monthFormat = DateFormat('MMMM yyyy');
+    final monthFormat = DateFormat('MMM yyyy');
     final weekdayFormat = DateFormat('E');
 
     return Container(
@@ -58,6 +62,35 @@ class HomeDateStrip extends StatelessWidget {
                   ),
                 ),
               ),
+              // H3: Jump-to-today button when not on today's window
+              if (!isOnToday)
+                Tooltip(
+                  message: 'Jump to today',
+                  child: TextButton.icon(
+                    onPressed: onJumpToToday,
+                    icon: const Icon(
+                      Icons.today_rounded,
+                      size: 16,
+                      color: AppColors.primaryBlue,
+                    ),
+                    label: const Text(
+                      'Today',
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
               HomeDateNavButton(
                 icon: Icons.arrow_back_rounded,
                 tooltip: 'Previous week',

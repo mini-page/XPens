@@ -1,6 +1,8 @@
 # XPensa – Project Memory
 
-> **Purpose:** Living reference for AI agents and developers. Update this file at every structural change. Last updated: 2026-04-04.
+> **Purpose:** Living reference for AI agents and developers. Update this file at every structural change. Last updated: 2026-04-16.
+>
+> **Agent Rule:** Every AI agent (Claude, Copilot, Jules, Gemini, etc.) **must** read this file at the start of each session and **must** append a row to §8 Change Log for every file they modify. This is the single source of truth for the project state.
 
 ---
 
@@ -359,3 +361,31 @@ All `push` / `pushReplacement` calls are centralised through **`AppRoutes`** in 
 | 2026-04-04 | Created `lib/features/transactions/transactions.dart` re-export barrel (add-expense + records-history + search screens + providers + model) | 1 new file |
 | 2026-04-06 | Created `lib/shared/widgets/app_pill_switch.dart` – unified `AppPillSwitch` widget replacing duplicate `AccountsPillSwitch` and `CategoriesPillSwitch`; both now resolved as `typedef` aliases | `app_pill_switch.dart`, `accounts_widgets.dart`, `categories_widgets.dart`, `shared/widgets/index.dart` |
 | 2026-04-06 | Created `lib/core/theme/app_theme.dart` – centralised `AppTheme.light()` / `AppTheme.dark()` factory replacing inline `ThemeData` in `main.dart`; `core/theme/index.dart` updated | `app_theme.dart`, `main.dart`, `core/theme/index.dart` |
+| 2026-04-16 | Increased `home_screen.dart` scroll-list bottom padding from default to `160` (EdgeInsets.only(bottom: 160)) so the last record is never hidden behind the floating FAB or the floating nav bar | `home_screen.dart` line ~96 |
+
+---
+
+## 9. AI Agent Instructions
+
+All AI agents working on this repository **must** follow these rules:
+
+1. **Read first** – Open and read `memory.md` at the start of every session before touching any code.
+2. **Write after** – Append a row to §8 Change Log for every file you create or modify (format: `| YYYY-MM-DD | Description | Files Affected |`).
+3. **Check issues** – Consult §5 Identified Issues before opening new ones; mark an issue resolved in §5 and §6 when your change fixes it.
+4. **Follow patterns** – Respect the conventions in §2 (screens, widgets, models, providers) and use the shared widgets in `lib/shared/widgets/` before building new ones.
+5. **Keep memory.md current** – This file is the authoritative project state; stale entries mislead future agents. Always update it.
+
+---
+
+## 10. Release Notes – v2.1.0 (2026-04-16)
+
+### What Changed
+| Area | Change |
+|------|--------|
+| Home screen scroll | Increased bottom padding of the recent-transactions scroll list to `160 dp` so the last record is never occluded by the floating FAB or the floating nav bar |
+
+### Migration Notes
+- No database schema changes; no data migration required.
+- No new dependencies added.
+
+---

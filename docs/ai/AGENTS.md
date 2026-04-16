@@ -1,5 +1,9 @@
 # AGENTS.md - XPensa Expense Tracker
 
+## 0. Memory File (Read Before Anything Else)
+
+Open **`memory.md`** (repo root) at the start of every session. It contains the current file layout, navigation map, identified issues, and a full change log. After completing any change, append a row to the §8 Change Log in `memory.md` (format: `| YYYY-MM-DD | Description | Files Affected |`). This keeps the shared agent context accurate and up-to-date for every subsequent session.
+
 ## 1. System Overview
 
 XPensa is a cross-platform, offline-first expense tracker built with:

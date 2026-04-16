@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer' as dev;
 
 import 'package:flutter/foundation.dart';
@@ -84,6 +85,48 @@ final currencyFormatProvider = Provider<NumberFormat>((ref) {
   );
 });
 
+final displayNameProvider = Provider<String>((ref) {
+  return ref.watch(appPreferencesProvider).value?.displayName ??
+      AppPreferencesModel.defaults.displayName;
+});
+
+final isPinEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appPreferencesProvider).value?.isPinEnabled ?? false;
+});
+
+final biometricLockEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appPreferencesProvider).value?.biometricLockEnabled ??
+      AppPreferencesModel.defaults.biometricLockEnabled;
+});
+
+final savingsGoalsJsonProvider = Provider<String>((ref) {
+  return ref.watch(appPreferencesProvider).value?.savingsGoalsJson ?? '';
+});
+
+final customQuickAmountsProvider = Provider<List<double>>((ref) {
+  final json =
+      ref.watch(appPreferencesProvider).value?.customQuickAmountsJson ?? '';
+  if (json.isEmpty) return const <double>[];
+  try {
+    final list = jsonDecode(json) as List<dynamic>;
+    return list.map((e) => (e as num).toDouble()).toList();
+  } catch (_) {
+    return const <double>[];
+  }
+});
+
+final hiddenDefaultAmountsProvider = Provider<List<double>>((ref) {
+  final json =
+      ref.watch(appPreferencesProvider).value?.hiddenDefaultAmountsJson ?? '';
+  if (json.isEmpty) return const <double>[];
+  try {
+    final list = jsonDecode(json) as List<dynamic>;
+    return list.map((e) => (e as num).toDouble()).toList();
+  } catch (_) {
+    return const <double>[];
+  }
+});
+
 final isOnboardingCompletedProvider = Provider<bool>((ref) {
   return ref.watch(appPreferencesProvider).value?.isOnboardingCompleted ??
       AppPreferencesModel.defaults.isOnboardingCompleted;
@@ -162,6 +205,42 @@ class AppPreferencesController {
 
   AppPreferencesModel get _current =>
       _ref.read(appPreferencesProvider).value ?? AppPreferencesModel.defaults;
+
+  Future<void> setDisplayName(String name) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(displayName: name));
+  }
+
+  Future<void> setPin(String pinHash) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(pinHash: pinHash));
+  }
+
+  Future<void> clearPin() async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(clearPin: true));
+  }
+
+  Future<void> setBiometricLock(bool enabled) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(biometricLockEnabled: enabled));
+  }
+
+  Future<void> setWhatsNewShownVersion(String version) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(whatsNewShownVersion: version));
+  }
+
+  Future<void> setSavingsGoalsJson(String json) async {
+    await _ref
+        .read(appPreferencesProvider.notifier)
+        .save(_current.copyWith(savingsGoalsJson: json));
+  }
 
   Future<void> setThemeMode(String themeModeKey) async {
     await _ref
@@ -258,6 +337,22 @@ class AppPreferencesController {
     await _ref
         .read(appPreferencesProvider.notifier)
         .save(_current.copyWith(lastBackupDateTime: dateTime));
+  }
+
+  Future<void> setCustomQuickAmounts(List<double> amounts) async {
+    await _ref.read(appPreferencesProvider.notifier).save(
+          _current.copyWith(
+            customQuickAmountsJson: jsonEncode(amounts),
+          ),
+        );
+  }
+
+  Future<void> setHiddenDefaultAmounts(List<double> amounts) async {
+    await _ref.read(appPreferencesProvider.notifier).save(
+          _current.copyWith(
+            hiddenDefaultAmountsJson: jsonEncode(amounts),
+          ),
+        );
   }
 
   Future<void> setExpenseCategoryEnabled(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../provider/account_providers.dart';
@@ -14,281 +16,171 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  late String _selectedLocale;
-  late String _selectedCurrency;
-  late String _selectedThemeKey;
-  late bool _smartReminders;
-  late String _accountName;
-  late double _initialBalance;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
-  final List<Map<String, String>> _languages = [
-    {'name': 'English (India)', 'locale': 'en_IN'},
-    {'name': 'English (US)', 'locale': 'en_US'},
-    {'name': 'हिन्दी (Hindi)', 'locale': 'hi_IN'},
-  ];
+  // Preferences state
+  String _selectedLocale = 'en_IN';
+  String _selectedCurrency = '₹';
+  String _selectedThemeKey = 'light';
+  bool _smartReminders = true;
+  String _accountName = 'Main Account';
+  double _initialBalance = 0.0;
+  String _displayName = '';
 
-  final List<Map<String, String>> _currencies = [
-    {'name': 'Rupee (\u20B9)', 'symbol': '\u20B9'},
-    {'name': 'Dollar (\$)', 'symbol': '\$'},
-    {'name': 'Euro (\u20AC)', 'symbol': '\u20AC'},
-    {'name': 'Pound (\u00A3)', 'symbol': '\u00A3'},
-  ];
+  // Step definitions
+  static const int _pageCount = 4;
 
   @override
-  void initState() {
-    super.initState();
-    _selectedLocale = 'en_IN';
-    _selectedCurrency = '₹';
-    _selectedThemeKey = 'light';
-    _smartReminders = true;
-    _accountName = 'Main Account';
-    _initialBalance = 0.0;
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _nextPage() {
+    if (_currentPage < _pageCount - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _completeOnboarding();
+    }
+  }
+
+  void _previousPage() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome to XPensa',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+        child: Column(
+          children: [
+            // Progress indicator
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                children: List.generate(_pageCount, (index) {
+                  final isActive = index <= _currentPage;
+                  return Expanded(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      height: 4,
+                      margin: EdgeInsets.only(
+                        right: index < _pageCount - 1 ? 6 : 0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? AppColors.primaryBlue
+                            : AppColors.surfaceAccent,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Let\'s set up your preferences to get started.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSubtle,
-                    ),
-              ),
-              const SizedBox(height: 32),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle('Language'),
-                      _buildDropdown<String>(
-                        value: _selectedLocale,
-                        items: _languages.map((lang) {
-                          return DropdownMenuItem(
-                            value: lang['locale'],
-                            child: Text(lang['name']!),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedLocale = val!),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSectionTitle('Currency'),
-                      _buildDropdown<String>(
-                        value: _selectedCurrency,
-                        items: _currencies.map((curr) {
-                          return DropdownMenuItem(
-                            value: curr['symbol'],
-                            child: Text(curr['name']!),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedCurrency = val!),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSectionTitle('First Account'),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: _buildTextField(
-                              label: 'Account Name',
-                              initialValue: _accountName,
-                              onChanged: (val) => _accountName = val,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildTextField(
-                              label: 'Balance',
-                              initialValue: _initialBalance.toString(),
-                              keyboardType: TextInputType.number,
-                              onChanged: (val) =>
-                                  _initialBalance = double.tryParse(val) ?? 0.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSectionTitle('Theme'),
-                      Row(
-                        children: [
-                          _buildThemeOption(
-                              'Light', 'light', Icons.light_mode_outlined),
-                          const SizedBox(width: 12),
-                          _buildThemeOption(
-                              'Dark', 'dark', Icons.dark_mode_outlined),
-                          const SizedBox(width: 12),
-                          _buildThemeOption('System', 'system',
-                              Icons.settings_brightness_outlined),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSectionTitle('Preferences'),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Smart Reminders'),
-                        subtitle: const Text('Get notified for pending bills'),
-                        value: _smartReminders,
-                        activeThumbColor: AppColors.primaryBlue,
-                        onChanged: (val) =>
-                            setState(() => _smartReminders = val),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                label: 'Get Started',
-                onPressed: _completeOnboarding,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textDark,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required String initialValue,
-    required ValueChanged<String> onChanged,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      initialValue: initialValue,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontSize: 12, color: AppColors.textSubtle),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.backgroundLight),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.backgroundLight),
-        ),
-      ),
-      keyboardType: keyboardType,
-      onChanged: onChanged,
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required T value,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.backgroundLight),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          items: items,
-          onChanged: onChanged,
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThemeOption(String label, String key, IconData icon) {
-    final isSelected = _selectedThemeKey == key;
-    return Expanded(
-      child: Semantics(
-        button: true,
-        label: 'Select $label theme',
-        selected: isSelected,
-        excludeSemantics: true,
-        child: GestureDetector(
-          onTap: () => setState(() => _selectedThemeKey = key),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primaryBlue.withValues(alpha: 0.1)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.primaryBlue
-                    : AppColors.backgroundLight,
-                width: 2,
+                  );
+                }),
               ),
             ),
-            child: Column(
-              children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color:
-                      isSelected ? AppColors.primaryBlue : AppColors.textSubtle,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isSelected
-                        ? AppColors.primaryBlue
-                        : AppColors.textSubtle,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+
+            // Pages
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (page) => setState(() => _currentPage = page),
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _WelcomePage(
+                    displayName: _displayName,
+                    onNameChanged: (v) => _displayName = v,
                   ),
-                ),
-              ],
+                  _LocalePage(
+                    selectedLocale: _selectedLocale,
+                    selectedCurrency: _selectedCurrency,
+                    onLocaleChanged: (v) =>
+                        setState(() => _selectedLocale = v),
+                    onCurrencyChanged: (v) =>
+                        setState(() => _selectedCurrency = v),
+                  ),
+                  _AccountPage(
+                    accountName: _accountName,
+                    initialBalance: _initialBalance,
+                    onNameChanged: (v) => _accountName = v,
+                    onBalanceChanged: (v) =>
+                        _initialBalance = double.tryParse(v) ?? 0,
+                  ),
+                  _PreferencesPage(
+                    themeKey: _selectedThemeKey,
+                    smartReminders: _smartReminders,
+                    onThemeChanged: (v) =>
+                        setState(() => _selectedThemeKey = v),
+                    onRemindersChanged: (v) =>
+                        setState(() => _smartReminders = v),
+                  ),
+                ],
+              ),
             ),
-          ),
+
+            // Navigation buttons
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+              child: Row(
+                children: [
+                  if (_currentPage > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: OutlinedButton(
+                        onPressed: _previousPage,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          side: const BorderSide(color: AppColors.primaryBlue),
+                        ),
+                        child: const Text(
+                          'Back',
+                          style: TextStyle(
+                            color: AppColors.primaryBlue,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child: AppButton(
+                      label: _currentPage == _pageCount - 1
+                          ? 'Get Started 🚀'
+                          : 'Continue',
+                      onPressed: _nextPage,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Future<void> _completeOnboarding() async {
-    // Create the first account
+    final name = _displayName.trim();
+    final accountName = _accountName.trim().isEmpty ? 'Main Account' : _accountName;
+
     await ref.read(accountControllerProvider).saveAccount(
-          name: _accountName,
+          name: accountName,
           iconKey: 'wallet',
           balance: _initialBalance,
         );
 
-    // Update preferences and complete onboarding
     await ref.read(appPreferencesControllerProvider).updateAll(
           themeModeKey: _selectedThemeKey,
           locale: _selectedLocale,
@@ -296,5 +188,547 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           smartRemindersEnabled: _smartReminders,
           isOnboardingCompleted: true,
         );
+
+    if (name.isNotEmpty) {
+      await ref.read(appPreferencesControllerProvider).setDisplayName(name);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page 1: Welcome
+// ---------------------------------------------------------------------------
+class _WelcomePage extends StatefulWidget {
+  const _WelcomePage({
+    required this.displayName,
+    required this.onNameChanged,
+  });
+
+  final String displayName;
+  final ValueChanged<String> onNameChanged;
+
+  @override
+  State<_WelcomePage> createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<_WelcomePage> {
+  late final TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.displayName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Spacer(),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Image.asset(AppAssets.logo, width: 96, height: 96),
+          ),
+          const SizedBox(height: 28),
+          Text(
+            'Welcome to XPensa',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Your smart offline expense tracker.\nLet\'s set you up in a minute.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSubtle,
+                  height: 1.5,
+                ),
+          ),
+          const SizedBox(height: 40),
+          TextField(
+            controller: _nameController,
+            onChanged: widget.onNameChanged,
+            maxLength: 40,
+            decoration: InputDecoration(
+              labelText: 'What should we call you? (optional)',
+              hintText: 'Your name',
+              prefixIcon: const Icon(Icons.person_outline_rounded),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              counterText: '',
+            ),
+          ),
+          const Spacer(flex: 2),
+          Text(
+            'Version ${AppConstants.version}',
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page 2: Language & Currency
+// ---------------------------------------------------------------------------
+class _LocalePage extends StatelessWidget {
+  const _LocalePage({
+    required this.selectedLocale,
+    required this.selectedCurrency,
+    required this.onLocaleChanged,
+    required this.onCurrencyChanged,
+  });
+
+  final String selectedLocale;
+  final String selectedCurrency;
+  final ValueChanged<String> onLocaleChanged;
+  final ValueChanged<String> onCurrencyChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          _OnboardingStepHeader(
+            icon: Icons.language_rounded,
+            title: 'Language & Currency',
+            subtitle: 'Choose your region and preferred currency',
+          ),
+          const SizedBox(height: 28),
+          _SectionLabel(label: 'Language'),
+          const SizedBox(height: 10),
+          _OptionGrid<String>(
+            options: AppConstants.locales
+                .map((l) => _OptionItem(label: l.label, value: l.locale))
+                .toList(),
+            selected: selectedLocale,
+            onSelected: onLocaleChanged,
+          ),
+          const SizedBox(height: 24),
+          _SectionLabel(label: 'Currency'),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: AppConstants.currencies.map((c) {
+              final isSelected = selectedCurrency == c.symbol;
+              return ChoiceChip(
+                label: Text(c.label),
+                selected: isSelected,
+                onSelected: (_) => onCurrencyChanged(c.symbol),
+                selectedColor: AppColors.primaryBlue,
+                backgroundColor: Colors.white,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.textDark,
+                  fontWeight: FontWeight.w700,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page 3: First Account
+// ---------------------------------------------------------------------------
+class _AccountPage extends StatelessWidget {
+  const _AccountPage({
+    required this.accountName,
+    required this.initialBalance,
+    required this.onNameChanged,
+    required this.onBalanceChanged,
+  });
+
+  final String accountName;
+  final double initialBalance;
+  final ValueChanged<String> onNameChanged;
+  final ValueChanged<String> onBalanceChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          _OnboardingStepHeader(
+            icon: Icons.account_balance_wallet_outlined,
+            title: 'Your First Account',
+            subtitle: 'This is where your transactions will be recorded',
+          ),
+          const SizedBox(height: 28),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.cardShadow,
+                  blurRadius: 16,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                TextFormField(
+                  initialValue: accountName,
+                  onChanged: onNameChanged,
+                  decoration: InputDecoration(
+                    labelText: 'Account Name',
+                    hintText: 'e.g. Cash, HDFC, SBI',
+                    prefixIcon: const Icon(Icons.wallet_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: initialBalance > 0
+                      ? initialBalance.toStringAsFixed(0)
+                      : '',
+                  onChanged: onBalanceChanged,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'Opening Balance (optional)',
+                    hintText: '0',
+                    prefixIcon: const Icon(Icons.currency_rupee_rounded),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'You can add more accounts later from the Tools page.',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page 4: Theme & Preferences
+// ---------------------------------------------------------------------------
+class _PreferencesPage extends StatelessWidget {
+  const _PreferencesPage({
+    required this.themeKey,
+    required this.smartReminders,
+    required this.onThemeChanged,
+    required this.onRemindersChanged,
+  });
+
+  final String themeKey;
+  final bool smartReminders;
+  final ValueChanged<String> onThemeChanged;
+  final ValueChanged<bool> onRemindersChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          _OnboardingStepHeader(
+            icon: Icons.tune_rounded,
+            title: 'Preferences',
+            subtitle: 'Customise how XPensa looks and behaves',
+          ),
+          const SizedBox(height: 28),
+          _SectionLabel(label: 'Theme'),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _ThemeOption(
+                  label: 'Light',
+                  themeKey: 'light',
+                  icon: Icons.light_mode_outlined,
+                  selected: themeKey,
+                  onTap: onThemeChanged),
+              const SizedBox(width: 10),
+              _ThemeOption(
+                  label: 'Dark',
+                  themeKey: 'dark',
+                  icon: Icons.dark_mode_outlined,
+                  selected: themeKey,
+                  onTap: onThemeChanged),
+              const SizedBox(width: 10),
+              _ThemeOption(
+                  label: 'System',
+                  themeKey: 'system',
+                  icon: Icons.brightness_auto_outlined,
+                  selected: themeKey,
+                  onTap: onThemeChanged),
+            ],
+          ),
+          const SizedBox(height: 28),
+          _SectionLabel(label: 'Notifications'),
+          const SizedBox(height: 4),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SwitchListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: const Text(
+                'Smart Reminders',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+              subtitle: const Text(
+                'Get notified for pending bills & recurring transactions',
+                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+              ),
+              value: smartReminders,
+              activeThumbColor: AppColors.primaryBlue,
+              onChanged: onRemindersChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared sub-widgets
+// ---------------------------------------------------------------------------
+
+class _OnboardingStepHeader extends StatelessWidget {
+  const _OnboardingStepHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.primaryBlue.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: AppColors.primaryBlue, size: 28),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label.toUpperCase(),
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w900,
+        color: AppColors.textMuted,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+}
+
+class _OptionItem<T> {
+  const _OptionItem({required this.label, required this.value});
+  final String label;
+  final T value;
+}
+
+class _OptionGrid<T> extends StatelessWidget {
+  const _OptionGrid({
+    required this.options,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<_OptionItem<T>> options;
+  final T selected;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: options.map((opt) {
+        final isSelected = opt.value == selected;
+        return GestureDetector(
+          onTap: () => onSelected(opt.value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primaryBlue
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primaryBlue
+                    : AppColors.surfaceAccent,
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              opt.label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.textDark,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _ThemeOption extends StatelessWidget {
+  const _ThemeOption({
+    required this.label,
+    required this.themeKey,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final String themeKey;
+  final IconData icon;
+  final String selected;
+  final ValueChanged<String> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = selected == themeKey;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => onTap(themeKey),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primaryBlue
+                  : AppColors.surfaceAccent,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 22,
+                color:
+                    isSelected ? AppColors.primaryBlue : AppColors.textSubtle,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected
+                      ? AppColors.primaryBlue
+                      : AppColors.textSubtle,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
