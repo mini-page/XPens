@@ -21,6 +21,7 @@ class AppPreferencesModel {
     this.whatsNewShownVersion = '',
     this.savingsGoalsJson = '',
     this.customQuickAmountsJson = '',
+    this.hiddenDefaultAmountsJson = '',
   });
 
   static const AppPreferencesModel defaults = AppPreferencesModel(
@@ -41,6 +42,7 @@ class AppPreferencesModel {
     whatsNewShownVersion: '',
     savingsGoalsJson: '',
     customQuickAmountsJson: '',
+    hiddenDefaultAmountsJson: '',
   );
 
   final String themeModeKey;
@@ -69,6 +71,8 @@ class AppPreferencesModel {
   final String savingsGoalsJson;
   /// JSON-encoded list of user-defined quick-add amounts (e.g. [25, 75, 200]).
   final String customQuickAmountsJson;
+  /// JSON-encoded list of locale-default amounts hidden by the user.
+  final String hiddenDefaultAmountsJson;
 
   bool get isPinEnabled => pinHash.isNotEmpty;
 
@@ -94,6 +98,7 @@ class AppPreferencesModel {
     bool clearPin = false,
     String? savingsGoalsJson,
     String? customQuickAmountsJson,
+    String? hiddenDefaultAmountsJson,
   }) {
     return AppPreferencesModel(
       themeModeKey: themeModeKey ?? this.themeModeKey,
@@ -122,6 +127,8 @@ class AppPreferencesModel {
       savingsGoalsJson: savingsGoalsJson ?? this.savingsGoalsJson,
       customQuickAmountsJson:
           customQuickAmountsJson ?? this.customQuickAmountsJson,
+      hiddenDefaultAmountsJson:
+          hiddenDefaultAmountsJson ?? this.hiddenDefaultAmountsJson,
     );
   }
 }
@@ -161,6 +168,7 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
         AppPreferencesModel.defaults.whatsNewShownVersion;
     String savingsGoalsJson = AppPreferencesModel.defaults.savingsGoalsJson;
     String customQuickAmountsJson = AppPreferencesModel.defaults.customQuickAmountsJson;
+    String hiddenDefaultAmountsJson = AppPreferencesModel.defaults.hiddenDefaultAmountsJson;
 
     try {
       if (reader.availableBytes > 0) locale = reader.readString();
@@ -192,6 +200,7 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       if (reader.availableBytes > 0) whatsNewShownVersion = reader.readString();
       if (reader.availableBytes > 0) savingsGoalsJson = reader.readString();
       if (reader.availableBytes > 0) customQuickAmountsJson = reader.readString();
+      if (reader.availableBytes > 0) hiddenDefaultAmountsJson = reader.readString();
     } catch (_) {
       // Fallback if reading fails
     }
@@ -216,6 +225,7 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       whatsNewShownVersion: whatsNewShownVersion,
       savingsGoalsJson: savingsGoalsJson,
       customQuickAmountsJson: customQuickAmountsJson,
+      hiddenDefaultAmountsJson: hiddenDefaultAmountsJson,
     );
   }
 
@@ -243,7 +253,8 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       ..writeBool(obj.biometricLockEnabled)
       ..writeString(obj.whatsNewShownVersion)
       ..writeString(obj.savingsGoalsJson)
-      ..writeString(obj.customQuickAmountsJson);
+      ..writeString(obj.customQuickAmountsJson)
+      ..writeString(obj.hiddenDefaultAmountsJson);
   }
 
   List<String> _readStringList(BinaryReader reader) {

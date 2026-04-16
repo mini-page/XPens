@@ -115,6 +115,18 @@ final customQuickAmountsProvider = Provider<List<double>>((ref) {
   }
 });
 
+final hiddenDefaultAmountsProvider = Provider<List<double>>((ref) {
+  final json =
+      ref.watch(appPreferencesProvider).value?.hiddenDefaultAmountsJson ?? '';
+  if (json.isEmpty) return const <double>[];
+  try {
+    final list = jsonDecode(json) as List<dynamic>;
+    return list.map((e) => (e as num).toDouble()).toList();
+  } catch (_) {
+    return const <double>[];
+  }
+});
+
 final isOnboardingCompletedProvider = Provider<bool>((ref) {
   return ref.watch(appPreferencesProvider).value?.isOnboardingCompleted ??
       AppPreferencesModel.defaults.isOnboardingCompleted;
@@ -331,6 +343,14 @@ class AppPreferencesController {
     await _ref.read(appPreferencesProvider.notifier).save(
           _current.copyWith(
             customQuickAmountsJson: jsonEncode(amounts),
+          ),
+        );
+  }
+
+  Future<void> setHiddenDefaultAmounts(List<double> amounts) async {
+    await _ref.read(appPreferencesProvider.notifier).save(
+          _current.copyWith(
+            hiddenDefaultAmountsJson: jsonEncode(amounts),
           ),
         );
   }

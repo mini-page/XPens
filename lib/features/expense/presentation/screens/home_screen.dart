@@ -65,11 +65,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final locale = ref.watch(localeProvider);
     final localeAmounts = _localeQuickAmounts(locale);
     final customAmounts = ref.watch(customQuickAmountsProvider);
-    // Merge: locale defaults first, then custom (deduplicated)
+    final hiddenDefaults = ref.watch(hiddenDefaultAmountsProvider);
+    // Merge: locale defaults (minus hidden) first, then custom (deduplicated),
+    // sorted ascending so newly-added amounts slot into the right position.
     final quickAmounts = [
-      ...localeAmounts,
+      ...localeAmounts.where((a) => !hiddenDefaults.contains(a)),
       ...customAmounts.where((a) => !localeAmounts.contains(a)),
-    ];
+    ]..sort();
 
     final unreadCount = ref.watch(unreadNotificationCountProvider);
 
@@ -125,6 +127,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               context,
                               initialAmount: amount,
                               initialDate: _selectedDate,
+                            ),
+                            onLongPress: () => _deleteChip(
+                              context,
+                              amount: amount,
+                              isLocaleDefault: localeAmounts.contains(amount),
+                              customAmounts: customAmounts,
+                              hiddenDefaults: hiddenDefaults,
                             ),
                           ),
                         );
@@ -419,9 +428,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final parsed = double.tryParse(controller.text.trim());
     if (parsed == null || parsed <= 0) return;
 
-    final updated = [...customAmounts, parsed];
+    final updated = [...customAmounts, parsed]..sort();
     await ref
         .read(appPreferencesControllerProvider)
         .setCustomQuickAmounts(updated);
+  }
+
+  Future<void> _deleteChip(
+    BuildContext context, {
+    required double amount,
+    required bool isLocaleDefault,
+    required List<double> customAmounts,
+    required List<double> hiddenDefaults,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove quick amount'),
+        content: Text(
+          'Remove this chip from the quick-add row?',
+          style: const TextStyle(height: 1.5),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    if (isLocaleDefault) {
+      final updated = [...hiddenDefaults, amount];
+      await ref
+          .read(appPreferencesControllerProvider)
+          .setHiddenDefaultAmounts(updated);
+    } else {
+      final updated = customAmounts.where((a) => a != amount).toList();
+      await ref
+          .read(appPreferencesControllerProvider)
+          .setCustomQuickAmounts(updated);
+    }
   }
 }

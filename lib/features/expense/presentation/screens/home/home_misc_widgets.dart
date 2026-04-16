@@ -45,32 +45,43 @@ class HomeEmptyCard extends StatelessWidget {
 
 /// A tappable chip showing a pre-set amount for the quick-add flow.
 class HomeAmountChip extends StatelessWidget {
-  const HomeAmountChip({super.key, required this.label, required this.onTap});
+  const HomeAmountChip({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.onLongPress,
+  });
 
   final String label;
   final VoidCallback onTap;
+  /// Called when the chip is long-pressed. When non-null a subtle delete hint
+  /// is implied to the user via the chip appearance.
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
       label: 'Quick add $label',
-      child: ActionChip(
-        onPressed: onTap,
-        label: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: ActionChip(
+          onPressed: onTap,
+          label: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.primaryBlue,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
           ),
+          backgroundColor: AppColors.surfaceAccent,
+          side: const BorderSide(color: AppColors.primaryBlueLight, width: 1),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          elevation: 0,
         ),
-        backgroundColor: AppColors.surfaceAccent,
-        side: const BorderSide(color: AppColors.primaryBlueLight, width: 1),
-        shape: const StadiumBorder(),
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        elevation: 0,
       ),
     );
   }
