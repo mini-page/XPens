@@ -16,7 +16,9 @@ import '../provider/expense_providers.dart';
 import '../provider/preferences_providers.dart';
 import '../provider/recurring_subscription_providers.dart';
 import '../widgets/ui_feedback.dart';
+import 'about_screen.dart';
 import 'pin_entry_screen.dart';
+import 'support_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -285,41 +287,27 @@ class SettingsScreen extends ConsumerWidget {
                   icon: Icons.description_outlined,
                   title: 'About This Project',
                   subtitle: 'Learn more about XPensa',
-                  onTap: () => showAboutDialog(
-                    context: context,
-                    applicationName: AppConstants.appName,
-                    applicationVersion: AppConstants.version,
-                    children: const <Widget>[
-                      Text(
-                        'XPensa is an offline-first personal finance tracker '
-                        'built for Android. Track expenses, manage accounts, '
-                        'plan budgets, and more — all on your device, no '
-                        'cloud required.',
-                        style: TextStyle(height: 1.5),
-                      ),
-                    ],
-                  ),
-                ),
-                _buildActionTile(
-                  icon: Icons.support_agent_outlined,
-                  title: 'Support',
-                  subtitle: 'Get help or report an issue',
-                  onTap: () => showPlannedFeatureNotice(
-                    context,
-                    title: 'Support',
-                    message:
-                        'In-app support is coming soon. For now, please reach out via the developer page or GitHub issues.',
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                        builder: (_) => const AboutScreen()),
                   ),
                 ),
                 _buildActionTile(
                   icon: Icons.person_outline_rounded,
                   title: 'Developer Page',
                   subtitle: 'Visit the project repository',
-                  onTap: () => showPlannedFeatureNotice(
-                    context,
-                    title: 'Developer Page',
-                    message:
-                        'XPensa is an open-source project. The GitHub link will be available in an upcoming update.',
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                        builder: (_) => const AboutScreen()),
+                  ),
+                ),
+                _buildActionTile(
+                  icon: Icons.volunteer_activism_outlined,
+                  title: 'Support the Project',
+                  subtitle: 'Donate or star the repo',
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                        builder: (_) => const SupportScreen()),
                   ),
                 ),
                 _buildActionTile(
