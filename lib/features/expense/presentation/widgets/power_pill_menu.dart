@@ -312,20 +312,27 @@ class _AnimatedPill extends StatelessWidget {
                       HapticFeedback.selectionClick();
                       onTrailingToggle?.call(!trailingToggleValue!);
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Transform.scale(
-                        scale: 0.75,
-                        child: Switch(
-                          value: trailingToggleValue!,
-                          onChanged: onTrailingToggle,
-                          activeColor: Colors.white,
-                          activeTrackColor: AppColors.primaryBlue
-                              .withValues(alpha: 0.7),
-                          inactiveThumbColor: Colors.white60,
-                          inactiveTrackColor: Colors.white24,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+                    child: SizedBox(
+                      // Clamp layout height to icon row height so the pill
+                      // stays the same height as all other pills.
+                      width: 44,
+                      height: 20,
+                      child: OverflowBox(
+                        maxWidth: 58,
+                        maxHeight: 30,
+                        child: Transform.scale(
+                          scale: 0.6,
+                          child: Switch(
+                            value: trailingToggleValue!,
+                            onChanged: onTrailingToggle,
+                            activeColor: Colors.white,
+                            activeTrackColor: AppColors.primaryBlue
+                                .withValues(alpha: 0.7),
+                            inactiveThumbColor: Colors.white60,
+                            inactiveTrackColor: Colors.white24,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
                       ),
                     ),
