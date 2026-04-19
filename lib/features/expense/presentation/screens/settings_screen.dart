@@ -156,24 +156,24 @@ class SettingsScreen extends ConsumerWidget {
             const SettingsSectionHeader(title: 'Data Management'),
             SettingsCard(
               children: [
+                // ── Backup Now ──────────────────────────────────────────
+                if (autoBackup && backupPath != null)
+                  _buildActionTile(
+                    icon: Icons.backup_rounded,
+                    title: 'Backup Now',
+                    subtitle: 'Save a backup to your backup folder',
+                    onTap: () => _backupNow(context, ref),
+                  ),
                 _buildActionTile(
                   icon: Icons.cloud_upload_outlined,
                   title: 'Export Data',
-                  subtitle: 'Create a local backup file (.xpensa)',
-                  onTap: () async {
-                    try {
-                      await backupController.exportData();
-                    } catch (e) {
-                      if (context.mounted) {
-                        context.showSnackBar('Export failed: $e');
-                      }
-                    }
-                  },
+                  subtitle: 'Share as .xpensa, CSV, or JSON',
+                  onTap: () => _showExportFormatSheet(context, ref),
                 ),
                 _buildActionTile(
                   icon: Icons.cloud_download_outlined,
                   title: 'Import Data',
-                  subtitle: 'Restore from a backup file',
+                  subtitle: 'Restore from a .xpensa backup file',
                   onTap: () async {
                     final confirmed = await confirmDestructiveAction(
                       context,
@@ -250,20 +250,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // ── App Management ────────────────────────────────────────────
-            const SettingsSectionHeader(title: 'App Management'),
-            SettingsCard(
-              children: [
-                _buildDangerTile(
-                  icon: Icons.delete_sweep_outlined,
-                  title: 'Reset App Data',
-                  subtitle: 'Permanently erase all transactions and accounts',
-                  onTap: () => _resetAppData(context, ref),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
             // ── AI Features ───────────────────────────────────────────────
             const SettingsSectionHeader(title: 'AI Features'),
             _AiFeaturesCard(
@@ -331,6 +317,11 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 32),
+
+            // ── Danger Zone ────────────────────────────────────────────────
+            _buildDangerZone(context, ref),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -344,21 +335,27 @@ class SettingsScreen extends ConsumerWidget {
   ) async {
     final controller = ref.read(appPreferencesControllerProvider);
     if (enable) {
+      // First check if the hardware supports biometrics at all.
       final available = await BiometricService.isAvailable();
       if (!available) {
         if (context.mounted) {
           context.showSnackBar(
-            'No biometrics are enrolled on this device.',
+            'No biometrics enrolled. Please set up fingerprint or face unlock '
+            'in your device settings first.',
           );
         }
         return;
       }
+      // Require the user to authenticate before enabling, so the feature
+      // can't be switched on without proving identity.
       final ok = await BiometricService.authenticate(
         reason: 'Confirm your identity to enable Biometric Lock',
       );
       if (!ok) {
         if (context.mounted) {
-          context.showSnackBar('Biometric verification failed.');
+          context.showSnackBar(
+            'Biometric verification failed. Please try again.',
+          );
         }
         return;
       }
@@ -400,15 +397,23 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _resetAppData(BuildContext context, WidgetRef ref) async {
-    final confirmed = await confirmDestructiveAction(
+    // Step 1: Standard destructive-action confirmation.
+    final step1 = await confirmDestructiveAction(
       context,
       title: 'Reset All Data?',
       message: 'This will permanently delete all transactions, accounts, '
           'subscriptions, and budgets. Your settings will be preserved. '
           'This cannot be undone.',
-      confirmLabel: 'Reset Everything',
+      confirmLabel: 'Continue',
     );
-    if (!confirmed || !context.mounted) return;
+    if (!step1 || !context.mounted) return;
+
+    // Step 2: Require the user to type "RESET" to prevent accidental taps.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _ResetConfirmDialog(),
+    );
+    if (confirmed != true || !context.mounted) return;
 
     try {
       await ref.read(backupControllerProvider).resetAllData();
@@ -424,6 +429,141 @@ class SettingsScreen extends ConsumerWidget {
         context.showSnackBar('Reset failed: $e');
       }
     }
+  }
+
+  /// Shows the export format picker and triggers the chosen export type.
+  Future<void> _showExportFormatSheet(
+      BuildContext context, WidgetRef ref) async {
+    final backupController = ref.read(backupControllerProvider);
+
+    final chosen = await showModalBottomSheet<_ExportFormat>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Colors.white,
+      builder: (_) => const _ExportFormatSheet(),
+    );
+
+    if (chosen == null || !context.mounted) return;
+
+    try {
+      switch (chosen) {
+        case _ExportFormat.native:
+          await backupController.exportData();
+        case _ExportFormat.csv:
+          await backupController.exportAsCSV();
+        case _ExportFormat.json:
+          await backupController.exportAsJSON();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        context.showSnackBar('Export failed: $e');
+      }
+    }
+  }
+
+  /// Triggers an immediate backup to the configured backup directory.
+  Future<void> _backupNow(BuildContext context, WidgetRef ref) async {
+    final backupController = ref.read(backupControllerProvider);
+    try {
+      context.showSnackBar('Creating backup…');
+      final savedAt = await backupController.backupNow();
+      if (context.mounted) {
+        if (savedAt != null) {
+          context.showSnackBar('Backup saved successfully.');
+        } else {
+          context.showSnackBar(
+            'Backup failed: no backup folder configured.',
+            type: AppFeedbackType.warning,
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        context.showSnackBar('Backup failed: $e');
+      }
+    }
+  }
+
+  /// Builds the red "Danger Zone" section at the very bottom of the page.
+  Widget _buildDangerZone(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(
+            'DANGER ZONE',
+            style: TextStyle(
+              color: AppColors.danger,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.danger.withValues(alpha: 0.25),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.danger.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: AppColors.danger, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Destructive Actions',
+                      style: TextStyle(
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Text(
+                  'The action below permanently deletes data and cannot be '
+                  'undone. Export a backup before proceeding.',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+              _buildDangerTile(
+                icon: Icons.delete_sweep_outlined,
+                title: 'Reset App Data',
+                subtitle:
+                    'Permanently erase all transactions, accounts, budgets & subscriptions',
+                onTap: () => _resetAppData(context, ref),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Future<String?> _pickBackupDirectory(
@@ -831,6 +971,221 @@ class SettingsScreen extends ConsumerWidget {
 }
 
 // ── Private widget ────────────────────────────────────────────────────────────
+
+/// Export format options shown in the export-format bottom sheet.
+enum _ExportFormat { native, csv, json }
+
+/// Bottom sheet that lets the user pick an export format.
+class _ExportFormatSheet extends StatelessWidget {
+  const _ExportFormatSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Export Format',
+              style: TextStyle(
+                color: AppColors.textDark,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Choose how to export your data.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            _FormatOption(
+              icon: Icons.folder_zip_outlined,
+              iconColor: AppColors.primaryBlue,
+              title: 'Native Backup (.xpensa)',
+              subtitle:
+                  'Full backup — includes all app data. Use to restore XPensa.',
+              onTap: () =>
+                  Navigator.of(context).pop(_ExportFormat.native),
+            ),
+            const Divider(height: 16),
+            _FormatOption(
+              icon: Icons.table_chart_outlined,
+              iconColor: AppColors.success,
+              title: 'CSV Spreadsheet',
+              subtitle: 'Transactions only — open in Excel, Sheets, etc.',
+              onTap: () =>
+                  Navigator.of(context).pop(_ExportFormat.csv),
+            ),
+            const Divider(height: 16),
+            _FormatOption(
+              icon: Icons.data_object_rounded,
+              iconColor: const Color(0xFFE07B39),
+              title: 'JSON',
+              subtitle:
+                  'Transactions as structured JSON — for developers / archiving.',
+              onTap: () =>
+                  Navigator.of(context).pop(_ExportFormat.json),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FormatOption extends StatelessWidget {
+  const _FormatOption({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textMuted, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Second-step confirmation dialog for Reset App Data that requires the user
+/// to type the word "RESET" before the action is permitted.
+class _ResetConfirmDialog extends StatefulWidget {
+  @override
+  State<_ResetConfirmDialog> createState() => _ResetConfirmDialogState();
+}
+
+class _ResetConfirmDialogState extends State<_ResetConfirmDialog> {
+  final TextEditingController _ctrl = TextEditingController();
+  bool _matches = false;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: AppColors.danger),
+          SizedBox(width: 10),
+          Text(
+            'Final Confirmation',
+            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Type RESET below to confirm you want to permanently delete all '
+            'transactions, accounts, budgets, and subscriptions.',
+            style: TextStyle(fontSize: 13, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _ctrl,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              hintText: 'Type RESET',
+              isDense: true,
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: AppColors.danger, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 12),
+            ),
+            onChanged: (val) {
+              final matches = val.trim() == 'RESET';
+              if (matches != _matches) setState(() => _matches = matches);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _matches ? () => Navigator.of(context).pop(true) : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.danger,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.danger.withValues(alpha: 0.35),
+          ),
+          child: const Text('Reset Everything'),
+        ),
+      ],
+    );
+  }
+}
 
 /// Small pill badge used as the trailing widget on the "Update Available" tile.
 class _UpdateBadge extends StatelessWidget {

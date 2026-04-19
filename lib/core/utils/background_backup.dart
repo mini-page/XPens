@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:archive/archive_io.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -36,24 +37,30 @@ void callbackDispatcher() {
         return Future.value(true); // Directory disappeared, nothing to do
       }
 
-      // Create a timestamped backup folder or file
+      // Create a timestamped .xpensa backup file in the target directory.
+      // The .xpensa format (ZIP of Hive files) is the same format used by
+      // BackupLocalDatasource.createBackup() and restoreBackup(), ensuring
+      // auto-backups can be imported via the Import Data feature.
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
           .split('.')
           .first;
-      final backupFolder =
-          Directory(p.join(targetDir.path, 'xpensa_backup_$timestamp'));
-      await backupFolder.create(recursive: true);
+      final backupFile =
+          File(p.join(targetDir.path, 'xpensa_backup_$timestamp.xpensa'));
+
+      final encoder = ZipFileEncoder();
+      encoder.create(backupFile.path);
 
       final sourceDir = Directory(appDir.path);
       await for (final entity in sourceDir.list()) {
         if (entity is File &&
-            (entity.path.endsWith('.hive') || entity.path.endsWith('.lock'))) {
-          final fileName = p.basename(entity.path);
-          await entity.copy(p.join(backupFolder.path, fileName));
+            (entity.path.endsWith('.hive') ||
+                entity.path.endsWith('.lock'))) {
+          encoder.addFile(entity);
         }
       }
+      encoder.close();
 
       // Update last backup time
       await box.put(
