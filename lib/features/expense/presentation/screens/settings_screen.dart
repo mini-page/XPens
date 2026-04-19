@@ -470,18 +470,20 @@ class SettingsScreen extends ConsumerWidget {
         onChanged: onChanged,
         options: items
             .where((item) => item.value != null)
-            .map((item) {
-              final labelWidget = item.child;
-              final label = labelWidget is Text
-                  ? (labelWidget.data ?? item.value!)
-                  : item.value!;
-              return (
-                value: item.value!,
-                label: label,
-                icon: null,
-                iconColor: null,
-              );
-            })
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (item) {
+                final labelWidget = item.child;
+                final label = labelWidget is Text
+                    ? (labelWidget.data ?? item.value!)
+                    : item.value!;
+                return (
+                  value: item.value!,
+                  label: label,
+                  icon: null,
+                  iconColor: null,
+                );
+              },
+            )
             .toList(growable: false),
       ),
     );
@@ -536,7 +538,9 @@ class SettingsScreen extends ConsumerWidget {
           if (value != null) controller.setLocale(value);
         },
         options: AppConstants.locales
-            .map((l) => (value: l.locale, label: l.label, icon: Icons.language_rounded, iconColor: AppColors.primaryBlue))
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (l) => (value: l.locale, label: l.label, icon: Icons.language_rounded, iconColor: AppColors.primaryBlue),
+            )
             .toList(growable: false),
       ),
     );
@@ -564,7 +568,9 @@ class SettingsScreen extends ConsumerWidget {
           if (value != null) controller.setCurrencySymbol(value);
         },
         options: AppConstants.currencies
-            .map((c) => (value: c.symbol, label: c.label, icon: Icons.payments_outlined, iconColor: AppColors.success))
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (c) => (value: c.symbol, label: c.label, icon: Icons.payments_outlined, iconColor: AppColors.success),
+            )
             .toList(growable: false),
       ),
     );
@@ -1154,44 +1160,45 @@ class _SettingsChoiceMenu extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final selectedLabel = options
-        .firstWhere(
-          (option) => option.value == value,
-          orElse: () => options.first,
-        )
-        .label;
+    final match = options.where((o) => o.value == value).firstOrNull;
+    final selectedLabel = (match ?? options.first).label;
 
-    return GestureDetector(
-      onTap: () => _openSheet(context),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceAccent,
-          borderRadius: BorderRadius.circular(AppRadii.pill),
-          border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: 0.22),
+    return IntrinsicWidth(
+      child: GestureDetector(
+        onTap: () => _openSheet(context),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceAccent,
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.22),
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              selectedLabel,
-              style: const TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  selectedLabel,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.expand_more_rounded,
-              color: AppColors.primaryBlue,
-              size: 18,
-            ),
-          ],
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.expand_more_rounded,
+                color: AppColors.primaryBlue,
+                size: 18,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1272,12 +1279,14 @@ class _AiModelSelector extends StatelessWidget {
           if (v != null) onChanged(v);
         },
         options: _kGeminiModels
-            .map((m) => (
-                  value: m.id,
-                  label: m.label,
-                  icon: Icons.auto_awesome_outlined,
-                  iconColor: AppColors.primaryBlue,
-                ))
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (m) => (
+                value: m.id,
+                label: m.label,
+                icon: Icons.auto_awesome_outlined,
+                iconColor: AppColors.primaryBlue,
+              ),
+            )
             .toList(growable: false),
       ),
     );
