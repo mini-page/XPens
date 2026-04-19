@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -35,11 +36,17 @@ class UnifiedScannerScreen extends ConsumerStatefulWidget {
       _UnifiedScannerScreenState();
 }
 
-class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
+class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen>
+    with TickerProviderStateMixin {
   // ── Controllers ───────────────────────────────────────────────────────────
 
   late final MobileScannerController _billController;
   late final MobileScannerController _aiController;
+
+  /// Drives the shutter button enter/exit animation when the AI tab is active.
+  late final AnimationController _shutterAnim;
+  late final Animation<double> _shutterScale;
+  late final Animation<double> _shutterOpacity;
 
   // ── State ─────────────────────────────────────────────────────────────────
 
@@ -48,6 +55,7 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
 
   // AI tab state
   String? _capturedImagePath;
+  bool _isCapturing = false;
   bool _isPicking = false;
   bool _isProcessing = false;
 
@@ -61,15 +69,30 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
     _billController = MobileScannerController();
     _aiController = MobileScannerController(autoStart: false);
 
+    _shutterAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _shutterScale = CurvedAnimation(
+      parent: _shutterAnim,
+      curve: Curves.elasticOut,
+    );
+    _shutterOpacity = CurvedAnimation(
+      parent: _shutterAnim,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+    );
+
     if (_tabIndex == 1) {
       // Start AI camera instead of bill camera when launched on AI tab.
       _billController.stop();
       _aiController.start();
+      _shutterAnim.forward();
     }
   }
 
   @override
   void dispose() {
+    _shutterAnim.dispose();
     _billController.dispose();
     _aiController.dispose();
     super.dispose();
@@ -87,9 +110,11 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
     if (index == 0) {
       _aiController.stop();
       _billController.start();
+      _shutterAnim.reverse();
     } else {
       _billController.stop();
       _aiController.start();
+      _shutterAnim.forward();
     }
   }
 
@@ -163,6 +188,36 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
   }
 
   // ── AI scan logic ─────────────────────────────────────────────────────────
+
+  Future<void> _captureAiPhoto() async {
+    if (_isCapturing || _isProcessing) return;
+    setState(() => _isCapturing = true);
+    try {
+      // Release the scanner camera so image_picker can access the device camera.
+      await _aiController.stop();
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+      if (!mounted) return;
+      if (picked == null) {
+        // User cancelled – restart the live preview.
+        await _aiController.start();
+        setState(() => _isCapturing = false);
+        return;
+      }
+      setState(() {
+        _capturedImagePath = picked.path;
+        _isCapturing = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        await _aiController.start();
+        setState(() => _isCapturing = false);
+      }
+    }
+  }
 
   Future<void> _aiPickGallery() async {
     if (_isPicking || _isProcessing) return;
@@ -494,18 +549,29 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // ── Bill tab: hint + flash/gallery ──────────────────
-                    if (!isAiTab) ...[
-                      _HintPill(
-                          text: 'Point camera at barcode or QR on receipt'),
+                    // ── Hint pill (both scan tabs, cross-fades on switch;
+                    //    hidden when AI capture preview is shown) ───────────
+                    if (!hasCapture) ...[
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: isAiTab
+                            ? const _HintPill(
+                                key: ValueKey('ai_hint'),
+                                text:
+                                    'Point at a product & capture for AI detection',
+                              )
+                            : const _HintPill(
+                                key: ValueKey('bill_hint'),
+                                text:
+                                    'Point camera at barcode or QR on receipt',
+                              ),
+                      ),
                       const SizedBox(height: 16),
-                      _buildBillControls(),
                     ],
 
-                    // ── AI tab: preview CTA or shutter/flash/gallery ────
-                    if (isAiTab && !hasCapture) ...[
-                      _buildAiControls(),
-                    ],
+                    // ── Controls row (bill or AI) ─────────────────────────
+                    if (!isAiTab) _buildBillControls(),
+                    if (isAiTab && !hasCapture) _buildAiControls(),
 
                     if (isAiTab && hasCapture) ...[
                       _buildAiPreviewCtas(capturedPath),
@@ -557,11 +623,12 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
     );
   }
 
-  // ── AI controls: Flash + Gallery ─────────────────────────────────────────
+  // ── AI controls: Flash + Shutter (animated) + Gallery ────────────────────
 
   Widget _buildAiControls() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Flash
         ValueListenableBuilder<MobileScannerState>(
@@ -576,9 +643,61 @@ class _UnifiedScannerScreenState extends ConsumerState<UnifiedScannerScreen> {
             );
           },
         ),
-        const SizedBox(width: 40),
 
-        // Gallery / pick photo
+        // Animated shutter button (scales+fades in when AI tab becomes active)
+        ScaleTransition(
+          scale: _shutterScale,
+          child: FadeTransition(
+            opacity: _shutterOpacity,
+            child: GestureDetector(
+              onTap: _isCapturing ? null : _captureAiPhoto,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _isCapturing
+                    ? Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white70, width: 3),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Colors.black87,
+                          size: 32,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ),
+
+        // Gallery
         _ControlButton(
           icon: Icons.photo_library_outlined,
           label: 'Gallery',
