@@ -922,14 +922,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     }
     final selected = await _showPickerSheet<ExpenseCategory>(
       title: 'Select expense category',
-      children: availableExpenseCategories.map((category) {
-        return _SelectionSheetTile(
+      items: availableExpenseCategories.map((category) {
+        return _PickerItem(
+          value: category,
+          label: category.name,
           icon: category.icon,
           iconColor: category.color,
           iconBackground: category.color.withValues(alpha: 0.15),
-          label: category.name,
           isSelected: category.name == _selectedExpenseCategory,
-          onTap: () => Navigator.of(context).pop(category),
         );
       }).toList(growable: false),
     );
@@ -953,14 +953,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     }
     final selected = await _showPickerSheet<ExpenseCategory>(
       title: 'Select income category',
-      children: availableIncomeCategories.map((category) {
-        return _SelectionSheetTile(
+      items: availableIncomeCategories.map((category) {
+        return _PickerItem(
+          value: category,
+          label: category.name,
           icon: category.icon,
           iconColor: category.color,
           iconBackground: category.color.withValues(alpha: 0.15),
-          label: category.name,
           isSelected: category.name == _selectedIncomeCategory,
-          onTap: () => Navigator.of(context).pop(category),
         );
       }).toList(growable: false),
     );
@@ -973,27 +973,23 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
   Future<void> _pickAccount(List<AccountModel> accounts) async {
     final selected = await _showPickerSheet<_NullableAccountSelection>(
       title: 'Choose account',
-      children: <Widget>[
-        _SelectionSheetTile(
+      items: <_PickerItem<_NullableAccountSelection>>[
+        _PickerItem(
+          value: const _NullableAccountSelection(null),
+          label: 'No account',
           icon: Icons.do_not_disturb_on_outlined,
           iconColor: AppColors.textMuted,
           iconBackground: const Color(0xFFEFF5FF),
-          label: 'No account',
           isSelected: _selectedAccountId == null,
-          onTap: () => Navigator.of(context).pop(
-            const _NullableAccountSelection(null),
-          ),
         ),
         ...accounts.map((account) {
-          return _SelectionSheetTile(
+          return _PickerItem(
+            value: _NullableAccountSelection(account),
+            label: account.name,
             icon: resolveAccountIcon(account.iconKey),
             iconColor: AppColors.primaryBlue,
             iconBackground: const Color(0xFFEFF5FF),
-            label: account.name,
             isSelected: account.id == _selectedAccountId,
-            onTap: () => Navigator.of(context).pop(
-              _NullableAccountSelection(account),
-            ),
           );
         }),
       ],
@@ -1015,14 +1011,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
   Future<void> _pickToAccount(List<AccountModel> accounts) async {
     final selected = await _showPickerSheet<AccountModel>(
       title: 'Transfer to account',
-      children: accounts.map((account) {
-        return _SelectionSheetTile(
+      items: accounts.map((account) {
+        return _PickerItem(
+          value: account,
+          label: account.name,
           icon: resolveAccountIcon(account.iconKey),
           iconColor: AppColors.primaryBlue,
           iconBackground: const Color(0xFFEFF5FF),
-          label: account.name,
           isSelected: account.id == _toAccountId,
-          onTap: () => Navigator.of(context).pop(account),
         );
       }).toList(growable: false),
     );
@@ -1038,56 +1034,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
 
   Future<T?> _showPickerSheet<T>({
     required String title,
-    required List<Widget> children,
+    required List<_PickerItem<T>> items,
   }) {
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (context) {
-        return FractionallySizedBox(
-          heightFactor: 0.74,
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Center(
-                    child: Container(
-                      width: 44,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD7DFEA),
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Color(0xFF111A33),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView(
-                      children: children,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x55000000),
+      builder: (_) => _SearchablePickerSheet<T>(title: title, items: items),
     );
   }
 
@@ -1320,6 +1274,203 @@ class _SelectionSheetTile extends StatelessWidget {
                 )
               : null,
           onTap: onTap,
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Data class for searchable picker items
+// ---------------------------------------------------------------------------
+
+class _PickerItem<T> {
+  const _PickerItem({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBackground,
+    required this.isSelected,
+  });
+
+  final T value;
+  final String label;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBackground;
+  final bool isSelected;
+}
+
+// ---------------------------------------------------------------------------
+// Searchable picker bottom sheet (settings-style: floating, search bar, no dividers)
+// ---------------------------------------------------------------------------
+
+class _SearchablePickerSheet<T> extends StatefulWidget {
+  const _SearchablePickerSheet({
+    required this.title,
+    required this.items,
+  });
+
+  final String title;
+  final List<_PickerItem<T>> items;
+
+  @override
+  State<_SearchablePickerSheet<T>> createState() =>
+      _SearchablePickerSheetState<T>();
+}
+
+class _SearchablePickerSheetState<T>
+    extends State<_SearchablePickerSheet<T>> {
+  late final TextEditingController _searchCtrl;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchCtrl = TextEditingController();
+    _searchCtrl.addListener(
+      () => setState(() => _query = _searchCtrl.text.toLowerCase()),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<_PickerItem<T>> get _filtered {
+    if (_query.isEmpty) return widget.items;
+    return widget.items
+        .where((item) => item.label.toLowerCase().contains(_query))
+        .toList(growable: false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPad = MediaQuery.viewInsetsOf(context).bottom;
+    final filtered = _filtered;
+
+    return SafeArea(
+      minimum: EdgeInsets.only(bottom: bottomPad),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: const <BoxShadow>[
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 32,
+              offset: Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            // Drag handle
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD7DFEA),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+            ),
+            // Title + close button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 8, 12),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: Color(0xFF111A33),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded,
+                        color: AppColors.textMuted, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F6FA),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextField(
+                  controller: _searchCtrl,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF111A33),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Search…',
+                    hintStyle: TextStyle(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: AppColors.primaryBlue,
+                      size: 20,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                  ),
+                ),
+              ),
+            ),
+            // Items list
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.55,
+              ),
+              child: filtered.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text(
+                        'No results',
+                        style: TextStyle(color: AppColors.textMuted),
+                      ),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final item = filtered[index];
+                        return _SelectionSheetTile(
+                          icon: item.icon,
+                          iconColor: item.iconColor,
+                          iconBackground: item.iconBackground,
+                          label: item.label,
+                          isSelected: item.isSelected,
+                          onTap: () => Navigator.of(context).pop(item.value),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );
