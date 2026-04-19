@@ -138,9 +138,10 @@ class PowerFabState extends State<PowerFab>
           _AnimatedPill(
             animation: _ctrl,
             staggerStart: 0.2,
-            icon: Icons.qr_code_scanner_rounded,
-            label: 'Scanner',
-            infoText: 'Scan a receipt or bill image to extract expense details',
+            icon: Icons.document_scanner_outlined,
+            label: 'Scan & Log',
+            infoText:
+                'Scan a bill barcode/QR or photograph a product — XPensa fills in the details for you',
             onTap: () => _closeAndRun(widget.onScanner),
           ),
           const SizedBox(height: 8),

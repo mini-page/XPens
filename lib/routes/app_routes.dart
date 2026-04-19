@@ -4,7 +4,8 @@ import '../features/expense/data/models/expense_model.dart';
 import '../features/expense/presentation/screens/add_expense_screen.dart';
 import '../features/expense/presentation/screens/notifications_screen.dart';
 import '../features/expense/presentation/screens/records_history_screen.dart';
-import '../features/expense/presentation/screens/scanner_screen.dart';
+import '../features/expense/presentation/screens/product_scanner_screen.dart';
+import '../features/expense/presentation/screens/receipt_scanner_screen.dart';
 import '../features/expense/presentation/screens/settings_screen.dart';
 import '../features/expense/presentation/screens/upi_scanner_screen.dart';
 
@@ -140,28 +141,51 @@ abstract final class AppRoutes {
     );
   }
 
-  // ── Scanner ────────────────────────────────────────────────────────────────
+  // ── Receipt Scanner ────────────────────────────────────────────────────────
+
+  /// Push the receipt / bill barcode–QR scanner screen.
+  static Future<void> pushReceiptScanner(BuildContext context) {
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const ReceiptScannerScreen()),
+    );
+  }
+
+  // ── Product Scanner (AI) ───────────────────────────────────────────────────
+
+  /// Push the AI-powered product photo scanner screen.
+  static Future<void> pushProductScanner(BuildContext context) {
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const ProductScannerScreen()),
+    );
+  }
+
+  // ── Scanner (legacy alias) ─────────────────────────────────────────────────
 
   /// Push the QR / barcode scanner screen.
+  ///
+  /// Kept for backward compatibility (e.g. home-widget `scanner` action).
+  /// New code should use [pushReceiptScanner] or [pushProductScanner].
   static Future<void> pushScanner(BuildContext context) {
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const ScannerScreen()),
-    );
+    return pushReceiptScanner(context);
   }
 
   /// Replace the current route with [AddExpenseScreen].
   ///
-  /// Used by [ScannerScreen] after a successful scan so that the user returns
+  /// Used by scanner screens after a successful scan so that the user returns
   /// directly to the expense form rather than back to the scanner.
   static void replaceWithAddExpense(
     BuildContext context, {
     double? initialAmount,
     String? initialNote,
+    String? initialCategory,
   }) {
     Navigator.of(context).pushReplacement<void, void>(
       MaterialPageRoute<void>(
         builder: (_) => AddExpenseScreen(
-            initialAmount: initialAmount, initialNote: initialNote),
+          initialAmount: initialAmount,
+          initialNote: initialNote,
+          initialCategory: initialCategory,
+        ),
       ),
     );
   }
