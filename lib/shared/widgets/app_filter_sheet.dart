@@ -296,7 +296,7 @@ class _SingleSelectSheetState<T> extends State<_SingleSelectSheet<T>> {
                         style: TextStyle(color: AppColors.textMuted),
                       ),
                     )
-                  : ListView.separated(
+                  : ListView.builder(
                       shrinkWrap: true,
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -305,7 +305,6 @@ class _SingleSelectSheetState<T> extends State<_SingleSelectSheet<T>> {
                         AppSpacing.lg,
                       ),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final item = filtered[index];
                         final isSelected = item.value == widget.selectedValue;
@@ -512,7 +511,7 @@ class _MultiSelectSheetState<T> extends State<_MultiSelectSheet<T>> {
                         style: TextStyle(color: AppColors.textMuted),
                       ),
                     )
-                  : ListView.separated(
+                  : ListView.builder(
                       shrinkWrap: true,
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -521,7 +520,6 @@ class _MultiSelectSheetState<T> extends State<_MultiSelectSheet<T>> {
                         AppSpacing.lg,
                       ),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final item = filtered[index];
                         final isSelected = _selected.contains(item.value);
