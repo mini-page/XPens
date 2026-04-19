@@ -11,6 +11,10 @@ import '../../data/datasource/backup_local_datasource.dart';
 import '../../data/datasource/budget_local_datasource.dart';
 import '../../data/datasource/expense_local_datasource.dart';
 import '../../data/datasource/recurring_subscription_local_datasource.dart';
+import '../../data/models/account_model.dart';
+import '../../data/models/budget_model.dart';
+import '../../data/models/expense_model.dart';
+import '../../data/models/recurring_subscription_model.dart';
 import '../../../../core/utils/hive_bootstrap.dart';
 import '../provider/preferences_providers.dart';
 
@@ -174,9 +178,14 @@ class BackupController {
   /// Permanently clears all user data boxes (expenses, accounts, budgets,
   /// subscriptions). App preferences are intentionally preserved.
   Future<void> resetAllData() async {
-    await Hive.box(ExpenseLocalDatasource.boxName).clear();
-    await Hive.box(AccountLocalDatasource.boxName).clear();
-    await Hive.box(BudgetLocalDatasource.boxName).clear();
-    await Hive.box(RecurringSubscriptionLocalDatasource.boxName).clear();
+    // Must use the same type parameter that was used when the box was opened;
+    // calling Hive.box(name) without a type on an already-open typed box
+    // throws "The box '…' is already open and of type Box<T>".
+    await Hive.box<ExpenseModel>(ExpenseLocalDatasource.boxName).clear();
+    await Hive.box<AccountModel>(AccountLocalDatasource.boxName).clear();
+    await Hive.box<BudgetModel>(BudgetLocalDatasource.boxName).clear();
+    await Hive.box<RecurringSubscriptionModel>(
+            RecurringSubscriptionLocalDatasource.boxName)
+        .clear();
   }
 }
