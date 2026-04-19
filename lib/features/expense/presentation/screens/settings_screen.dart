@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -157,11 +155,11 @@ class SettingsScreen extends ConsumerWidget {
             SettingsCard(
               children: [
                 // ── Backup Now ──────────────────────────────────────────
-                if (autoBackup && backupPath != null)
+                if (autoBackup)
                   _buildActionTile(
                     icon: Icons.backup_rounded,
                     title: 'Backup Now',
-                    subtitle: 'Save a backup to your backup folder',
+                    subtitle: 'Save a backup immediately',
                     onTap: () => _backupNow(context, ref),
                   ),
                 _buildActionTile(
@@ -202,13 +200,7 @@ class SettingsScreen extends ConsumerWidget {
                   title: 'Auto Backup',
                   subtitle: 'Scheduled offline backups',
                   value: autoBackup,
-                  onChanged: (val) async {
-                    if (val && backupPath == null) {
-                      final picked = await _pickBackupDirectory(context, ref);
-                      if (picked == null) return;
-                    }
-                    controller.setAutoBackup(val);
-                  },
+                  onChanged: (val) => controller.setAutoBackup(val),
                 ),
                 if (autoBackup) ...[
                   _buildSelectionTile(
@@ -226,11 +218,20 @@ class SettingsScreen extends ConsumerWidget {
                           value: 'monthly', child: Text('Monthly')),
                     ],
                   ),
-                  _buildActionTile(
-                    icon: Icons.folder_open_rounded,
-                    title: 'Backup Location',
-                    subtitle: backupPath ?? 'Not set',
-                    onTap: () => _pickBackupDirectory(context, ref),
+                  ListTile(
+                    leading:
+                        const SettingsTileIcon(icon: Icons.folder_open_rounded),
+                    title: const Text(
+                      'Backup Location',
+                      style: TextStyle(
+                          color: AppColors.textDark,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: Text(
+                      backupPath ?? 'Auto-selected on first backup',
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 12),
+                    ),
                   ),
                 ],
                 ListTile(
@@ -564,25 +565,6 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Future<String?> _pickBackupDirectory(
-      BuildContext context, WidgetRef ref) async {
-    // Request permission first
-    final status = await Permission.storage.request();
-    if (!status.isGranted && !status.isLimited) {
-      if (context.mounted) {
-        context
-            .showSnackBar('Storage permission is required for auto-backups.');
-      }
-      return null;
-    }
-
-    final path = await FilePicker.platform.getDirectoryPath();
-    if (path != null) {
-      ref.read(appPreferencesControllerProvider).setBackupDirectory(path);
-    }
-    return path;
   }
 
   Widget _buildSelectionTile({

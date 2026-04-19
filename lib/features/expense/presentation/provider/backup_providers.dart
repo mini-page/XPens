@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../data/datasource/account_local_datasource.dart';
@@ -74,22 +75,59 @@ class BackupController {
     }
   }
 
-  /// Creates a `.xpensa` backup immediately and saves it to the configured
-  /// backup directory. Returns the [DateTime] of the backup on success, or
-  /// `null` if no backup directory is configured or the directory is missing.
-  Future<DateTime?> backupNow() async {
+  /// Returns the app-scoped backup directory on external storage.
+  ///
+  /// This directory lives under `Android/data/<package>/files/XPensa/Backups/`
+  /// which is accessible to the user via the Files app but requires **zero
+  /// runtime permissions** to write from the app itself.  Falls back to the
+  /// app's internal documents directory if external storage is unavailable.
+  static Future<Directory> _defaultBackupDir() async {
+    Directory base;
+    try {
+      // getExternalStorageDirectory returns the app-scoped external dir.
+      // On Android this is /sdcard/Android/data/<pkg>/files — no permission needed.
+      final ext = await getExternalStorageDirectory();
+      base = ext ?? await getApplicationDocumentsDirectory();
+    } catch (_) {
+      base = await getApplicationDocumentsDirectory();
+    }
+    final dir = Directory(p.join(base.path, 'XPensa', 'Backups'));
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
+  /// Returns the effective backup directory: the user's saved path if valid,
+  /// otherwise the app-scoped default (no runtime permission required).
+  Future<Directory> _resolveBackupDir() async {
     final prefs = _ref.read(appPreferencesProvider).value;
-    final backupPath = prefs?.backupDirectoryPath;
-    if (backupPath == null) return null;
+    final savedPath = prefs?.backupDirectoryPath;
+    if (savedPath != null) {
+      final saved = Directory(savedPath);
+      if (await saved.exists()) return saved;
+    }
+    final defaultDir = await _defaultBackupDir();
+    // Persist the auto-resolved path so the Settings UI can show it.
+    await _ref
+        .read(appPreferencesControllerProvider)
+        .setBackupDirectory(defaultDir.path);
+    return defaultDir;
+  }
 
-    final targetDir = Directory(backupPath);
-    if (!await targetDir.exists()) return null;
+  /// Creates a `.xpensa` backup immediately and saves it to the backup
+  /// directory, creating it automatically if needed.
+  ///
+  /// No runtime storage permission is required — backups are written to the
+  /// app-scoped external storage directory.
+  ///
+  /// Returns the [DateTime] of the backup on success.
+  Future<DateTime?> backupNow() async {
+    final targetDir = await _resolveBackupDir();
 
-    // Create .xpensa in app docs dir, then copy to backup directory.
     final tmpFile = await _datasource.createBackup();
     try {
-      final destPath =
-          p.join(targetDir.path, p.basename(tmpFile.path));
+      final destPath = p.join(targetDir.path, p.basename(tmpFile.path));
       await tmpFile.copy(destPath);
     } finally {
       if (await tmpFile.exists()) await tmpFile.delete();

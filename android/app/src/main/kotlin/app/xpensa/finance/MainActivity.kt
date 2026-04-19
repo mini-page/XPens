@@ -3,12 +3,12 @@ package app.xpensa.finance
 import android.app.Activity
 import android.content.Intent
 import android.speech.RecognizerIntent
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
 
     // ── Voice recognition ──────────────────────────────────────────────
     private var voiceResultCallback: MethodChannel.Result? = null
