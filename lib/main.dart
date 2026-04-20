@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'core/constants/app_constants.dart';
-import 'core/services/biometric_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/background_backup.dart';
 import 'core/utils/hive_bootstrap.dart';
@@ -28,11 +27,11 @@ Future<void> main() async {
     ),
   );
   await HiveBootstrap.initialize();
-  runApp(const ProviderScope(child: XPensaApp()));
+  runApp(const ProviderScope(child: XPensApp()));
 }
 
-class XPensaApp extends ConsumerWidget {
-  const XPensaApp({super.key});
+class XPensApp extends ConsumerWidget {
+  const XPensApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

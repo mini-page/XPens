@@ -122,29 +122,42 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
 
                       // Range picker
                       InkWell(
-                        borderRadius: BorderRadius.circular(AppRadii.sm),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
                         onTap: _showRangePicker,
-                        child: Padding(
+                        child: Ink(
                           padding: const EdgeInsets.symmetric(
-                            vertical: 6,
-                            horizontal: 2,
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceAccent,
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                            border: Border.all(
+                              color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
+                              const Icon(
+                                Icons.calendar_today_rounded,
+                                size: 16,
+                                color: AppColors.primaryBlue,
+                              ),
+                              const SizedBox(width: 8),
                               Text(
                                 _selectedRange,
                                 style: const TextStyle(
-                                  fontSize: 18,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: AppColors.primaryBlue,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               const Icon(
                                 Icons.keyboard_arrow_down_rounded,
-                                color: AppColors.textSecondary,
-                                size: 22,
+                                color: AppColors.primaryBlue,
+                                size: 20,
                               ),
                             ],
                           ),
@@ -204,6 +217,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadii.xxl),
@@ -220,6 +234,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: 2,
+                ),
                 tileColor:
                     active ? AppColors.surfaceAccent : Colors.transparent,
                 title: Text(
@@ -231,7 +249,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                 ),
                 trailing: active
                     ? const Icon(
-                        Icons.check_circle,
+                        Icons.check_circle_rounded,
                         color: AppColors.primaryBlue,
                       )
                     : null,

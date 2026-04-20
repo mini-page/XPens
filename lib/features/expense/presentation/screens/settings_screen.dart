@@ -1,9 +1,7 @@
-import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -13,6 +11,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import 'settings/settings_widgets.dart';
 import '../../../../core/utils/context_extensions.dart';
+import '../../../../shared/widgets/app_filter_sheet.dart';
+import '../../../../shared/widgets/app_toggle_switch.dart';
 import '../provider/account_providers.dart';
 import '../provider/backup_providers.dart';
 import '../provider/budget_providers.dart';
@@ -155,24 +155,23 @@ class SettingsScreen extends ConsumerWidget {
             const SettingsSectionHeader(title: 'Data Management'),
             SettingsCard(
               children: [
+                // ── Backup Now (always visible) ─────────────────────────
+                _buildActionTile(
+                  icon: Icons.backup_rounded,
+                  title: 'Backup Now',
+                  subtitle: 'Save a backup to the current backup location',
+                  onTap: () => _backupNow(context, ref),
+                ),
                 _buildActionTile(
                   icon: Icons.cloud_upload_outlined,
                   title: 'Export Data',
-                  subtitle: 'Create a local backup file (.xpensa)',
-                  onTap: () async {
-                    try {
-                      await backupController.exportData();
-                    } catch (e) {
-                      if (context.mounted) {
-                        context.showSnackBar('Export failed: $e');
-                      }
-                    }
-                  },
+                  subtitle: 'Share as .xpens, CSV, or JSON',
+                  onTap: () => _showExportFormatSheet(context, ref),
                 ),
                 _buildActionTile(
                   icon: Icons.cloud_download_outlined,
                   title: 'Import Data',
-                  subtitle: 'Restore from a backup file',
+                  subtitle: 'Restore from a .xpens backup file',
                   onTap: () async {
                     final confirmed = await confirmDestructiveAction(
                       context,
@@ -201,15 +200,9 @@ class SettingsScreen extends ConsumerWidget {
                   title: 'Auto Backup',
                   subtitle: 'Scheduled offline backups',
                   value: autoBackup,
-                  onChanged: (val) async {
-                    if (val && backupPath == null) {
-                      final picked = await _pickBackupDirectory(context, ref);
-                      if (picked == null) return;
-                    }
-                    controller.setAutoBackup(val);
-                  },
+                  onChanged: (val) => controller.setAutoBackup(val),
                 ),
-                if (autoBackup) ...[
+                if (autoBackup)
                   _buildSelectionTile(
                     icon: Icons.timer_outlined,
                     title: 'Backup Frequency',
@@ -225,13 +218,8 @@ class SettingsScreen extends ConsumerWidget {
                           value: 'monthly', child: Text('Monthly')),
                     ],
                   ),
-                  _buildActionTile(
-                    icon: Icons.folder_open_rounded,
-                    title: 'Backup Location',
-                    subtitle: backupPath ?? 'Not set',
-                    onTap: () => _pickBackupDirectory(context, ref),
-                  ),
-                ],
+                // ── Backup Location (always visible & tappable) ─────────
+                _buildBackupLocationTile(context, ref, backupPath),
                 ListTile(
                   leading: const SettingsTileIcon(icon: Icons.update_rounded),
                   title: const Text(
@@ -244,20 +232,6 @@ class SettingsScreen extends ConsumerWidget {
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 12),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // ── App Management ────────────────────────────────────────────
-            const SettingsSectionHeader(title: 'App Management'),
-            SettingsCard(
-              children: [
-                _buildDangerTile(
-                  icon: Icons.delete_sweep_outlined,
-                  title: 'Reset App Data',
-                  subtitle: 'Permanently erase all transactions and accounts',
-                  onTap: () => _resetAppData(context, ref),
                 ),
               ],
             ),
@@ -301,7 +275,7 @@ class SettingsScreen extends ConsumerWidget {
                 _buildActionTile(
                   icon: Icons.info_outline_rounded,
                   title: 'About',
-                  subtitle: 'About XPensa & developer info',
+                  subtitle: 'About XPens & developer info',
                   onTap: () => Navigator.of(context).push<void>(
                     MaterialPageRoute<void>(
                         builder: (_) => const AboutScreen()),
@@ -325,11 +299,16 @@ class SettingsScreen extends ConsumerWidget {
                     context,
                     title: 'Privacy Policy',
                     message:
-                        'XPensa stores all data locally on your device. No data is ever sent to any server or third party.',
+                        'XPens stores all data locally on your device. No data is ever sent to any server or third party.',
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 32),
+
+            // ── Danger Zone ────────────────────────────────────────────────
+            _buildDangerZone(context, ref),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -343,21 +322,27 @@ class SettingsScreen extends ConsumerWidget {
   ) async {
     final controller = ref.read(appPreferencesControllerProvider);
     if (enable) {
+      // First check if the hardware supports biometrics at all.
       final available = await BiometricService.isAvailable();
       if (!available) {
         if (context.mounted) {
           context.showSnackBar(
-            'No biometrics are enrolled on this device.',
+            'No biometrics enrolled. Please set up fingerprint or face unlock '
+            'in your device settings first.',
           );
         }
         return;
       }
+      // Require the user to authenticate before enabling, so the feature
+      // can't be switched on without proving identity.
       final ok = await BiometricService.authenticate(
         reason: 'Confirm your identity to enable Biometric Lock',
       );
       if (!ok) {
         if (context.mounted) {
-          context.showSnackBar('Biometric verification failed.');
+          context.showSnackBar(
+            'Biometric verification failed. Please try again.',
+          );
         }
         return;
       }
@@ -399,22 +384,36 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _resetAppData(BuildContext context, WidgetRef ref) async {
-    final confirmed = await confirmDestructiveAction(
+    // Step 1: Standard destructive-action confirmation.
+    final step1 = await confirmDestructiveAction(
       context,
       title: 'Reset All Data?',
       message: 'This will permanently delete all transactions, accounts, '
           'subscriptions, and budgets. Your settings will be preserved. '
           'This cannot be undone.',
-      confirmLabel: 'Reset Everything',
+      confirmLabel: 'Continue',
     );
-    if (!confirmed || !context.mounted) return;
+    if (!step1 || !context.mounted) return;
+
+    // Step 2: Require the user to type "RESET" to prevent accidental taps.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _ResetConfirmDialog(),
+    );
+    if (confirmed != true || !context.mounted) return;
 
     try {
       await ref.read(backupControllerProvider).resetAllData();
-      ref.invalidate(expenseListProvider);
-      ref.invalidate(accountListProvider);
-      ref.invalidate(budgetTargetsProvider);
-      ref.invalidate(recurringSubscriptionListProvider);
+      // Defer invalidations to the next microtask so Riverpod has time to
+      // settle any in-progress subscription-count bookkeeping before each
+      // subsequent invalidation fires (avoids the
+      // "pausedActiveSubscriptionCount" assertion in debug mode).
+      await Future.microtask(() {
+        ref.invalidate(expenseListProvider);
+        ref.invalidate(accountListProvider);
+        ref.invalidate(budgetTargetsProvider);
+        ref.invalidate(recurringSubscriptionListProvider);
+      });
       if (context.mounted) {
         context.showSnackBar('All data has been reset.');
       }
@@ -425,23 +424,226 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<String?> _pickBackupDirectory(
+  /// Shows the export format picker and triggers the chosen export type.
+  Future<void> _showExportFormatSheet(
       BuildContext context, WidgetRef ref) async {
-    // Request permission first
-    final status = await Permission.storage.request();
-    if (!status.isGranted && !status.isLimited) {
-      if (context.mounted) {
-        context
-            .showSnackBar('Storage permission is required for auto-backups.');
+    final backupController = ref.read(backupControllerProvider);
+
+    final chosen = await showModalBottomSheet<_ExportFormat>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Colors.white,
+      builder: (_) => const _ExportFormatSheet(),
+    );
+
+    if (chosen == null || !context.mounted) return;
+
+    try {
+      switch (chosen) {
+        case _ExportFormat.native:
+          await backupController.exportData();
+        case _ExportFormat.csv:
+          await backupController.exportAsCSV();
+        case _ExportFormat.json:
+          await backupController.exportAsJSON();
       }
-      return null;
+    } catch (e) {
+      if (context.mounted) {
+        context.showSnackBar('Export failed: $e');
+      }
+    }
+  }
+
+  /// Triggers an immediate backup to the configured backup directory.
+  Future<void> _backupNow(BuildContext context, WidgetRef ref) async {
+    final backupController = ref.read(backupControllerProvider);
+    try {
+      context.showSnackBar('Creating backup…');
+      await backupController.backupNow();
+      if (context.mounted) {
+        context.showSnackBar('Backup saved successfully.');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        context.showSnackBar('Backup failed: $e');
+      }
+    }
+  }
+
+  /// Builds the red "Danger Zone" section at the very bottom of the page.
+  Widget _buildDangerZone(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(
+            'DANGER ZONE',
+            style: TextStyle(
+              color: AppColors.danger,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.danger.withValues(alpha: 0.25),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.danger.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: AppColors.danger, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Destructive Actions',
+                      style: TextStyle(
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Text(
+                  'The action below permanently deletes data and cannot be '
+                  'undone. Export a backup before proceeding.',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+              _buildDangerTile(
+                icon: Icons.delete_sweep_outlined,
+                title: 'Reset App Data',
+                subtitle:
+                    'Permanently erase all transactions, accounts, budgets & subscriptions',
+                onTap: () => _resetAppData(context, ref),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Opens the system folder picker (Android Storage Access Framework) and
+  /// saves the chosen path.  No runtime storage permission is required —
+  /// SAF grants per-URI access automatically.
+  Future<void> _pickBackupDirectory(
+      BuildContext context, WidgetRef ref) async {
+    final path = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Choose Backup Location',
+      lockParentWindow: true,
+    );
+    if (path == null) return; // user cancelled
+
+    await ref
+        .read(appPreferencesControllerProvider)
+        .setBackupDirectory(path);
+
+    if (context.mounted && _isInsideAppSandbox(path)) {
+      context.showSnackBar(
+        'This location is inside app storage and will be lost if the app is '
+        'uninstalled or its data is cleared. Tap "Backup Location" to choose '
+        'a safer folder (e.g. Downloads).',
+        type: AppFeedbackType.warning,
+      );
+    }
+  }
+
+  /// Returns `true` when [path] is inside the app-scoped sandbox
+  /// (`Android/data/<pkg>/` or `Android/obb/<pkg>/`), which is erased on
+  /// app-data clear or uninstall.
+  bool _isInsideAppSandbox(String path) {
+    return path.contains('/Android/data/') || path.contains('/Android/obb/');
+  }
+
+  /// Tappable Backup Location tile that shows the current path and a warning
+  /// badge when the location is inside the app sandbox.
+  Widget _buildBackupLocationTile(
+      BuildContext context, WidgetRef ref, String? backupPath) {
+    final isSandbox =
+        backupPath != null && _isInsideAppSandbox(backupPath);
+
+    String displayPath;
+    if (backupPath == null) {
+      displayPath = 'Tap to choose — auto-selected on first backup';
+    } else {
+      // Show only the last two path segments for readability.
+      final parts = backupPath.split('/').where((s) => s.isNotEmpty).toList();
+      displayPath = parts.length >= 2
+          ? '…/${parts[parts.length - 2]}/${parts.last}'
+          : backupPath;
     }
 
-    final path = await FilePicker.platform.getDirectoryPath();
-    if (path != null) {
-      ref.read(appPreferencesControllerProvider).setBackupDirectory(path);
-    }
-    return path;
+    return ListTile(
+      leading: const SettingsTileIcon(icon: Icons.folder_open_rounded),
+      title: Row(
+        children: [
+          const Text(
+            'Backup Location',
+            style: TextStyle(
+                color: AppColors.textDark, fontWeight: FontWeight.w700),
+          ),
+          if (isSandbox) ...[
+            const SizedBox(width: 6),
+            Tooltip(
+              message:
+                  'This location is inside app storage and may be lost on uninstall.',
+              child: Icon(Icons.warning_amber_rounded,
+                  size: 16, color: Colors.orange.shade700),
+            ),
+          ],
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            displayPath,
+            style:
+                const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
+          if (isSandbox)
+            Text(
+              'Tap to choose a safer location (e.g. Downloads)',
+              style: TextStyle(
+                  color: Colors.orange.shade700,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500),
+            ),
+        ],
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded,
+          color: AppColors.textMuted),
+      onTap: () => _pickBackupDirectory(context, ref),
+    );
   }
 
   Widget _buildSelectionTile({
@@ -463,11 +665,27 @@ class SettingsScreen extends ConsumerWidget {
         subtitle,
         style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
       ),
-      trailing: DropdownButton<String>(
+      trailing: _SettingsChoiceMenu(
         value: value,
-        underline: const SizedBox(),
+        sheetTitle: title,
         onChanged: onChanged,
-        items: items,
+        options: items
+            .where((item) => item.value != null)
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (item) {
+                final labelWidget = item.child;
+                final label = labelWidget is Text
+                    ? (labelWidget.data ?? item.value!)
+                    : item.value!;
+                return (
+                  value: item.value!,
+                  label: label,
+                  icon: null,
+                  iconColor: null,
+                );
+              },
+            )
+            .toList(growable: false),
       ),
     );
   }
@@ -484,18 +702,16 @@ class SettingsScreen extends ConsumerWidget {
         style:
             TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w700),
       ),
-      trailing: DropdownButton<String>(
+      trailing: _SettingsChoiceMenu(
         value: currentMode.name,
-        underline: const SizedBox(),
+        sheetTitle: 'Appearance',
         onChanged: (value) {
-          if (value != null) {
-            controller.setThemeMode(value);
-          }
+          if (value != null) controller.setThemeMode(value);
         },
-        items: const [
-          DropdownMenuItem(value: 'light', child: Text('Light')),
-          DropdownMenuItem(value: 'dark', child: Text('Dark')),
-          DropdownMenuItem(value: 'system', child: Text('System')),
+        options: const <({String value, String label, IconData? icon, Color? iconColor})>[
+          (value: 'light', label: 'Light', icon: Icons.wb_sunny_outlined, iconColor: Color(0xFFFFB648)),
+          (value: 'dark', label: 'Dark', icon: Icons.nights_stay_outlined, iconColor: Color(0xFF6D8FFF)),
+          (value: 'system', label: 'System', icon: Icons.phone_android_outlined, iconColor: AppColors.primaryBlue),
         ],
       ),
     );
@@ -513,24 +729,20 @@ class SettingsScreen extends ConsumerWidget {
         style:
             TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w700),
       ),
-      trailing: DropdownButton<String>(
+      trailing: _SettingsChoiceMenu(
         value: AppConstants.locales.any((l) => l.locale == currentLocale)
             ? currentLocale
             : AppConstants.locales.first.locale,
-        underline: const SizedBox(),
+        sheetTitle: 'Language',
+        searchable: true,
         onChanged: (value) {
-          if (value != null) {
-            controller.setLocale(value);
-          }
+          if (value != null) controller.setLocale(value);
         },
-        items: AppConstants.locales
-            .map(
-              (l) => DropdownMenuItem(
-                value: l.locale,
-                child: Text(l.label),
-              ),
+        options: AppConstants.locales
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (l) => (value: l.locale, label: l.label, icon: Icons.language_rounded, iconColor: AppColors.primaryBlue),
             )
-            .toList(),
+            .toList(growable: false),
       ),
     );
   }
@@ -547,24 +759,20 @@ class SettingsScreen extends ConsumerWidget {
         style:
             TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w700),
       ),
-      trailing: DropdownButton<String>(
+      trailing: _SettingsChoiceMenu(
         value: AppConstants.currencies.any((c) => c.symbol == currentCurrency)
             ? currentCurrency
             : AppConstants.currencies.first.symbol,
-        underline: const SizedBox(),
+        sheetTitle: 'Currency',
+        searchable: true,
         onChanged: (value) {
-          if (value != null) {
-            controller.setCurrencySymbol(value);
-          }
+          if (value != null) controller.setCurrencySymbol(value);
         },
-        items: AppConstants.currencies
-            .map(
-              (c) => DropdownMenuItem(
-                value: c.symbol,
-                child: Text(c.label),
-              ),
+        options: AppConstants.currencies
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (c) => (value: c.symbol, label: c.label, icon: Icons.payments_outlined, iconColor: AppColors.success),
             )
-            .toList(),
+            .toList(growable: false),
       ),
     );
   }
@@ -587,10 +795,9 @@ class SettingsScreen extends ConsumerWidget {
         subtitle,
         style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
       ),
-      trailing: Switch.adaptive(
+      trailing: AppToggleSwitch(
         value: value,
         onChanged: onChanged,
-        activeTrackColor: AppColors.primaryBlue,
       ),
     );
   }
@@ -615,48 +822,6 @@ class SettingsScreen extends ConsumerWidget {
       trailing:
           const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
       onTap: onTap,
-    );
-  }
-
-  /// A tile whose action is not yet available. Tapping shows a planned-feature
-  /// notice. A pill badge is shown instead of a chevron.
-  Widget _buildComingSoonTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return ListTile(
-      leading: SettingsTileIcon(icon: icon),
-      title: Text(
-        title,
-        style: const TextStyle(
-            color: AppColors.textDark, fontWeight: FontWeight.w700),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-      ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceAccent,
-          borderRadius: BorderRadius.circular(AppRadii.pill),
-        ),
-        child: const Text(
-          'Soon',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      onTap: () => showPlannedFeatureNotice(
-        context,
-        title: title,
-        message: 'This security feature is coming in a future update.',
-      ),
     );
   }
 
@@ -818,7 +983,7 @@ class SettingsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'A new version of XPensa is available.\n\n'
+              'A new version of XPens is available.\n\n'
               'v${AppConstants.version}  \u2192  v${info.latestVersion}',
               style: const TextStyle(fontSize: 14),
             ),
@@ -830,8 +995,8 @@ class SettingsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                notes!.characters.length > _kMaxReleaseNotesLength
-                    ? '${notes.characters.take(_kMaxReleaseNotesLength).toString().trimRight()}\u2026'
+                notes.length > _kMaxReleaseNotesLength
+                    ? '${notes.substring(0, _kMaxReleaseNotesLength).trimRight()}\u2026'
                     : notes,
                 style:
                     const TextStyle(fontSize: 12, color: AppColors.textMuted),
@@ -853,7 +1018,7 @@ class SettingsScreen extends ConsumerWidget {
               } else if (context.mounted) {
                 context.showSnackBar(
                   'Could not open the download link. '
-                  'Visit github.com/mini-page/XPensa/releases manually.',
+                  'Visit github.com/mini-page/XPens/releases manually.',
                 );
               }
             },
@@ -867,6 +1032,221 @@ class SettingsScreen extends ConsumerWidget {
 }
 
 // ── Private widget ────────────────────────────────────────────────────────────
+
+/// Export format options shown in the export-format bottom sheet.
+enum _ExportFormat { native, csv, json }
+
+/// Bottom sheet that lets the user pick an export format.
+class _ExportFormatSheet extends StatelessWidget {
+  const _ExportFormatSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Export Format',
+              style: TextStyle(
+                color: AppColors.textDark,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Choose how to export your data.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            _FormatOption(
+              icon: Icons.folder_zip_outlined,
+              iconColor: AppColors.primaryBlue,
+              title: 'Native Backup (.xpens)',
+              subtitle:
+                  'Full backup — includes all app data. Use to restore XPens.',
+              onTap: () =>
+                  Navigator.of(context).pop(_ExportFormat.native),
+            ),
+            const Divider(height: 16),
+            _FormatOption(
+              icon: Icons.table_chart_outlined,
+              iconColor: AppColors.success,
+              title: 'CSV Spreadsheet',
+              subtitle: 'Transactions only — open in Excel, Sheets, etc.',
+              onTap: () =>
+                  Navigator.of(context).pop(_ExportFormat.csv),
+            ),
+            const Divider(height: 16),
+            _FormatOption(
+              icon: Icons.data_object_rounded,
+              iconColor: const Color(0xFFE07B39),
+              title: 'JSON',
+              subtitle:
+                  'Transactions as structured JSON — for developers / archiving.',
+              onTap: () =>
+                  Navigator.of(context).pop(_ExportFormat.json),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FormatOption extends StatelessWidget {
+  const _FormatOption({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textMuted, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Second-step confirmation dialog for Reset App Data that requires the user
+/// to type the word "RESET" before the action is permitted.
+class _ResetConfirmDialog extends StatefulWidget {
+  @override
+  State<_ResetConfirmDialog> createState() => _ResetConfirmDialogState();
+}
+
+class _ResetConfirmDialogState extends State<_ResetConfirmDialog> {
+  final TextEditingController _ctrl = TextEditingController();
+  bool _matches = false;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: AppColors.danger),
+          SizedBox(width: 10),
+          Text(
+            'Final Confirmation',
+            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Type RESET below to confirm you want to permanently delete all '
+            'transactions, accounts, budgets, and subscriptions.',
+            style: TextStyle(fontSize: 13, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _ctrl,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              hintText: 'Type RESET',
+              isDense: true,
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: AppColors.danger, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 12),
+            ),
+            onChanged: (val) {
+              final matches = val.trim() == 'RESET';
+              if (matches != _matches) setState(() => _matches = matches);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _matches ? () => Navigator.of(context).pop(true) : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.danger,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.danger.withValues(alpha: 0.35),
+          ),
+          child: const Text('Reset Everything'),
+        ),
+      ],
+    );
+  }
+}
 
 /// Small pill badge used as the trailing widget on the "Update Available" tile.
 class _UpdateBadge extends StatelessWidget {
@@ -1007,9 +1387,8 @@ class _AiFeaturesCard extends StatelessWidget {
               fontSize: 11,
             ),
           ),
-          trailing: Switch.adaptive(
+          trailing: AppToggleSwitch(
             value: aiEnabled,
-            activeTrackColor: AppColors.primaryBlue,
             onChanged: _hasKey ? (v) => controller.setAiEnabled(v) : (_) {},
           ),
         ),
@@ -1122,14 +1501,102 @@ class _AiKeyRow extends StatelessWidget {
               ),
             ),
       onTap: hasKey
-          ? () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Delete the key first to add a new one.'),
-                  duration: Duration(seconds: 2),
-                ),
+          ? () => context.showSnackBar(
+                'Delete the key first to add a new one.',
+                type: AppFeedbackType.warning,
               )
           : onAdd,
     );
+  }
+}
+
+class _SettingsChoiceMenu extends StatelessWidget {
+  const _SettingsChoiceMenu({
+    required this.value,
+    required this.onChanged,
+    required this.options,
+    this.sheetTitle = 'Choose',
+    this.searchable = false,
+  });
+
+  final String value;
+  final ValueChanged<String?> onChanged;
+  final List<({String value, String label, IconData? icon, Color? iconColor})>
+      options;
+  final String sheetTitle;
+  final bool searchable;
+
+  @override
+  Widget build(BuildContext context) {
+    if (options.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final match = options.where((o) => o.value == value).firstOrNull;
+    final selectedLabel = (match ?? options.first).label;
+
+    return IntrinsicWidth(
+      child: GestureDetector(
+        onTap: () => _openSheet(context),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceAccent,
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.22),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  selectedLabel,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.expand_more_rounded,
+                color: AppColors.primaryBlue,
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSheet(BuildContext context) async {
+    final items = options
+        .map(
+          (o) => FilterSheetItem<String>(
+            value: o.value,
+            label: o.label,
+            icon: o.icon,
+            iconColor: o.iconColor,
+          ),
+        )
+        .toList(growable: false);
+
+    final chosen = await showSingleSelectSheet<String>(
+      context: context,
+      title: sheetTitle,
+      items: items,
+      selectedValue: value,
+      searchable: searchable,
+    );
+
+    if (chosen != null) onChanged(chosen);
   }
 }
 
@@ -1177,24 +1644,22 @@ class _AiModelSelector extends StatelessWidget {
         model.description,
         style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
       ),
-      trailing: DropdownButton<String>(
+      trailing: _SettingsChoiceMenu(
         value: selected,
-        underline: const SizedBox(),
-        isDense: true,
+        sheetTitle: 'Gemini Model',
         onChanged: (v) {
           if (v != null) onChanged(v);
         },
-        items: _kGeminiModels
-            .map(
-              (m) => DropdownMenuItem(
+        options: _kGeminiModels
+            .map<({String value, String label, IconData? icon, Color? iconColor})>(
+              (m) => (
                 value: m.id,
-                child: Text(
-                  m.label,
-                  style: const TextStyle(fontSize: 13),
-                ),
+                label: m.label,
+                icon: Icons.auto_awesome_outlined,
+                iconColor: AppColors.primaryBlue,
               ),
             )
-            .toList(),
+            .toList(growable: false),
       ),
     );
   }
@@ -1236,9 +1701,8 @@ class _AiFeatureToggle extends StatelessWidget {
         subtitle,
         style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
       ),
-      trailing: Switch.adaptive(
+      trailing: AppToggleSwitch(
         value: value,
-        activeTrackColor: AppColors.primaryBlue,
         onChanged: onChanged,
       ),
     );

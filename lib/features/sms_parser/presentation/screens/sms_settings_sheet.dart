@@ -18,6 +18,7 @@ import '../../domain/sms_broadcast_service.dart';
 import '../../domain/sms_monitoring_service.dart';
 import '../../domain/sms_parser_engine.dart';
 import '../provider/sms_providers.dart';
+import '../../../../shared/widgets/app_toggle_switch.dart';
 
 /// Shows the SMS Parsing management sheet as a modal bottom sheet.
 Future<void> showSmsSettingsSheet(BuildContext context) {
@@ -71,11 +72,12 @@ class _SmsSettingsSheetState extends ConsumerState<SmsSettingsSheet> {
   Future<void> _checkPermission() async {
     setState(() => _checkingPermission = true);
     final granted = await SmsPermissionHelper.isGranted();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _permissionGranted = granted;
         _checkingPermission = false;
       });
+    }
   }
 
   @override
@@ -262,7 +264,7 @@ class _SmsSettingsSheetState extends ConsumerState<SmsSettingsSheet> {
       builder: (ctx) => AlertDialog(
         title: const Text('SMS Permission Required'),
         content: const Text(
-          'XPensa needs SMS read permission to detect bank transactions automatically. '
+          'XPens needs SMS read permission to detect bank transactions automatically. '
           'Please enable it in app settings.',
         ),
         actions: <Widget>[
@@ -383,9 +385,8 @@ class _ToggleCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Switch(
+              AppToggleSwitch(
                 value: enabled,
-                activeColor: AppColors.primaryBlue,
                 onChanged: onChanged,
               ),
             ],

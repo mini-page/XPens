@@ -601,7 +601,6 @@ abstract final class _VoiceCommandParser {
       'ko',
       'ne',
       'kiya',
-      'kiya',
       'hai',
       'tha',
       'thi',

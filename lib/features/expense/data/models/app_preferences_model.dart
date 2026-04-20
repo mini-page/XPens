@@ -335,18 +335,24 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
       if (reader.availableBytes > 0) biometricLockEnabled = reader.readBool();
       if (reader.availableBytes > 0) whatsNewShownVersion = reader.readString();
       if (reader.availableBytes > 0) savingsGoalsJson = reader.readString();
-      if (reader.availableBytes > 0)
+      if (reader.availableBytes > 0) {
         customQuickAmountsJson = reader.readString();
-      if (reader.availableBytes > 0)
+      }
+      if (reader.availableBytes > 0) {
         hiddenDefaultAmountsJson = reader.readString();
-      if (reader.availableBytes > 0)
+      }
+      if (reader.availableBytes > 0) {
         customExpenseCategoriesJson = reader.readString();
-      if (reader.availableBytes > 0)
+      }
+      if (reader.availableBytes > 0) {
         customIncomeCategoriesJson = reader.readString();
-      if (reader.availableBytes > 0)
+      }
+      if (reader.availableBytes > 0) {
         builtInExpenseCategoryOverridesJson = reader.readString();
-      if (reader.availableBytes > 0)
+      }
+      if (reader.availableBytes > 0) {
         builtInIncomeCategoryOverridesJson = reader.readString();
+      }
       if (reader.availableBytes > 0) smsParsingEnabled = reader.readBool();
       if (reader.availableBytes > 0) smsDefaultAccountId = reader.readString();
       if (reader.availableBytes > 0) smsDefaultCategory = reader.readString();

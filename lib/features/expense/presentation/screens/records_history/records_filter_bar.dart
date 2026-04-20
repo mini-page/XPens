@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../data/models/account_model.dart';
+import '../../../../../core/theme/app_tokens.dart';
 import 'records_filter.dart';
 
 /// Horizontal scrollable row of [ChoiceChip]s for filtering records.
@@ -24,7 +24,7 @@ class RecordsFilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 42,
+      height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: RecordsFilter.values.map((filter) {
@@ -41,91 +41,36 @@ class RecordsFilterChips extends StatelessWidget {
                   onFilterSelected(filter);
                 }
               },
+              avatar: isSelected
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    )
+                  : null,
+              // Intentionally use a custom selected-state icon via avatar.
+              showCheckmark: false,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              side: BorderSide(
+                color: isSelected
+                    ? AppColors.primaryBlue
+                    : AppColors.primaryBlue.withValues(alpha: 0.2),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
               selectedColor: AppColors.primaryBlue,
-              backgroundColor: AppColors.lightBlueBg,
+              backgroundColor: Colors.white,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : const Color(0xFF48607E),
-                fontWeight: FontWeight.w700,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                fontSize: 13,
               ),
             ),
           );
         }).toList(growable: false),
-      ),
-    );
-  }
-}
-
-/// Popup-menu button for filtering records by account.
-class RecordsAccountDropdown extends StatelessWidget {
-  const RecordsAccountDropdown({
-    super.key,
-    required this.accounts,
-    required this.onAccountSelected,
-    required this.allAccountsKey,
-    required this.accountFilterLabel,
-  });
-
-  final List<AccountModel> accounts;
-  final ValueChanged<String> onAccountSelected;
-  final String allAccountsKey;
-  final String accountFilterLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: PopupMenuButton<String>(
-        color: Colors.white,
-        onSelected: onAccountSelected,
-        itemBuilder: (context) => <PopupMenuEntry<String>>[
-          PopupMenuItem<String>(
-            value: allAccountsKey,
-            child: const Text('All accounts'),
-          ),
-          ...accounts.map((account) {
-            return PopupMenuItem<String>(
-              value: account.id,
-              child: Text(account.name),
-            );
-          }),
-        ],
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: const <BoxShadow>[
-              BoxShadow(
-                color: AppColors.cardShadow,
-                blurRadius: 18,
-                offset: Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const Icon(
-                Icons.account_balance_wallet_outlined,
-                size: 18,
-                color: AppColors.primaryBlue,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                accountFilterLabel,
-                style: const TextStyle(
-                  color: AppColors.textDark,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: AppColors.textMuted,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

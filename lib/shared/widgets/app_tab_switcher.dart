@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 
 /// Describes a single tab entry: the text shown when active and the icon
 /// shown when inactive.
@@ -40,10 +41,17 @@ class AppTabSwitcher extends StatelessWidget {
     const containerPadding = 8.0; // 4px left + 4px right
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(AppSpacing.xs / 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F6FA),
-        borderRadius: BorderRadius.circular(22),
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+        boxShadow: const <BoxShadow>[
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: scrollable
           ? LayoutBuilder(
@@ -103,13 +111,28 @@ class _AppTabCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: isSelected ? Colors.white : Colors.transparent,
-      borderRadius: BorderRadius.circular(18),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppRadii.lg),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.lg),
+            color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+            boxShadow: isSelected
+                ? const <BoxShadow>[
+                    BoxShadow(
+                      color: AppColors.darkBlueShadow,
+                      blurRadius: 14,
+                      offset: Offset(0, 5),
+                    ),
+                  ]
+                : null,
+          ),
           child: Center(
             child: SizedBox(
               height: 18,
@@ -128,7 +151,7 @@ class _AppTabCell extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: AppColors.textDark,
+                          color: Colors.white,
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
                         ),

@@ -92,7 +92,7 @@ class ExpenseCategory {
 
   /// 6-char hex colour string without '#', e.g. `'FFB648'`.
   String get colorHex =>
-      color.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase();
+      color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase();
 }
 
 const List<ExpenseCategory> expenseCategories = <ExpenseCategory>[

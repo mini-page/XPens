@@ -4,11 +4,13 @@ import '../features/expense/data/models/expense_model.dart';
 import '../features/expense/presentation/screens/add_expense_screen.dart';
 import '../features/expense/presentation/screens/notifications_screen.dart';
 import '../features/expense/presentation/screens/records_history_screen.dart';
-import '../features/expense/presentation/screens/scanner_screen.dart';
+import '../features/expense/presentation/screens/product_scanner_screen.dart';
+import '../features/expense/presentation/screens/receipt_scanner_screen.dart';
+import '../features/expense/presentation/screens/unified_scanner_screen.dart';
 import '../features/expense/presentation/screens/settings_screen.dart';
 import '../features/expense/presentation/screens/upi_scanner_screen.dart';
 
-/// Centralised navigation helpers for XPensa.
+/// Centralised navigation helpers for XPens.
 ///
 /// All `Navigator.push` / `pushReplacement` calls for named screens are
 /// routed through this class so that screen locations and constructor
@@ -140,28 +142,67 @@ abstract final class AppRoutes {
     );
   }
 
-  // ── Scanner ────────────────────────────────────────────────────────────────
+  // ── Unified Scanner ────────────────────────────────────────────────────────
+
+  /// Push the unified scanner screen (Bill Scan + AI Scan tabs).
+  ///
+  /// This is the primary entry point for the Scan & Log pill.
+  static Future<void> pushUnifiedScanner(
+    BuildContext context, {
+    int initialTab = 0,
+  }) {
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => UnifiedScannerScreen(initialTab: initialTab),
+      ),
+    );
+  }
+
+  // ── Receipt Scanner ────────────────────────────────────────────────────────
+
+  /// Push the receipt / bill barcode–QR scanner screen.
+  static Future<void> pushReceiptScanner(BuildContext context) {
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const ReceiptScannerScreen()),
+    );
+  }
+
+  // ── Product Scanner (AI) ───────────────────────────────────────────────────
+
+  /// Push the AI-powered product photo scanner screen.
+  static Future<void> pushProductScanner(BuildContext context) {
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const ProductScannerScreen()),
+    );
+  }
+
+  // ── Scanner (legacy alias) ─────────────────────────────────────────────────
 
   /// Push the QR / barcode scanner screen.
+  ///
+  /// Kept for backward compatibility (e.g. home-widget `scanner` action).
+  /// New code should use [pushUnifiedScanner].
   static Future<void> pushScanner(BuildContext context) {
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const ScannerScreen()),
-    );
+    return pushUnifiedScanner(context);
   }
 
   /// Replace the current route with [AddExpenseScreen].
   ///
-  /// Used by [ScannerScreen] after a successful scan so that the user returns
+  /// Used by scanner screens after a successful scan so that the user returns
   /// directly to the expense form rather than back to the scanner.
   static void replaceWithAddExpense(
     BuildContext context, {
     double? initialAmount,
     String? initialNote,
+    String? initialCategory,
   }) {
     Navigator.of(context).pushReplacement<void, void>(
       MaterialPageRoute<void>(
         builder: (_) => AddExpenseScreen(
-            initialAmount: initialAmount, initialNote: initialNote),
+          initialAmount: initialAmount,
+          initialNote: initialNote,
+          initialCategory: initialCategory,
+        ),
       ),
     );
   }

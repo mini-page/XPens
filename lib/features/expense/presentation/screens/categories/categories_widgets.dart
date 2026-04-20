@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_tokens.dart';
+import '../../../../../shared/widgets/app_toggle_switch.dart';
 
 class CategoryGridCard extends StatelessWidget {
   const CategoryGridCard({
@@ -69,7 +70,7 @@ class CategoryGridCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    _MiniToggle(
+                    AppToggleSwitch(
                       value: isEnabled,
                       activeColor: AppColors.primaryBlue,
                       onChanged: onToggle,
@@ -268,59 +269,6 @@ class _ProgressBar extends StatelessWidget {
               child: Container(color: color),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniToggle extends StatelessWidget {
-  const _MiniToggle({
-    required this.value,
-    required this.activeColor,
-    required this.onChanged,
-  });
-
-  final bool value;
-  final Color activeColor;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      toggled: value,
-      child: GestureDetector(
-        onTap: () => onChanged(!value),
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          width: 42,
-          height: 24,
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            color: value ? activeColor : AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: AnimatedAlign(
-            duration: const Duration(milliseconds: 160),
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: const <BoxShadow>[
-                  BoxShadow(
-                    color: AppColors.cardShadow,
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );

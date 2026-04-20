@@ -33,7 +33,7 @@ abstract final class SmsParserEngine {
         upper.contains('BANK') ||
         upper.contains('FINANCE') ||
         upper.contains('PAY') ||
-        upper.contains('UPI')) return true;
+        upper.contains('UPI')) { return true; }
     return false;
   }
 
