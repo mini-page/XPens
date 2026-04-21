@@ -10,8 +10,12 @@ import '../../../../shared/widgets/app_toggle_switch.dart';
 /// An expandable power FAB.
 ///
 /// Shows a circular `+` button. When tapped the button rotates 135° (making it
-/// look like ×) and five action pills animate up above it:
-///   Quick Add · Pay via UPI · Scanner · Voice · SMS
+/// look like ×) and action pills animate up above it:
+///   Quick Add · Voice · Pay via UPI · Scan & Log · SMS
+///
+/// Pills for features under development (Pay via UPI, Scan & Log, SMS) are
+/// shown as visually-muted "Coming Soon" items — they are non-tappable and
+/// carry a small "Soon" badge so users know they are on the roadmap.
 ///
 /// The SMS pill has a split interaction:
 ///   - Tapping the label / icon area opens the SMS settings sheet.
@@ -115,44 +119,44 @@ class PowerFabState extends State<PowerFab>
       children: <Widget>[
         // ── Action pills (shown only when open) ──────────────────────────
         if (_open) ...<Widget>[
+          // ── Coming-soon pills (top, farthest from FAB) ─────────────────
           _AnimatedPill(
             animation: _ctrl,
             staggerStart: 0.4,
             icon: Icons.sms_outlined,
             label: 'SMS',
             infoText: 'Reads transaction SMS and logs expenses automatically',
-            onTap: () => _closeAndRun(widget.onSms),
-            trailingToggleValue: widget.smsParsingEnabled,
-            onTrailingToggle: widget.onSmsToggle,
+            comingSoon: true,
           ),
           const SizedBox(height: 8),
           _AnimatedPill(
             animation: _ctrl,
             staggerStart: 0.3,
-            icon: Icons.mic_none_rounded,
-            label: 'Voice',
-            infoText: 'Speak an expense aloud — parsed and saved for you',
-            onTap: () => _closeAndRun(widget.onVoice),
+            icon: Icons.document_scanner_outlined,
+            label: 'Scan & Log',
+            infoText:
+                'Scan a bill barcode/QR or photograph a product — XPens fills in the details for you',
+            comingSoon: true,
           ),
           const SizedBox(height: 8),
           _AnimatedPill(
             animation: _ctrl,
             staggerStart: 0.2,
-            icon: Icons.document_scanner_outlined,
-            label: 'Scan & Log',
-            infoText:
-                'Scan a bill barcode/QR or photograph a product — XPens fills in the details for you',
-            onTap: () => _closeAndRun(widget.onScanner),
-          ),
-          const SizedBox(height: 8),
-          _AnimatedPill(
-            animation: _ctrl,
-            staggerStart: 0.1,
             icon: Icons.currency_rupee_rounded,
             label: 'Pay via UPI',
             infoText:
                 'Scan a merchant UPI QR, open your payment app, and log the transaction',
-            onTap: () => _closeAndRun(widget.onPayDirectly),
+            comingSoon: true,
+          ),
+          const SizedBox(height: 8),
+          // ── Live pills (close to FAB) ───────────────────────────────────
+          _AnimatedPill(
+            animation: _ctrl,
+            staggerStart: 0.1,
+            icon: Icons.mic_none_rounded,
+            label: 'Voice',
+            infoText: 'Speak an expense aloud — parsed and saved for you',
+            onTap: () => _closeAndRun(widget.onVoice),
           ),
           const SizedBox(height: 8),
           _AnimatedPill(
@@ -223,6 +227,7 @@ class _AnimatedPill extends StatefulWidget {
     this.onTap,
     this.trailingToggleValue,
     this.onTrailingToggle,
+    this.comingSoon = false,
   });
 
   final Animation<double> animation;
@@ -242,6 +247,10 @@ class _AnimatedPill extends StatefulWidget {
   /// of the pill. Tapping the toggle does NOT trigger [onTap].
   final bool? trailingToggleValue;
   final ValueChanged<bool>? onTrailingToggle;
+
+  /// When `true` the pill is visually muted, shows a "Soon" badge, and
+  /// ignores all taps — the feature is not yet available.
+  final bool comingSoon;
 
   @override
   State<_AnimatedPill> createState() => _AnimatedPillState();
@@ -279,6 +288,19 @@ class _AnimatedPillState extends State<_AnimatedPill> {
       ),
     );
 
+    // Coming-soon pills are slightly faded and use a muted colour.
+    final pillColor = widget.comingSoon
+        ? const Color(0xFF2A3550) // desaturated navy
+        : widget.highlighted
+            ? AppColors.primaryBlue
+            : _kPillColor;
+
+    final contentOpacity = widget.comingSoon ? 0.55 : 1.0;
+
+    // Effective tap handler: nil for coming-soon pills.
+    final effectiveTap =
+        widget.comingSoon ? null : widget.onTap;
+
     return AnimatedBuilder(
       animation: curve,
       builder: (_, child) => Opacity(
@@ -288,127 +310,165 @@ class _AnimatedPillState extends State<_AnimatedPill> {
           child: child,
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          // ── Pill row ────────────────────────────────────────────────────
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: widget.onTap != null
-                  ? () {
-                      HapticFeedback.selectionClick();
-                      widget.onTap!();
-                    }
-                  : null,
-              borderRadius: BorderRadius.circular(28),
-              child: Container(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 12,
-                  top: 14,
-                  bottom: 14,
-                ),
-                decoration: BoxDecoration(
-                  color: widget.highlighted
-                      ? AppColors.primaryBlue
-                      : _kPillColor,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color(0x28000000),
-                      blurRadius: 14,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(widget.icon, color: Colors.white, size: 20),
-                    const SizedBox(width: 10),
-                    Text(
-                      widget.label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        letterSpacing: 0.2,
+      child: Opacity(
+        opacity: widget.comingSoon ? 0.72 : 1.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            // ── Pill row ──────────────────────────────────────────────────
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: effectiveTap != null
+                    ? () {
+                        HapticFeedback.selectionClick();
+                        effectiveTap();
+                      }
+                    : null,
+                borderRadius: BorderRadius.circular(28),
+                child: Container(
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 12,
+                    top: 14,
+                    bottom: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: pillColor,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const <BoxShadow>[
+                      BoxShadow(
+                        color: Color(0x28000000),
+                        blurRadius: 14,
+                        offset: Offset(0, 5),
                       ),
-                    ),
-                    if (widget.trailingToggleValue != null) ...<Widget>[
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Opacity(
+                        opacity: contentOpacity,
+                        child: Icon(widget.icon,
+                            color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Opacity(
+                        opacity: contentOpacity,
+                        child: Text(
+                          widget.label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                      // ── "Soon" badge (coming-soon pills only) ───────────
+                      if (widget.comingSoon) ...<Widget>[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Soon',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                      // ── Trailing toggle (live pills only) ────────────────
+                      if (!widget.comingSoon &&
+                          widget.trailingToggleValue != null) ...<Widget>[
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: Colors.white.withValues(alpha: 0.25),
+                        ),
+                        const SizedBox(width: 8),
+                        // GestureDetector absorbs taps so they don't bubble
+                        // to InkWell
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            widget.onTrailingToggle
+                                ?.call(!widget.trailingToggleValue!);
+                          },
+                          child: AppToggleSwitch(
+                            value: widget.trailingToggleValue!,
+                            onChanged:
+                                widget.onTrailingToggle ?? (_) {},
+                            small: true,
+                          ),
+                        ),
+                      ],
+                      // ── Info icon ────────────────────────────────────────
                       const SizedBox(width: 10),
                       Container(
                         width: 1,
                         height: 20,
                         color: Colors.white.withValues(alpha: 0.25),
                       ),
-                      const SizedBox(width: 8),
-                      // GestureDetector absorbs taps so they don't bubble to InkWell
+                      const SizedBox(width: 2),
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          widget.onTrailingToggle
-                              ?.call(!widget.trailingToggleValue!);
-                        },
-                        child: AppToggleSwitch(
-                          value: widget.trailingToggleValue!,
-                          onChanged: widget.onTrailingToggle ?? (_) {},
-                          small: true,
+                        onTap: _toggleInfo,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          child: Icon(
+                            _showInfo
+                                ? Icons.info_rounded
+                                : Icons.info_outline_rounded,
+                            color: _showInfo
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.55),
+                            size: 18,
+                          ),
                         ),
                       ),
                     ],
-                    // ── Info icon ──────────────────────────────────────────
-                    const SizedBox(width: 10),
-                    Container(
-                      width: 1,
-                      height: 20,
-                      color: Colors.white.withValues(alpha: 0.25),
-                    ),
-                    const SizedBox(width: 2),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _toggleInfo,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        child: Icon(
-                          _showInfo
-                              ? Icons.info_rounded
-                              : Icons.info_outline_rounded,
-                          color: _showInfo
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.55),
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // ── Info bar ────────────────────────────────────────────────────
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            transitionBuilder: (child, anim) => FadeTransition(
-              opacity: anim,
-              child: SizeTransition(
-                sizeFactor: anim,
-                axisAlignment: -1,
-                child: child,
+            // ── Info bar ────────────────────────────────────────────────
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SizeTransition(
+                  sizeFactor: anim,
+                  axisAlignment: -1,
+                  child: child,
+                ),
               ),
+              child: _showInfo
+                  ? _InfoBar(
+                      key: const ValueKey('info'),
+                      text: widget.comingSoon
+                          ? '${widget.infoText} (Coming soon)'
+                          : widget.infoText,
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty')),
             ),
-            child: _showInfo
-                ? _InfoBar(key: const ValueKey('info'), text: widget.infoText)
-                : const SizedBox.shrink(key: ValueKey('empty')),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
