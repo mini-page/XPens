@@ -86,7 +86,7 @@ List<SubcategoryModel> subcategoriesFromJson(String json) {
 }
 
 String subcategoriesToJson(List<SubcategoryModel> subcategories) =>
-    jsonEncode(subcategories.map((subcategory) => subcategory.toJson()).toList());
+    jsonEncode(subcategories.map((subcategory) => subcategory.toJson()));
 
 const Map<String, List<SubcategoryModel>> defaultSubcategories =
     <String, List<SubcategoryModel>>{
