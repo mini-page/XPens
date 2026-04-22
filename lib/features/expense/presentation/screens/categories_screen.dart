@@ -56,11 +56,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
       final newIndex = _tabController.index;
       final newMode = _BoardMode.values[newIndex];
       if (_mode != newMode) {
-        _searchController.clear();
+        // Update state (including _searchQuery) first so the searchController
+        // listener finds the query already empty and skips its own setState.
         setState(() {
           _mode = newMode;
           _searchQuery = '';
         });
+        _searchController.clear();
       }
     });
   }
@@ -288,11 +290,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
               tabs: _categoryTabs,
               selected: _mode.index,
               onChanged: (index) {
-                _searchController.clear();
+                // Update mode + query in one setState, then clear the
+                // controller so its listener finds the query already empty.
                 setState(() {
                   _mode = _BoardMode.values[index];
                   _searchQuery = '';
                 });
+                _searchController.clear();
                 _tabController.animateTo(index);
               },
             ),

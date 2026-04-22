@@ -21,6 +21,10 @@ class MonthBudgetLocalDatasource {
 
   // ── per-category overrides ─────────────────────────────────────────────────
 
+  /// Returns category budget overrides stored for [monthKey].
+  ///
+  /// This scans all box keys, so prefer calling [loadAll] once at startup to
+  /// build a complete in-memory snapshot rather than calling this repeatedly.
   Map<String, double> getCategoryBudgetsForMonth(String monthKey) {
     final prefix = '$monthKey::';
     final result = <String, double>{};

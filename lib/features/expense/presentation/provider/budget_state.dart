@@ -84,13 +84,19 @@ class MonthBudgetNotifier extends AsyncNotifier<MonthBudgetState> {
   }
 
   Future<void> saveMonthTotal(DateTime month, double amount) async {
-    final key = monthKeyOf(month);
-    await _ds.saveMonthTotalBudget(key, amount);
-
-    final current = state.value ?? const MonthBudgetState();
-    final updatedTotals = Map<String, double>.from(current.totalBudgets)
-      ..[key] = amount;
-    state = AsyncData(current.copyWith(totalBudgets: updatedTotals));
+    try {
+      final key = monthKeyOf(month);
+      await _ds.saveMonthTotalBudget(key, amount);
+      final current = state.value ?? const MonthBudgetState();
+      final updatedTotals = Map<String, double>.from(current.totalBudgets)
+        ..[key] = amount;
+      state = AsyncData(current.copyWith(totalBudgets: updatedTotals));
+    } catch (e, st) {
+      if (kDebugMode) {
+        dev.log('saveMonthTotal failed',
+            error: e, stackTrace: st, name: 'MonthBudgetNotifier');
+      }
+    }
   }
 
   Future<void> copyFromPreviousMonth(DateTime targetMonth) async {
