@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/account_model.dart';
 import '../../data/models/expense_model.dart';
+import '../../data/models/subcategory_model.dart';
 import '../provider/account_providers.dart';
 import '../provider/expense_providers.dart';
 import '../provider/preferences_providers.dart';
@@ -20,6 +21,7 @@ class AddExpenseScreen extends ConsumerStatefulWidget {
     this.expenseId,
     this.initialAmount,
     this.initialCategory,
+    this.initialSubcategory,
     this.initialDate,
     this.initialNote,
     this.initialAccountId,
@@ -31,6 +33,7 @@ class AddExpenseScreen extends ConsumerStatefulWidget {
   final String? expenseId;
   final double? initialAmount;
   final String? initialCategory;
+  final String? initialSubcategory;
   final DateTime? initialDate;
   final String? initialNote;
   final String? initialAccountId;
@@ -65,6 +68,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
   String? _selectedAccountId;
   String? _toAccountId;
   late bool _hasExplicitAccountChoice;
+  String? _selectedSubcategory;
   bool _isSaving = false;
 
   /// True once the user has returned from the UPI app (pay-mode only).
@@ -97,6 +101,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     );
     _selectedType = widget.initialType;
     _amountExpression = normalizeAmountSeed(widget.initialAmount);
+    _selectedSubcategory = widget.initialSubcategory;
     _selectedExpenseCategory = (_selectedType == TransactionType.expense
             ? widget.initialCategory
             : null) ??
@@ -446,6 +451,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                         ],
                       ),
                       const SizedBox(height: 8),
+                      // ── Subcategory chip row ────────────────────────────
+                      if (_selectedType != TransactionType.transfer)
+                        _SubcategoryRow(
+                          categoryName: _selectedType == TransactionType.income
+                              ? _selectedIncomeCategory
+                              : _selectedExpenseCategory,
+                          selectedSubcategory: _selectedSubcategory,
+                          onSelected: (name) {
+                            setState(() {
+                              _selectedSubcategory =
+                                  _selectedSubcategory == name ? null : name;
+                            });
+                          },
+                        ),
                       Row(
                         children: <Widget>[
                           Expanded(
@@ -872,6 +891,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
 
     setState(() {
       _selectedType = type;
+      _selectedSubcategory = null;
       if (type == TransactionType.transfer) {
         _ensureTransferAccounts(availableAccounts);
       }
@@ -936,7 +956,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     if (selected == null) {
       return;
     }
-    setState(() => _selectedExpenseCategory = selected.name);
+    setState(() {
+      _selectedExpenseCategory = selected.name;
+      _selectedSubcategory = null;
+    });
   }
 
   Future<void> _pickIncomeCategory() async {
@@ -967,7 +990,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     if (selected == null) {
       return;
     }
-    setState(() => _selectedIncomeCategory = selected.name);
+    setState(() {
+      _selectedIncomeCategory = selected.name;
+      _selectedSubcategory = null;
+    });
   }
 
   Future<void> _pickAccount(List<AccountModel> accounts) async {
@@ -1192,6 +1218,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
           note: _noteController.text,
           accountId: selectedAccount?.id,
           type: _selectedType,
+          subcategory: _selectedSubcategory,
+          clearSubcategory: _selectedSubcategory == null,
         );
       } else {
         await controller.addExpense(
@@ -1203,6 +1231,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
           note: _noteController.text,
           accountId: selectedAccount?.id,
           type: _selectedType,
+          subcategory: _selectedSubcategory,
         );
       }
 
@@ -1471,6 +1500,98 @@ class _SearchablePickerSheetState<T>
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Subcategory chip row
+// ---------------------------------------------------------------------------
+
+/// A horizontally scrollable row of subcategory chips for the given [categoryName].
+///
+/// When there are no subcategories (e.g. Transfer, or an unconfigured
+/// category), the widget renders nothing so it takes no space.
+class _SubcategoryRow extends ConsumerWidget {
+  const _SubcategoryRow({
+    required this.categoryName,
+    required this.selectedSubcategory,
+    required this.onSelected,
+  });
+
+  final String categoryName;
+  final String? selectedSubcategory;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (categoryName.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final subcategories =
+        ref.watch(subcategoriesForCategoryProvider(categoryName));
+
+    if (subcategories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SizedBox(
+        height: 34,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.zero,
+          itemCount: subcategories.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 6),
+          itemBuilder: (context, index) {
+            final sub = subcategories[index];
+            final isSelected = sub.name == selectedSubcategory;
+            return _SubcategoryChip(
+              label: sub.name,
+              isSelected: isSelected,
+              onTap: () => onSelected(sub.name),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _SubcategoryChip extends StatelessWidget {
+  const _SubcategoryChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryBlue : const Color(0xFFF4F6FA),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? Colors.white : AppColors.textMuted,
+          ),
         ),
       ),
     );

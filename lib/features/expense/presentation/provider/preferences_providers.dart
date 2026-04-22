@@ -10,6 +10,7 @@ import 'package:workmanager/workmanager.dart';
 import '../../data/datasource/preferences_local_datasource.dart';
 import '../../data/models/app_preferences_model.dart';
 import '../../data/models/custom_category_model.dart';
+import '../../data/models/subcategory_model.dart';
 import '../../data/repositories/hive_preferences_repository.dart';
 import '../../domain/repositories/preferences_repository.dart';
 import '../widgets/expense_category.dart';
@@ -162,6 +163,43 @@ final builtInIncomeCategoryOverridesProvider =
           ?.builtInIncomeCategoryOverridesJson ??
       '';
   return builtInOverridesFromJson(json);
+});
+
+/// All user-defined or enabled subcategories, merged with defaults.
+///
+/// The returned list is a flat union of:
+/// 1. All entries from [defaultSubcategories] that have NOT been overridden
+///    by a user entry with the same [id].
+/// 2. Every user-defined subcategory stored in [AppPreferencesModel.subcategoriesJson].
+final subcategoryListProvider = Provider<List<SubcategoryModel>>((ref) {
+  final json =
+      ref.watch(appPreferencesProvider).value?.subcategoriesJson ?? '';
+  final userSubcategories = subcategoriesFromJson(json);
+  final userIds = <String>{for (final s in userSubcategories) s.id};
+
+  final merged = <SubcategoryModel>[];
+  for (final entry in defaultSubcategories.values) {
+    for (final sub in entry) {
+      if (!userIds.contains(sub.id)) {
+        merged.add(sub);
+      }
+    }
+  }
+  merged.addAll(userSubcategories);
+  return merged;
+});
+
+/// Returns enabled subcategories for a given parent category name.
+///
+/// Provides the merged default + user subcategories filtered to
+/// [parentCategoryName] where [SubcategoryModel.isEnabled] is `true`.
+final subcategoriesForCategoryProvider =
+    Provider.family<List<SubcategoryModel>, String>((ref, parentCategoryName) {
+  final all = ref.watch(subcategoryListProvider);
+  return all
+      .where((s) =>
+          s.parentCategoryName == parentCategoryName && s.isEnabled)
+      .toList(growable: false);
 });
 
 /// All expense categories: built-in list (with user overrides) + user-defined custom categories.
@@ -735,5 +773,122 @@ class AppPreferencesController {
     await _ref
         .read(appPreferencesProvider.notifier)
         .save(_current.copyWith(aiSmsAiEnabled: enabled));
+  }
+
+  // ── Subcategories ────────────────────────────────────────────────────────
+
+  List<SubcategoryModel> _currentSubcategories() {
+    return subcategoriesFromJson(_current.subcategoriesJson);
+  }
+
+  Future<void> _saveSubcategories(List<SubcategoryModel> list) async {
+    await _ref.read(appPreferencesProvider.notifier).save(
+          _current.copyWith(subcategoriesJson: subcategoriesToJson(list)),
+        );
+  }
+
+  /// Adds a user-defined subcategory.
+  Future<void> addSubcategory(SubcategoryModel subcategory) async {
+    final list = _currentSubcategories();
+    list.add(subcategory);
+    await _saveSubcategories(list);
+  }
+
+  /// Replaces an existing subcategory matched by [SubcategoryModel.id].
+  Future<void> updateSubcategory(SubcategoryModel subcategory) async {
+    final list = _currentSubcategories();
+    final index = list.indexWhere((s) => s.id == subcategory.id);
+    if (index != -1) {
+      list[index] = subcategory;
+    } else {
+      list.add(subcategory);
+    }
+    await _saveSubcategories(list);
+  }
+
+  /// Removes a subcategory by id.
+  ///
+  /// For default subcategories that cannot be removed, calling this will
+  /// instead persist a disabled override so that the entry is hidden.
+  Future<void> removeSubcategory(String id) async {
+    final list = _currentSubcategories();
+    // Check if this id belongs to a default subcategory
+    SubcategoryModel? defaultMatch;
+    for (final subs in defaultSubcategories.values) {
+      for (final sub in subs) {
+        if (sub.id == id) {
+          defaultMatch = sub;
+          break;
+        }
+      }
+      if (defaultMatch != null) break;
+    }
+
+    if (defaultMatch != null) {
+      // Persist a disabled override so the default is hidden.
+      await updateSubcategory(defaultMatch.copyWith(isEnabled: false));
+      return;
+    }
+
+    list.removeWhere((s) => s.id == id);
+    await _saveSubcategories(list);
+  }
+
+  /// Enables or disables a subcategory.
+  ///
+  /// For default subcategories an override record is persisted in user
+  /// storage; for user-defined ones the stored entry is updated in place.
+  Future<void> setSubcategoryEnabled(String id, bool enabled) async {
+    final list = _currentSubcategories();
+    final index = list.indexWhere((s) => s.id == id);
+    if (index != -1) {
+      list[index] = list[index].copyWith(isEnabled: enabled);
+      await _saveSubcategories(list);
+      return;
+    }
+
+    // Not found in user list — must be a default. Persist an override.
+    SubcategoryModel? defaultMatch;
+    for (final subs in defaultSubcategories.values) {
+      for (final sub in subs) {
+        if (sub.id == id) {
+          defaultMatch = sub;
+          break;
+        }
+      }
+      if (defaultMatch != null) break;
+    }
+
+    if (defaultMatch != null) {
+      list.add(defaultMatch.copyWith(isEnabled: enabled));
+      await _saveSubcategories(list);
+    }
+  }
+
+  /// Increments the usage counter for a subcategory by 1.
+  Future<void> incrementSubcategoryUsage(String id) async {
+    final list = _currentSubcategories();
+    final index = list.indexWhere((s) => s.id == id);
+    if (index != -1) {
+      list[index] =
+          list[index].copyWith(usageCount: list[index].usageCount + 1);
+      await _saveSubcategories(list);
+      return;
+    }
+    // Default subcategory — promote to user list with usage 1.
+    SubcategoryModel? defaultMatch;
+    for (final subs in defaultSubcategories.values) {
+      for (final sub in subs) {
+        if (sub.id == id) {
+          defaultMatch = sub;
+          break;
+        }
+      }
+      if (defaultMatch != null) break;
+    }
+    if (defaultMatch != null) {
+      list.add(defaultMatch.copyWith(usageCount: 1));
+      await _saveSubcategories(list);
+    }
   }
 }

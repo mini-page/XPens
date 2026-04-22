@@ -24,6 +24,7 @@ void main() {
       expect(expense.date, validDate.toUtc());
       expect(expense.note, 'Lunch');
       expect(expense.type, TransactionType.expense);
+      expect(expense.subcategory, isNull);
     });
 
     group('Constructor Validations', () {
@@ -155,6 +156,7 @@ void main() {
         expect(model.note, 'Bonus');
         expect(model.accountId, 'acc-123');
         expect(model.type, TransactionType.expense); // default
+        expect(model.subcategory, isNull);
       });
 
       test('should set accountId to null if it is empty or whitespace', () {
@@ -175,6 +177,35 @@ void main() {
           accountId: '   ',
         );
         expect(model2.accountId, isNull);
+      });
+
+      test('should store subcategory when provided', () {
+        final model = ExpenseModel.create(
+          amount: 50.0,
+          category: 'Food & Dining',
+          date: DateTime(2023),
+          subcategory: '  Lunch  ',
+        );
+
+        expect(model.subcategory, 'Lunch');
+      });
+
+      test('should set subcategory to null when empty or whitespace', () {
+        final model1 = ExpenseModel.create(
+          amount: 50.0,
+          category: 'Food',
+          date: DateTime(2023),
+          subcategory: '',
+        );
+        expect(model1.subcategory, isNull);
+
+        final model2 = ExpenseModel.create(
+          amount: 50.0,
+          category: 'Food',
+          date: DateTime(2023),
+          subcategory: '   ',
+        );
+        expect(model2.subcategory, isNull);
       });
     });
 
@@ -221,6 +252,23 @@ void main() {
         final updated = original.copyWith(clearAccountId: true);
 
         expect(updated.accountId, isNull);
+      });
+
+      test('should update subcategory', () {
+        final original = ExpenseModel(
+          id: 'test-id',
+          amount: 50.0,
+          category: 'Food',
+          date: DateTime.utc(2023),
+          note: '',
+          subcategory: 'Lunch',
+        );
+
+        final withNew = original.copyWith(subcategory: 'Dinner');
+        expect(withNew.subcategory, 'Dinner');
+
+        final cleared = original.copyWith(clearSubcategory: true);
+        expect(cleared.subcategory, isNull);
       });
     });
   });

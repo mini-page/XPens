@@ -87,6 +87,7 @@ class ExpenseController {
     required String note,
     String? accountId,
     TransactionType type = TransactionType.expense,
+    String? subcategory,
   }) async {
     final expense = ExpenseModel.create(
       amount: amount,
@@ -95,6 +96,7 @@ class ExpenseController {
       note: note.trim(),
       accountId: accountId,
       type: type,
+      subcategory: subcategory,
     );
 
     await _applyBalanceAdjustments(nextExpense: expense);
@@ -133,6 +135,8 @@ class ExpenseController {
     String? accountId,
     String? toAccountId,
     TransactionType type = TransactionType.expense,
+    String? subcategory,
+    bool clearSubcategory = false,
   }) async {
     final existingExpense = await _findExpenseById(id);
     if (existingExpense == null) {
@@ -149,6 +153,8 @@ class ExpenseController {
       toAccountId: type == TransactionType.transfer ? toAccountId : null,
       clearToAccountId: type != TransactionType.transfer || toAccountId == null,
       type: type,
+      subcategory: subcategory,
+      clearSubcategory: clearSubcategory,
     );
 
     await _applyBalanceAdjustments(
