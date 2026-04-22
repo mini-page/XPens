@@ -145,60 +145,36 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
     required NumberFormat currency,
     required bool privacyModeEnabled,
   }) {
-    return SingleChildScrollView(
+    final itemCount = cards.length + 1;
+    return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 124),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          final crossAxisCount = width >= 900
-              ? 4
-              : width >= 640
-                  ? 3
-                  : 2;
-          final ratio = width >= 900
-              ? 1.35
-              : width >= 640
-                  ? 1.28
-                  : 1.22;
-
-          return GridView.builder(
-            itemCount: cards.length + 1,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: ratio,
-            ),
-            itemBuilder: (context, index) {
-              if (index == cards.length) {
-                return AddCategoryCard(
-                  onTap: () => _handlePrimaryActionTapFor(mode),
-                  title: _actionTitle(mode),
-                  detail: _actionDetail(mode),
-                );
-              }
-
-              final entry = cards[index];
-              return CategoryGridCard(
-                title: entry.title,
-                icon: entry.icon,
-                tone: entry.tone,
-                amount: _displayAmount(
-                    entry.amount, entry.amountColor, currency,
-                    masked: privacyModeEnabled),
-                progressLabel: entry.progressLabel,
-                progress: entry.progress,
-                isEnabled: entry.isEnabled,
-                onTap: entry.onTap,
-                onToggle: entry.onToggle,
-                amountColor: entry.amountColor,
-              );
-            },
+      itemCount: itemCount,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        if (index == cards.length) {
+          return AddCategoryListCard(
+            onTap: () => _handlePrimaryActionTapFor(mode),
+            title: _actionTitle(mode),
+            detail: _actionDetail(mode),
           );
-        },
-      ),
+        }
+
+        final entry = cards[index];
+        return CategoryListCard(
+          title: entry.title,
+          icon: entry.icon,
+          tone: entry.tone,
+          amount: _displayAmount(
+              entry.amount, entry.amountColor, currency,
+              masked: privacyModeEnabled),
+          progressLabel: entry.progressLabel,
+          progress: entry.progress,
+          isEnabled: entry.isEnabled,
+          onTap: entry.onTap,
+          onToggle: entry.onToggle,
+          amountColor: entry.amountColor,
+        );
+      },
     );
   }
 
